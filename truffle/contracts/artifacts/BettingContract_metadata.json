@@ -1,0 +1,271 @@
+{
+	"compiler": {
+		"version": "0.8.6+commit.11564f7e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_objectId",
+						"type": "string"
+					}
+				],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "amount",
+						"type": "uint256"
+					}
+				],
+				"name": "AmountToLow",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "GameAlreadyEnded",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint256",
+						"name": "odds",
+						"type": "uint256"
+					}
+				],
+				"name": "OddsToLow",
+				"type": "error"
+			},
+			{
+				"inputs": [],
+				"name": "OnlyOwner",
+				"type": "error"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "enum BettingContract.BetSide",
+						"name": "_betSide",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "_betType",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "_selection",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint16",
+						"name": "_odds",
+						"type": "uint16"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "_fromAddr",
+						"type": "address"
+					}
+				],
+				"name": "MatchedBetPlaced",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "enum BettingContract.BetSide",
+						"name": "_betSide",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "_betType",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint8",
+						"name": "_selection",
+						"type": "uint8"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint16",
+						"name": "_odds",
+						"type": "uint16"
+					},
+					{
+						"indexed": false,
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					},
+					{
+						"indexed": false,
+						"internalType": "address",
+						"name": "_fromAddr",
+						"type": "address"
+					}
+				],
+				"name": "UnmatchedBetPlaced",
+				"type": "event"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "_betType",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_selection",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint16",
+						"name": "_odds",
+						"type": "uint16"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "createBackBet",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "uint8",
+						"name": "_betType",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_selection",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint16",
+						"name": "_odds",
+						"type": "uint16"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "createLayBet",
+				"outputs": [],
+				"stateMutability": "payable",
+				"type": "function"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"errors": {
+				"AmountToLow(uint256)": [
+					{
+						"notice": "Bet Amount of `amount` to low."
+					}
+				],
+				"GameAlreadyEnded()": [
+					{
+						"notice": "Game has already ended."
+					}
+				],
+				"OddsToLow(uint256)": [
+					{
+						"notice": "Odds of `odds` to low."
+					}
+				],
+				"OnlyOwner()": [
+					{
+						"notice": "Only Owner can call."
+					}
+				]
+			},
+			"events": {
+				"MatchedBetPlaced(uint8,uint8,uint8,uint16,uint256,address)": {
+					"notice": "Matched bet has been placed."
+				},
+				"UnmatchedBetPlaced(uint8,uint8,uint8,uint16,uint256,address)": {
+					"notice": "Unmatched bet has been placed."
+				}
+			},
+			"kind": "user",
+			"methods": {
+				"constructor": {
+					"notice": "Create game struct and init vars"
+				},
+				"createBackBet(uint8,uint8,uint16,uint256)": {
+					"notice": "Public function for placing back bet -> msg.value = bet amount"
+				},
+				"createLayBet(uint8,uint8,uint16,uint256)": {
+					"notice": "Public function for placing lay bet -> msg.value = bet liqidity"
+				}
+			},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"truffle/contracts/BetingContract.sol": "BettingContract"
+		},
+		"evmVersion": "berlin",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"truffle/contracts/BetingContract.sol": {
+			"keccak256": "0x4971fc746f642091a3d2eed638d761baa8a737a6afd0ffb974b8d500bb54d86d",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://cf7ccbc25649f9466327d6412cb767cb9dffc14d626a6f4d52fbeb6942477dae",
+				"dweb:/ipfs/QmSReubNAVKQP6kx6moFypysnFfFfXavB4iDgVuYd22cSq"
+			]
+		}
+	},
+	"version": 1
+}

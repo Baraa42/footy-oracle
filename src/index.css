@@ -1,0 +1,224 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 300;
+  src: local("Inter Light"), local("Inter-Light"),
+    url("@/assets/fonts/Inter-Light.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 400;
+  src: local("Inter Regular"), local("Inter-Regular"),
+    url("@/assets/fonts/Inter-Regular.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 500;
+  src: local("Inter Medium"), local("Inter-Medium"),
+    url("@/assets/fonts/Inter-Medium.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 600;
+  src: local("Inter SemiBold"), local("Inter-SemiBold"),
+    url("@/assets/fonts/Inter-SemiBold.ttf") format("truetype");
+}
+
+@font-face {
+  font-family: "Inter";
+  font-style: normal;
+  font-weight: 700;
+  src: local("Inter Bold"), local("Inter-Bold"),
+    url("@/assets/fonts/Inter-Bold.ttf") format("truetype");
+}
+
+
+.touch-action-none {
+  touch-action: none;
+}
+
+.mt-save {
+  margin-top: env(safe-area-inset-top);
+}
+
+.mb-save {
+  margin-bottom: env(safe-area-inset-bottom);
+}
+
+.mr-save {
+  margin-right: env(safe-area-inset-right);
+}
+
+.ml-save {
+  margin-left: env(safe-area-inset-right);
+}
+
+.pt-save {
+  padding-top: env(safe-area-inset-top);
+}
+
+.pb-save {
+  padding-bottom: env(safe-area-inset-bottom);
+}
+
+.pb-2-save {
+  padding-bottom: calc(env(safe-area-inset-bottom) * 2);
+}
+
+.pr-save {
+  padding-right: env(safe-area-inset-right);
+}
+
+.pl-save {
+  padding-left: env(safe-area-inset-right);
+}
+
+.h-calc-without-nav-footer {
+  height: 100%;
+  height: calc(100% - 56px - 64px);
+}
+
+.h-calc-without-footer {
+  height: 100%;
+  height: calc(100% - 56px);
+}
+
+.scrollbar {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.hide-scrollbar {
+  /*FireFox*/
+  scrollbar-width: none;
+  /*IE10+*/
+  -ms-overflow-style: -ms-autohiding-scrollbar;
+}
+.hide-scrollbar::-webkit-scrollbar {
+  /*Chrome, Safari, Edge*/
+  display: none;
+}
+
+.st0 {
+  fill: #e2761b;
+  stroke: #e2761b;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st1 {
+  fill: #e4761b;
+  stroke: #e4761b;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st2 {
+  fill: #d7c1b3;
+  stroke: #d7c1b3;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st3 {
+  fill: #233447;
+  stroke: #233447;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st4 {
+  fill: #cd6116;
+  stroke: #cd6116;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st5 {
+  fill: #e4751f;
+  stroke: #e4751f;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st6 {
+  fill: #f6851b;
+  stroke: #f6851b;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st7 {
+  fill: #c0ad9e;
+  stroke: #c0ad9e;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st8 {
+  fill: #161616;
+  stroke: #161616;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.st9 {
+  fill: #763d16;
+  stroke: #763d16;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+
+.text-number {
+  font-variant-numeric: tabular-nums;
+}
+
+.texture-hexagons {
+  background-image: url("/textures/hexagons.svg");
+  background-repeat: repeat;
+}
+
+.texture-charlie-brown {
+  background-image: url("/textures/charlie-brown.svg");
+  background-repeat: repeat;
+}
+
+.texture-temple {
+  background-image: url("/textures/temple.svg");
+  background-repeat: repeat;
+}
+
+.texture-temple {
+  background-image: url("/textures/temple.svg");
+  background-repeat: repeat;
+}
+.texture-four-point-stars {
+  background-image: url("/textures/4-point-stars.svg");
+  background-repeat: repeat;
+}
+
+.texture-bamboo {
+  background-image: url("/textures/bamboo.svg");
+  background-repeat: repeat;
+}
+
+.texture-wiggle {
+  background-image: url("/textures/wiggle.svg");
+  background-repeat: repeat;
+}
+
+.texture-glamorous {
+  background-image: url("/textures/glamorous.svg");
+  background-repeat: repeat;
+}
+
+.texture-circuit-board {
+  background-image: url("/textures/circuit-board.svg");
+  background-repeat: repeat;
+}
+
+.texture-bank-note {
+  background-image: url("/textures/bank-note.svg");
+  background-repeat: repeat;
+}

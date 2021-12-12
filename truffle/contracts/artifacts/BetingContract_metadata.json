@@ -1,0 +1,51 @@
+{
+	"compiler": {
+		"version": "0.8.6+commit.11564f7e"
+	},
+	"language": "Solidity",
+	"output": {
+		"abi": [
+			{
+				"inputs": [],
+				"stateMutability": "nonpayable",
+				"type": "constructor"
+			}
+		],
+		"devdoc": {
+			"kind": "dev",
+			"methods": {},
+			"version": 1
+		},
+		"userdoc": {
+			"kind": "user",
+			"methods": {},
+			"version": 1
+		}
+	},
+	"settings": {
+		"compilationTarget": {
+			"truffle/contracts/BetingContract.sol": "BetingContract"
+		},
+		"evmVersion": "berlin",
+		"libraries": {},
+		"metadata": {
+			"bytecodeHash": "ipfs"
+		},
+		"optimizer": {
+			"enabled": false,
+			"runs": 200
+		},
+		"remappings": []
+	},
+	"sources": {
+		"truffle/contracts/BetingContract.sol": {
+			"keccak256": "0xc0114f1b8019357551751a2b50fb9d5594872bcc3d537c4cfd3d69ef5dde20c7",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://8ee9d085949452237c3fb4a858f8cbe82468180e41be87fdfc94acb0bdce0f43",
+				"dweb:/ipfs/QmQDUA5ddJdquk2rJLzQf1nzNm4uwdXwnZEy2UQ9s6FENW"
+			]
+		}
+	},
+	"version": 1
+}
