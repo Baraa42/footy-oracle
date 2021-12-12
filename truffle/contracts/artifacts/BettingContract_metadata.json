@@ -259,11 +259,11 @@
 	},
 	"sources": {
 		"truffle/contracts/BetingContract.sol": {
-			"keccak256": "0x4971fc746f642091a3d2eed638d761baa8a737a6afd0ffb974b8d500bb54d86d",
+			"keccak256": "0x42dea39d1ac48f90edd91f6489eaf25974474ea1e7b7047d981a6bd187529752",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://cf7ccbc25649f9466327d6412cb767cb9dffc14d626a6f4d52fbeb6942477dae",
-				"dweb:/ipfs/QmSReubNAVKQP6kx6moFypysnFfFfXavB4iDgVuYd22cSq"
+				"bzz-raw://ef456fcf09ae5d5d2302bff8955bf51967ab380ad63b76423748b10a25db10ef",
+				"dweb:/ipfs/QmSXDUDRKAEctT2yhaSevtarfpgcAgaBqdHwsRxWN5K9cP"
 			]
 		}
 	},

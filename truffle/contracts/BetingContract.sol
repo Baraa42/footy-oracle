@@ -130,12 +130,11 @@ contract BettingContract  {
 
         // place matched bets
         for (uint i=0; i < matchingWith.length; i++) {
+            placeMatchedBet(oppositeSide, _betType, _selection, _odds, matchingAmount[i], unmatchedBetsArray[matchingWith[i]].fromAddr);
             if(matchingAmount[i] == unmatchedBetsArray[matchingWith[i]].amount){
-                placeMatchedBet(oppositeSide, _betType, _selection, _odds, matchingAmount[i], unmatchedBetsArray[matchingWith[i]].fromAddr);
                 delete unmatchedBets[oppositeSide][_betType][_selection][_odds][matchingWith[i]];
             }
             else {
-                placeMatchedBet(oppositeSide, _betType, _selection, _odds, matchingAmount[i], unmatchedBetsArray[matchingWith[i]].fromAddr);
                 unmatchedBets[oppositeSide][_betType][_selection][_odds][matchingWith[i]].amount -= matchingAmount[i]; 
                 //TODO emit update unmatched bet
             }
