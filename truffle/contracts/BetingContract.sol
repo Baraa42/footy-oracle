@@ -1,7 +1,9 @@
 // SPDX-License-Identifier: MIT
 pragma solidity >=0.4.22 <0.9.0;
 
-contract BettingContract  {
+import "@openzeppelin/contracts/access/Ownable.sol";
+
+contract BettingContract is Ownable {
 
     enum GameStatus {Open, Closed}
     
@@ -32,8 +34,9 @@ contract BettingContract  {
     error AmountToLow(uint amount);
     /// Odds of `odds` to low.
     error OddsToLow(uint256 odds);
+    // REPLACED BY onlyowner OZ
     /// Only Owner can call.
-    error OnlyOwner();
+    //error OnlyOwner();
     
     
     /// check if amount is greater then zero
@@ -54,11 +57,12 @@ contract BettingContract  {
         _;
     }
     
+    // REPLACED BY onlyowner
     /// check if address is from game owner
-    modifier onlyOwner(address _addr) {
-        if(_addr != game.owner) revert OnlyOwner();
-        _;
-    }
+    // modifier onlyOwner(address _addr) {
+    //     if(_addr != game.owner) revert OnlyOwner();
+    //     _;
+    // }
     
     /// Create game struct and init vars
     constructor(string memory _objectId) {
