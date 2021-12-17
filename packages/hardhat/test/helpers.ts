@@ -15,6 +15,7 @@ export interface Bet {
   oddsParsed: BigNumberish;
   liabilityParsed: BigNumberish;
   account: Signer;
+  copyWithNewAmount(amount: string): Bet;
 }
 
 /**
@@ -33,15 +34,15 @@ export const deployBettingContract = async (
 };
 
 /**
- * Generate bet helper
+ * Creates bet object for consistent usage insides test
  *
- * @param betSide
- * @param betType
- * @param selection
- * @param odds
- * @param amount
- * @param address
- * @returns
+ * @param  {number} betSide
+ * @param  {number} betType
+ * @param  {number} selection
+ * @param  {string} odds
+ * @param  {string} amount
+ * @param  {Signer} account
+ * @returns Bet
  */
 export const generateBet = (
   betSide: number,
@@ -65,18 +66,25 @@ export const generateBet = (
     oddsParsed: oddsParsed,
     liabilityParsed: liabilityParsed,
     account: account,
+    copyWithNewAmount: function (newAmount: string): Bet {
+      return generateBet(betSide, betType, selection, odds, newAmount, account);
+    },
   };
+
   return bet;
 };
 
 /**
- * Bet event expectation helper
+ * Places the bet and wrappes it into an expectation
  *
- * @param contract
- * @param bet
- * @returns
+ * @param  {BettingContract} contract
+ * @param  {Bet} bet
+ * @returns Chai
  */
-export const getBetExpectation = (contract: BettingContract, bet: Bet) => {
+export const getBetExpectation = (
+  contract: BettingContract,
+  bet: Bet
+): Chai.Assertion => {
   if (bet.betSide === 0) {
     return expect(
       contract
@@ -109,20 +117,20 @@ export const getBetExpectation = (contract: BettingContract, bet: Bet) => {
 };
 
 /**
- * Check event from expectation helper
+ * Checks inside expectation, if event is emited with with args from bet
  *
- * @param expectation
- * @param contract
- * @param event
- * @param bet
- * @returns
+ * @param  {Chai.Assertion} expectation
+ * @param  {BettingContract} contract
+ * @param  {string} event
+ * @param  {Bet} bet
+ * @returns Promise
  */
 export const checkBetEventFromExpectation = async (
   expectation: Chai.Assertion,
   contract: BettingContract,
   event: string,
   bet: Bet
-) => {
+): Promise<Chai.AsyncAssertion> => {
   return await expectation?.to
     .emit(contract, event)
     .withArgs(
@@ -133,4 +141,48 @@ export const checkBetEventFromExpectation = async (
       bet.amountParsed,
       await bet.account.getAddress()
     );
+};
+
+/**
+ * Muliplies math save a number with decimals inside a string
+ *
+ * @param  {string} value
+ * @param  {number} mul
+ * @returns string
+ */
+export const mulMathSave = (value: string, mul: number): string => {
+  return utils.formatEther(utils.parseUnits(value).mul(mul));
+};
+
+/**
+ * Divides math save a number with decimals inside a string
+ *
+ * @param  {string} value
+ * @param  {number} div
+ * @returns string
+ */
+export const divMathSave = (value: string, div: number): string => {
+  return utils.formatEther(utils.parseUnits(value).div(div));
+};
+
+/**
+ * Adds math save a number with decimals inside a string
+ *
+ * @param  {string} value
+ * @param  {number} add
+ * @returns string
+ */
+export const addMathSave = (value: string, add: number): string => {
+  return utils.formatEther(utils.parseUnits(value).add(add));
+};
+
+/**
+ * Subtracts math save a number with decimals inside a string
+ *
+ * @param  {string} value
+ * @param  {number} sub
+ * @returns string
+ */
+export const subMathSave = (value: string, sub: number): string => {
+  return utils.formatEther(utils.parseUnits(value).sub(sub));
 };
