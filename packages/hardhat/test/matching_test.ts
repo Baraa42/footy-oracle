@@ -13,12 +13,12 @@ import {
   getBetExpectation,
   mulMathSave,
 } from "./helpers";
-import { BettingContract } from "../typechain";
+import { Betting } from "../typechain/Betting";
 const { deployContract } = waffle;
 
 describe("BettingContract", function () {
   let accounts: Signer[];
-  let bettingContract: BettingContract;
+  let bettingContract: Betting;
   let randomBetSide: number;
   let randomOdds: string;
   let randomAmount: string;

@@ -5,7 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 
-contract BettingContract is Ownable {
+contract Betting is Ownable {
 
     enum GameStatus {Open, Closed}
     enum BetSide {Back, Lay}

@@ -3,7 +3,7 @@
 import { ethers } from "hardhat";
 import { BigNumberish, Signer, utils } from "ethers";
 import { expect } from "chai";
-import { BettingContract } from "../typechain";
+import { Betting } from "../typechain/Betting";
 
 export interface Bet {
   betSide: BigNumberish;
@@ -26,8 +26,8 @@ export interface Bet {
  */
 export const deployBettingContract = async (
   eventId: string = "123456"
-): Promise<BettingContract> => {
-  const BettingContract = await ethers.getContractFactory("BettingContract");
+): Promise<Betting> => {
+  const BettingContract = await ethers.getContractFactory("Betting");
   const bettingContract = await BettingContract.deploy(eventId);
   await bettingContract.deployed();
   return bettingContract;
@@ -77,12 +77,12 @@ export const generateBet = (
 /**
  * Places the bet and wrappes it into an expectation
  *
- * @param  {BettingContract} contract
+ * @param  {Betting} contract
  * @param  {Bet} bet
  * @returns Chai
  */
 export const getBetExpectation = (
-  contract: BettingContract,
+  contract: Betting,
   bet: Bet
 ): Chai.Assertion => {
   if (bet.betSide === 0) {
@@ -120,14 +120,14 @@ export const getBetExpectation = (
  * Checks inside expectation, if event is emited with with args from bet
  *
  * @param  {Chai.Assertion} expectation
- * @param  {BettingContract} contract
+ * @param  {Betting} contract
  * @param  {string} event
  * @param  {Bet} bet
  * @returns Promise
  */
 export const checkBetEventFromExpectation = async (
   expectation: Chai.Assertion,
-  contract: BettingContract,
+  contract: Betting,
   event: string,
   bet: Bet
 ): Promise<Chai.AsyncAssertion> => {
