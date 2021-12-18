@@ -4,6 +4,7 @@ import { ethers } from "hardhat";
 import { BigNumberish, Signer, utils } from "ethers";
 import { expect } from "chai";
 import { Betting } from "../typechain/Betting";
+import { SoccerResolver } from "../typechain/SoccerResolver";
 
 export interface Bet {
   betSide: BigNumberish;
@@ -27,8 +28,14 @@ export interface Bet {
 export const deployBettingContract = async (
   eventId: string = "123456"
 ): Promise<Betting> => {
+  const ResolverContract = await ethers.getContractFactory("SoccerResolver");
+  const resolverContract: SoccerResolver = await ResolverContract.deploy();
+
   const BettingContract = await ethers.getContractFactory("Betting");
-  const bettingContract = await BettingContract.deploy(eventId);
+  const bettingContract: Betting = await BettingContract.deploy(
+    eventId,
+    resolverContract.address
+  );
   await bettingContract.deployed();
   return bettingContract;
 };

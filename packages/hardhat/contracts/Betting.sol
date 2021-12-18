@@ -4,11 +4,11 @@ pragma solidity 0.8.4;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
+import './SoccerResolver.sol';
 
 contract Betting is Ownable {
 
     enum GameStatus {Open, Closed}
-    enum BetSide {Back, Lay}
 
     struct Game {
         address owner;
@@ -16,24 +16,39 @@ contract Betting is Ownable {
         GameStatus status;
     }
     
-    struct BetAmount {
+    struct UnmatchedBetAmount {
         uint256 amount;
         address fromAddr;
     }
 
+    struct MatchedBet {
+        BetSide betSide;
+        BetType betType;
+        uint8 selection;
+        uint16 odds;
+        uint256 amount;
+        address fromAddr;
+        bool won;
+    }
+
     Game game;
+    SoccerResolver public resolver;
   
-    // Hold all unmatched bets: BetSide -> BetType -> BetType Selection Index -> Odds -> BetAmount[]
-    mapping(BetSide => mapping(uint8 => mapping(uint8 => mapping(uint16 => BetAmount[])))) unmatchedBets;
+    // Hold all unmatched bets: BetSide -> BetType -> BetType Selection Index -> Odds = UnmatchedBetAmount[]
+    mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[])))) unmatchedBets;
+
+    uint256 matchedIndex;
+    // Hold all matched bets: BetSide -> matched index = MatchedBet[]
+    mapping(BetSide => mapping(uint256 => MatchedBet[])) matchedBets;
 
     // Unmatched bet has been placed.
-    event UnmatchedBetPlaced(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
+    event UnmatchedBetPlaced(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
     // Unmatched bet has been updated.
-    event UnmatchedBetUpdated(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
+    event UnmatchedBetUpdated(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
     // Unmatched bet has been removed.
-    event UnmatchedBetRemoved(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
+    event UnmatchedBetRemoved(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
     // Matched bet has been placed.
-    event MatchedBetPlaced(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
+    event MatchedBetPlaced(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
 
     // Game has already ended.
     error GameAlreadyEnded();
@@ -61,32 +76,41 @@ contract Betting is Ownable {
     }
     
     // Create game struct and init vars
-    constructor(string memory _objectId) {
+    constructor(string memory _objectId, SoccerResolver _resolver) {
         game.owner = msg.sender;
         game.objectId = _objectId;
         game.status = GameStatus.Open;
+        resolver = _resolver;
+        matchedIndex = 0;
     }
 
 
     // Public function for placing back bet -> msg.value = bet amount
-    function createBackBet(uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount) public payable checkGameRunning() amountGreaterZero(msg.value) checkOdds(_odds) {
+    function createBackBet(BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount) public payable checkGameRunning() amountGreaterZero(msg.value) checkOdds(_odds) {
         require(_amount == msg.value, "Amount and send value are not equal!");
         placeBet(BetSide.Back, _betType, _selection, _odds, _amount, msg.sender);
     }
 
     // Public function for placing lay bet -> msg.value = bet liqidity
-    function createLayBet(uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount) public payable checkGameRunning() amountGreaterZero(msg.value) checkOdds(_odds) {
+    function createLayBet(BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount) public payable checkGameRunning() amountGreaterZero(msg.value) checkOdds(_odds) {
         uint256 liqidity = (_amount * (_odds - 1000) / 1000);
         require(liqidity == msg.value, "Liqidity and send value are not equal!");
         placeBet(BetSide.Lay, _betType, _selection, _odds, _amount, msg.sender);
     }
 
+    // for testing
+    function withdraw() public {
+        if(game.status == GameStatus.Open){
+            payout();
+        }
+    }
+
     // Internal function for placing and matching all bets
-    function placeBet(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
+    function placeBet(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
 
         // Get all unmatched bets from the same bet type, selection, odds and opposite bet side
         BetSide oppositeSide = (BetSide.Back == _betSide) ? BetSide.Lay: BetSide.Back;
-        BetAmount[] memory unmatchedBetsArray = unmatchedBets[oppositeSide][_betType][_selection][_odds];
+        UnmatchedBetAmount[] memory unmatchedBetsArray = unmatchedBets[oppositeSide][_betType][_selection][_odds];
 
         // no bets found, place unmatched bet
         if(unmatchedBetsArray.length == 0){
@@ -128,6 +152,7 @@ contract Betting is Ownable {
             // Place current fully matched bet and exit
             if(amountLeft == 0){
                 placeMatchedBet(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
+                matchedIndex++;
                 return;
             }
         }
@@ -135,17 +160,53 @@ contract Betting is Ownable {
         // Place current partly matched bet and unmatched bet with remaining amount
         placeMatchedBet(_betSide, _betType, _selection, _odds, _amount - amountLeft, _fromAddr);
         placeUnmatchedBet(_betSide, _betType, _selection, _odds, amountLeft, _fromAddr);
-        
+        matchedIndex++;
     }
 
     // Internal function for placing unmatched bet
-    function placeMatchedBet(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
-      emit MatchedBetPlaced(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
+    function placeMatchedBet(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
+        matchedBets[_betSide][matchedIndex].push(MatchedBet(_betSide, _betType, _selection, _odds, _amount, _fromAddr, false)); // realy gas heavy
+        emit MatchedBetPlaced(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
     }
     
     // Internal function for placing unmatched bet
-    function placeUnmatchedBet(BetSide _betSide, uint8 _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
-        unmatchedBets[_betSide][_betType][_selection][_odds].push(BetAmount(_amount, _fromAddr));
+    function placeUnmatchedBet(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
+        unmatchedBets[_betSide][_betType][_selection][_odds].push(UnmatchedBetAmount(_amount, _fromAddr));
         emit UnmatchedBetPlaced(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
+    }
+
+    // Internal function for paying all sides from all matched bets for the game
+    function payout () internal {
+
+        // loop over all matched bets, TODO reduce the load
+        for (uint i=0; i < matchedIndex; i++) {
+            MatchedBet[] memory matchedBackBets = matchedBets[BetSide.Back][i];
+            MatchedBet[] memory matchedLayBets = matchedBets[BetSide.Back][i];
+
+            bool hasBackSideWon = resolver.checkResult(game.objectId, matchedBackBets[0].betSide, matchedBackBets[0].betType, matchedBackBets[0].selection);
+
+            // loop over all matched back bets
+            for (uint y = 0; y < matchedBackBets.length; y++) {
+                matchedBackBets[y].won = hasBackSideWon;
+                if(hasBackSideWon) {
+                    uint256 amount = (matchedBackBets[y].amount * ((matchedBackBets[y].odds - 1000 )  / 1000 )); // TODO is this right?, pre calculate
+                    transferAmount(matchedBackBets[y].fromAddr, amount);
+                }
+            }
+
+              // loop over all matched lay bets
+            for (uint z = 0; z < matchedLayBets.length; z++) {
+                matchedLayBets[z].won = !hasBackSideWon;
+                if(!hasBackSideWon) {
+                     uint256 amount = (matchedBackBets[z].amount * ((matchedBackBets[z].odds - 1000 )  / 1000 )); // TODO is this right?, pre calculate
+                     transferAmount(matchedBackBets[z].fromAddr, amount);
+                }
+            }
+        }
+        game.status = GameStatus.Closed;
+    }
+
+    function transferAmount(address addr, uint256 amount) internal {
+        payable(addr).transfer(amount);
     }
 }

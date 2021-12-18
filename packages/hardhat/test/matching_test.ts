@@ -34,8 +34,8 @@ describe("BettingContract", function () {
     randomBetSide = Math.random() >= 0.5 ? 1 : 0;
     randomOdds = utils.formatUnits(crypto.randomInt(110, 500).toString(), 2); // random odds from 1.10 to 5
     randomAmount = utils.formatUnits(crypto.randomInt(11, 200).toString(), 2); // random amount from 0.01 to 2
-    randomBetType = crypto.randomInt(0, 100); // random bet type from 0 to 100
-    randomSelection = crypto.randomInt(0, 10); // random bet type from 0 to 10
+    randomBetType = 0; // random bet type from 0 to 100
+    randomSelection = crypto.randomInt(0, 2); // random bet type from 0 to 10
   });
 
   it("Should full match a bet with an other", async function () {
@@ -309,5 +309,64 @@ describe("BettingContract", function () {
       "MatchedBetPlaced",
       matchingBet
     );
+  });
+
+  it("Should payout a full match", async function () {
+    /**
+     * Create two bets that can fully match with random values
+     */
+    const firstBet = generateBet(
+      0,
+      randomBetType,
+      randomSelection,
+      randomOdds,
+      randomAmount,
+      accounts[0]
+    );
+    const secondBet = generateBet(
+      1,
+      randomBetType,
+      randomSelection,
+      randomOdds,
+      randomAmount,
+      accounts[1]
+    );
+
+    const firstBetTx = await bettingContract
+      .connect(firstBet.account)
+      .createBackBet(
+        firstBet.betType,
+        firstBet.selection,
+        firstBet.oddsParsed,
+        firstBet.amountParsed,
+        {
+          value: firstBet.amountParsed,
+        }
+      );
+    await firstBetTx.wait();
+
+    const secondBetTx = await bettingContract
+      .connect(secondBet.account)
+      .createLayBet(
+        firstBet.betType,
+        firstBet.selection,
+        firstBet.oddsParsed,
+        firstBet.amountParsed,
+        {
+          value: secondBet.liabilityParsed,
+        }
+      );
+    await secondBetTx.wait();
+
+    const payoutExpectation = expect(
+      await bettingContract.connect(accounts[3]).withdraw()
+    );
+
+    /** 
+    await payoutExpectation.to.changeEtherBalances(
+      [firstBet.account, secondBet.account],
+      [utils.parseUnits(firstBet.amount), 0]
+    );
+    */
   });
 });
