@@ -31,18 +31,19 @@ contract Betting is Ownable {
   
     // Hold all unmatched bets: BetSide -> BetType -> Selection -> Odds = UnmatchedBetAmount[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[])))) unmatchedBets;
-
     // Hold all matched indexes: BetType -> Selection = matchedIndex
     mapping(BetType => mapping(uint8 => uint256)) matchedIndexes;
     // Hold all matched bets: BetSide -> BetType -> Selection = MatchedBetAmount[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => MatchedBetAmount[]))) matchedBets;
 
-    /**
-     * Used for making the payout process easiar
-     */
-    mapping(BetType => mapping(uint8 => bool)) isCombinationUsed;
+    // Array of all used bet types for withdrawing
     BetType[] public usedBetTypes;
+    // Array of all used selections mapped in BetType for withdrawing
     mapping(BetType => uint8[]) usedBetTypeSelections;
+    // Check if BetType is already used in matched bet
+    mapping(BetType => bool) isBetTypeUsed;
+    // Check if BetType, Selection combination is already used in matched bet
+    mapping(BetType => mapping(uint8 => bool)) isCombinationUsed;
 
     // Unmatched bet has been placed.
     event UnmatchedBetPlaced(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
@@ -171,7 +172,10 @@ contract Betting is Ownable {
 
         // Save which _betType _selection combination is used
         if(!isCombinationUsed[_betType][_selection]){
-            usedBetTypes.push(_betType);
+            if(!isBetTypeUsed[_betType]){
+                usedBetTypes.push(_betType);
+                isBetTypeUsed[_betType] = true;
+            }
             usedBetTypeSelections[_betType].push(_selection);
             isCombinationUsed[_betType][_selection] = true;
         }
