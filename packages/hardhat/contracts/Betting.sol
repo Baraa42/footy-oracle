@@ -1,5 +1,5 @@
 // SPDX-License-Identifier: MIT
-pragma solidity 0.8.4;
+pragma solidity 0.8.9;
 
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
@@ -21,25 +21,28 @@ contract Betting is Ownable {
         address fromAddr;
     }
 
-    struct MatchedBet {
-        BetSide betSide;
-        BetType betType;
-        uint8 selection;
-        uint16 odds;
-        uint256 amount;
+    struct MatchedBetAmount {
+        uint256 profit;
         address fromAddr;
-        bool won;
     }
 
     Game game;
     SoccerResolver public resolver;
   
-    // Hold all unmatched bets: BetSide -> BetType -> BetType Selection Index -> Odds = UnmatchedBetAmount[]
+    // Hold all unmatched bets: BetSide -> BetType -> Selection -> Odds = UnmatchedBetAmount[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[])))) unmatchedBets;
 
-    uint256 matchedIndex;
-    // Hold all matched bets: BetSide -> matched index = MatchedBet[]
-    mapping(BetSide => mapping(uint256 => MatchedBet[])) matchedBets;
+    // Hold all matched indexes: BetType -> Selection = matchedIndex
+    mapping(BetType => mapping(uint8 => uint256)) matchedIndexes;
+    // Hold all matched bets: BetSide -> BetType -> Selection = MatchedBetAmount[]
+    mapping(BetSide => mapping(BetType => mapping(uint8 => MatchedBetAmount[]))) matchedBets;
+
+    /**
+     * Used for making the payout process easiar
+     */
+    mapping(BetType => mapping(uint8 => bool)) isCombinationUsed;
+    BetType[] public usedBetTypes;
+    mapping(BetType => uint8[]) usedBetTypeSelections;
 
     // Unmatched bet has been placed.
     event UnmatchedBetPlaced(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
@@ -81,7 +84,6 @@ contract Betting is Ownable {
         game.objectId = _objectId;
         game.status = GameStatus.Open;
         resolver = _resolver;
-        matchedIndex = 0;
     }
 
 
@@ -101,7 +103,7 @@ contract Betting is Ownable {
     // for testing
     function withdraw() public {
         if(game.status == GameStatus.Open){
-            payout();
+            withdrawWinners();
         }
     }
 
@@ -119,6 +121,7 @@ contract Betting is Ownable {
         }
 
         uint256 amountLeft = _amount;
+        uint256 matchedIndex = matchedIndexes[_betType][_selection];
         
         for (uint i=0; i < unmatchedBetsArray.length; i++) {
 
@@ -165,7 +168,23 @@ contract Betting is Ownable {
 
     // Internal function for placing unmatched bet
     function placeMatchedBet(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr) internal {
-        matchedBets[_betSide][matchedIndex].push(MatchedBet(_betSide, _betType, _selection, _odds, _amount, _fromAddr, false)); // realy gas heavy
+
+        // Save which _betType _selection combination is used
+        if(!isCombinationUsed[_betType][_selection]){
+            usedBetTypes.push(_betType);
+            usedBetTypeSelections[_betType].push(_selection);
+            isCombinationUsed[_betType][_selection] = true;
+        }
+
+        // TODO do something with matchIndex = matchedIndexes[_betType][_selection]
+
+        // profit for lay = amount, if back calculate
+        uint256 profit = _amount;
+        if(_betSide == BetSide.Back){
+            profit = (_amount * (_odds - 1000) / 1000);
+        }
+
+        matchedBets[_betSide][_betType][_selection].push(MatchedBetAmount(profit, _fromAddr));
         emit MatchedBetPlaced(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
     }
     
@@ -176,34 +195,31 @@ contract Betting is Ownable {
     }
 
     // Internal function for paying all sides from all matched bets for the game
-    function payout () internal {
+    function withdrawWinners () internal {
+        
+        game.status = GameStatus.Closed;
 
-        // loop over all matched bets, TODO reduce the load
-        for (uint i=0; i < matchedIndex; i++) {
-            MatchedBet[] memory matchedBackBets = matchedBets[BetSide.Back][i];
-            MatchedBet[] memory matchedLayBets = matchedBets[BetSide.Back][i];
+        // loop over all used bet types
+        for (uint i=0; i < usedBetTypes.length; i++) {
+            BetType betType = usedBetTypes[i];
 
-            bool hasBackSideWon = resolver.checkResult(game.objectId, matchedBackBets[0].betSide, matchedBackBets[0].betType, matchedBackBets[0].selection);
+            // loop over all used selections inside the bet type
+            for (uint y=0; y < usedBetTypeSelections[betType].length; y++) {
+                uint8 selection = usedBetTypeSelections[betType][y];
 
-            // loop over all matched back bets
-            for (uint y = 0; y < matchedBackBets.length; y++) {
-                matchedBackBets[y].won = hasBackSideWon;
-                if(hasBackSideWon) {
-                    uint256 amount = (matchedBackBets[y].amount * ((matchedBackBets[y].odds - 1000 )  / 1000 )); // TODO is this right?, pre calculate
-                    transferAmount(matchedBackBets[y].fromAddr, amount);
-                }
-            }
+                // now runs only with uniqe parms
+                bool hasBackSideWon = resolver.checkResult(game.objectId, BetSide.Back, betType, selection);
 
-              // loop over all matched lay bets
-            for (uint z = 0; z < matchedLayBets.length; z++) {
-                matchedLayBets[z].won = !hasBackSideWon;
-                if(!hasBackSideWon) {
-                     uint256 amount = (matchedBackBets[z].amount * ((matchedBackBets[z].odds - 1000 )  / 1000 )); // TODO is this right?, pre calculate
-                     transferAmount(matchedBackBets[z].fromAddr, amount);
+                // get only winning bets
+                BetSide winnerSide = (hasBackSideWon == true) ? BetSide.Back: BetSide.Lay;
+                MatchedBetAmount[] memory wonBets = matchedBets[winnerSide][betType][selection];
+            
+                // loop over all wining bets and pay them
+                for (uint z = 0; z < wonBets.length; z++) {
+                    transferAmount(wonBets[z].fromAddr, wonBets[z].profit);
                 }
             }
         }
-        game.status = GameStatus.Closed;
     }
 
     function transferAmount(address addr, uint256 amount) internal {

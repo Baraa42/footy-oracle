@@ -82,6 +82,43 @@ export const generateBet = (
 };
 
 /**
+ * Places bet and wait for it
+ *
+ * @param  {Betting} contract
+ * @param  {Bet} bet
+ * @returns Promise
+ */
+export const placeBet = async (contract: Betting, bet: Bet): Promise<void> => {
+  let betTx: any;
+  if (bet.betSide === 0) {
+    betTx = await contract
+      .connect(bet.account)
+      .createBackBet(
+        bet.betType,
+        bet.selection,
+        bet.oddsParsed,
+        bet.amountParsed,
+        {
+          value: bet.amountParsed,
+        }
+      );
+  } else {
+    betTx = await contract
+      .connect(bet.account)
+      .createLayBet(
+        bet.betType,
+        bet.selection,
+        bet.oddsParsed,
+        bet.amountParsed,
+        {
+          value: bet.liabilityParsed,
+        }
+      );
+  }
+  await betTx.wait();
+};
+
+/**
  * Places the bet and wrappes it into an expectation
  *
  * @param  {Betting} contract
