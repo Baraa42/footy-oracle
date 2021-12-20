@@ -4,7 +4,7 @@ import { Moralis as MoralisTypes } from "moralis/types";
 import { useFavorites } from "./favorites";
 import { Betslip } from "../../interfaces/Betslip";
 import { useBet } from "./bets";
-import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
+import { NftOwnerModel, ListedNftModel } from "../../interfaces/models/NftOwnerModel";
 import { User } from "../../interfaces/User";
 import { FavoriteModel } from "../../interfaces/models/FavoriteModel";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
@@ -47,6 +47,11 @@ const betslip: Ref<Array<Betslip> | undefined> = toRef(user.value, "betslip");
  */
 const nfts: Ref<Array<NftOwnerModel> | undefined> = toRef(user.value, "nfts");
 
+/**
+ * Reference for NFTs Listed in Marketplace
+ */
+const listedNfts: Ref<Array<ListedNftModel> | undefined> = toRef(user.value, "listedNfts");
+
 const isAuthenticated = computed((): boolean => user.value.isAuthenticated); // read only access to is authenticated state
 const moralisUser = computed((): MoralisTypes.User | undefined => user.value.moralis); // read only access to the moralis user
 const balance = computed(() => user.value.balances);
@@ -71,7 +76,7 @@ const login = async (): Promise<void> => {
   if (moralisUser) {
     user.value.moralis = moralisUser as MoralisTypes.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites(), loadNFTsListedOnMarketPlace()]); // load all user specific data
   }
 };
 
@@ -88,7 +93,7 @@ const initUserFromCache = async (): Promise<void> => {
     console.log(currentUser);
     user.value.moralis = currentUser as MoralisTypes.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites(), loadNFTsListedOnMarketPlace()]); // load all user specific data
   }
 };
 
@@ -124,11 +129,18 @@ const loadTokenBalance = async (): Promise<void> => {
  * @returns Promise
  */
 const loadNfts = async (): Promise<void> => {
-  const { getNFTs } = useNFTs();
+  const { getNFTs, getNFTsListedOnMarketplace } = useNFTs();
   const localNfts: Ref<Array<NftOwnerModel> | undefined> = await getNFTs();
   if (localNfts.value) {
     user.value.nfts = localNfts.value;
   }
+  //console.log(localNfts);
+
+  const localListedNfts: Ref<Array<ListedNftModel> | undefined> = await getNFTsListedOnMarketplace();
+  if (localListedNfts.value) {
+    user.value.listedNfts = localListedNfts.value;
+  }
+  //console.log(localListedNfts);
 };
 
 const loadFavorites = async () => {
@@ -168,5 +180,6 @@ export const useMoralis = () => {
     tokens,
     nfts,
     loadNfts,
+    listedNfts
   };
 };

@@ -77,6 +77,13 @@ export default defineComponent({
           name: "swap",
         },
       },
+      {
+        name: "NFT MarketPlace",
+        icon: markRaw(RefreshIcon),
+        to: {
+          name: "nftMarketplace",
+        },
+      },
     ];
 
     const sports = [

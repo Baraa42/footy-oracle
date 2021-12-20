@@ -1,4 +1,4 @@
-import { NftMetadata, NftOwnerModel, NftOwnerPendingModel } from "../../interfaces/models/NftOwnerModel";
+import { NftMetadata, NftOwnerModel, NftOwnerPendingModel, ListedNftModel } from "../../interfaces/models/NftOwnerModel";
 import axios from "axios";
 import { useContract } from "./contract";
 import { useMoralis } from "./moralis";
@@ -23,6 +23,8 @@ const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
 const nftSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
 const collectionName = "xyz";
 
+const listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
+
 /**
  * Get user nfts and subscribe for new nfts
  *
@@ -40,12 +42,13 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
     nftQuery.descending("block_number");
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
+    console.log(nfts.value);
 
     /**
      * Resolve metadata from nft
      */
     nfts.value.forEach(async (nft: NftOwnerModel) => {
-      nft.parsed_metadata = await resolveMetadataFromNft(nft);
+      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.token_uri);
     });
 
     /**
@@ -59,7 +62,7 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     nftSubscription.value.on("create", async (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
       const nft = object as NftOwnerModel;
       console.log("Subscription: NFT created " + nft.attributes.token_id);
-      nft.parsed_metadata = await resolveMetadataFromNft(nft);
+      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.token_uri);
       nfts.value?.push(nft);
     });
   }
@@ -190,16 +193,32 @@ const getOpenseaLink = (nft: NftOwnerModel): string => {
  * @param  {NftOwnerPendingModel|NftOwnerModel} nft
  * @returns Promise
  */
-const resolveMetadataFromNft = async (nft: NftOwnerPendingModel | NftOwnerModel): Promise<NftMetadata | undefined> => {
+const resolveMetadataFromNft = async (uri: string): Promise<NftMetadata | undefined> => {
   try {
-    const response = await axios.get(nft.attributes.token_uri);
+    const response = await axios.get(uri);
     if (response) {
       return response.data;
     }
   } catch (err) {
-    //console.log(err);
+    console.log(uri + ' -> ' + err);
   }
 };
+
+const getNFTsListedOnMarketplace = async () : Promise<Ref<Array<ListedNftModel> | undefined>> =>  {
+  const queryAll = new Moralis.Query("PlacedOfferings");
+  queryAll.equalTo("tokenId", "2");
+  queryAll.equalTo("hostContract", "0x802b6a0eeb65f58d93b6c443f1fa5424f3d71709");
+  listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
+  //console.log(listedNfts);
+  
+  /**
+   * Resolve metadata from nft
+  */
+  listedNfts.value.forEach(async (nft: ListedNftModel) => {
+    nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
+  });
+  return listedNfts;
+}
 
 export const useNFTs = () => {
   return {
@@ -210,5 +229,6 @@ export const useNFTs = () => {
     collectionName,
     getOpenseaLink,
     resolveMetadataFromNft,
+    getNFTsListedOnMarketplace
   };
 };

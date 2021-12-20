@@ -42,3 +42,26 @@ export interface NftOwnerPendingModel extends MoralisTypes.Object<MoralisTypes.A
   };
   parsed_metadata?: NftMetadata;
 }
+
+
+export interface ListedNftModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+  attributes: {
+    createdAt: string,
+    updatedAt: string,
+    transaction_hash: string,
+    log_index: number,
+    offeringId: string,
+    hostContract: string,
+    offerer: string,
+    tokenId: string,
+    price: string,
+    uri: string,
+    address: string,
+    block_hash: string,
+    block_number: string,
+    transaction_index: number,
+    block_timestamp: string,
+    confirmed: boolean
+  };
+  parsed_metadata?: NftMetadata;
+}
