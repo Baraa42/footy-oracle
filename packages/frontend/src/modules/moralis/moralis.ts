@@ -76,7 +76,7 @@ const login = async (): Promise<void> => {
   if (moralisUser) {
     user.value.moralis = moralisUser as MoralisTypes.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites(), loadNFTsListedOnMarketPlace()]); // load all user specific data
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
   }
 };
 
@@ -93,7 +93,7 @@ const initUserFromCache = async (): Promise<void> => {
     console.log(currentUser);
     user.value.moralis = currentUser as MoralisTypes.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites(), loadNFTsListedOnMarketPlace()]); // load all user specific data
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
   }
 };
 
