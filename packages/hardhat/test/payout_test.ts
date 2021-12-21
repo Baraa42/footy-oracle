@@ -7,132 +7,89 @@ import crypto, { randomInt } from "crypto";
 
 import {
   Bet,
+  betFactory,
+  BetFactory,
   checkBetEventFromExpectation,
+  deployBetNFTContract,
   deployBettingContract,
+  deploySoccerResolverContract,
   divMathSave,
   generateBet,
   getBetExpectation,
+  mintBet,
   mulMathSave,
   placeBet,
 } from "./helpers";
 import { Betting } from "../typechain/Betting";
+import { BetNFT, SoccerResolver } from "../typechain";
 const { deployContract } = waffle;
 
 describe("BettingContract", function () {
-  let accounts: Signer[];
+  let resolver: SoccerResolver;
+  let betNFT: BetNFT;
   let bettingContract: Betting;
-  let randomOdds: string;
-  let randomAmount: string;
-  /**
-   * Generate accounts, random values and deploys the contract for each test
-   */
+  let bets: BetFactory;
+  let account: Signer;
+  const maxBets = 5;
+
+  before(async function () {
+    resolver = await deploySoccerResolverContract();
+    betNFT = await deployBetNFTContract();
+  });
+
   beforeEach(async function () {
-    accounts = await ethers.getSigners();
-    bettingContract = await deployBettingContract();
-    randomOdds = utils.formatUnits(crypto.randomInt(110, 500).toString(), 2); // random odds from 1.10 to 5
-    randomAmount = utils.formatUnits(crypto.randomInt(11, 200).toString(), 2); // random amount from 0.01 to 2
+    const [owner] = await ethers.getSigners();
+    account = owner;
+    bettingContract = await deployBettingContract("123213", resolver, betNFT);
+    bets = await betFactory(maxBets);
   });
 
   it("Should payout a full match with one back and lay bet", async function () {
-    /**
-     * Create two bets that can fully match with random values
-     */
-    const winningBet = generateBet(
-      0,
-      0,
-      0,
-      randomOdds,
-      randomAmount,
-      accounts[0]
-    );
+    await placeBet(bettingContract, bets.backBets[0]);
+    await placeBet(bettingContract, bets.layBets[0]);
 
-    const loosingBet = generateBet(
-      1,
-      0,
-      0,
-      randomOdds,
-      randomAmount,
-      accounts[1]
-    );
-
-    /**
-     * Places and matched the two bets
-     */
-    await placeBet(bettingContract, winningBet);
-    await placeBet(bettingContract, loosingBet);
-
-    /**
-     * Call withdraw function and wrapp it inside expect
-     */
     const payoutExpectation = expect(
-      await bettingContract.connect(accounts[3]).withdraw()
+      await bettingContract.connect(account).withdraw()
     );
 
-    /**
-     * Expect ether balances changed for the winning account
-     */
     await payoutExpectation.to.changeEtherBalances(
-      [winningBet.account, loosingBet.account],
-      [loosingBet.liabilityParsed, 0]
+      [bets.backBets[0].account, bets.layBets[0].account],
+      [bets.layBets[0].liabilityParsed, 0]
     );
   });
 
   it("Should payout full matches with many back and lay bets", async function () {
-    let index = 0;
-
-    const backBets: Bet[] = [];
-    const layBets: Bet[] = [];
-
-    while (index < 3) {
-      // random odds from 1.10 to 5
-      const randomOdds = utils.formatUnits(
-        crypto.randomInt(110, 500).toString(),
-        2
-      );
-      // random amount from 0.01 to 2
-      const randomAmount = utils.formatUnits(
-        crypto.randomInt(11, 200).toString(),
-        2
-      );
-
-      const backBet = generateBet(
-        0,
-        0,
-        0,
-        randomOdds,
-        randomAmount,
-        accounts[index]
-      );
-      backBets.push(backBet);
-      await placeBet(bettingContract, backBet);
-
-      const layBet = generateBet(
-        1,
-        0,
-        0,
-        randomOdds,
-        randomAmount,
-        accounts[index]
-      );
-
-      layBets.push(layBet);
-      await placeBet(bettingContract, layBet);
-
-      index++;
+    for (let i = 0; i < maxBets; i++) {
+      await placeBet(bettingContract, bets.backBets[i]);
+      await placeBet(bettingContract, bets.layBets[i]);
     }
 
-    /**
-     * Call withdraw function and wrapp it inside expect
-     */
     const payoutExpectation = expect(
-      await bettingContract.connect(accounts[10]).withdraw()
+      await bettingContract.connect(account).withdraw()
     );
 
-    for (let i = 0; i < backBets.length; i++) {
+    for (let i = 0; i < maxBets; i++) {
       await payoutExpectation.to.changeEtherBalance(
-        backBets[i].account,
-        backBets[i].liabilityParsed
+        bets.backBets[i].account,
+        bets.backBets[i].liabilityParsed
       );
     }
+  });
+
+  it("Should not payout minted bets", async function () {
+    await placeBet(bettingContract, bets.backBets[0]);
+    await placeBet(bettingContract, bets.layBets[0]);
+
+    await mintBet(bettingContract, bets.backBets[0]);
+    await mintBet(bettingContract, bets.layBets[0]);
+
+    const payoutExpectation = expect(
+      await bettingContract.connect(account).withdraw()
+    );
+
+    await payoutExpectation.to.changeEtherBalances(
+      [bets.backBets[0].account, bets.layBets[0].account],
+      [0, 0]
+    );
   });
 });

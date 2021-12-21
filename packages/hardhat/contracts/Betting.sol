@@ -5,6 +5,7 @@ import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
 import './SoccerResolver.sol';
+import './BetNFT.sol';
 
 contract Betting is Ownable {
 
@@ -21,20 +22,30 @@ contract Betting is Ownable {
         address fromAddr;
     }
 
-    struct MatchedBetAmount {
-        uint256 profit;
+    struct MatchedBet {
+        uint256 amount;
+        uint16 odds;
         address fromAddr;
+        bool shiftedToNFT;
+        //uint256 matchedIndex;
     }
 
     Game game;
     SoccerResolver public resolver;
+    BetNFT public betNFT;
+    uint256 nftBetIndex;
   
     // Hold all unmatched bets: BetSide -> BetType -> Selection -> Odds = UnmatchedBetAmount[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[])))) unmatchedBets;
     // Hold all matched indexes: BetType -> Selection = matchedIndex
     mapping(BetType => mapping(uint8 => uint256)) matchedIndexes;
-    // Hold all matched bets: BetSide -> BetType -> Selection = MatchedBetAmount[]
-    mapping(BetSide => mapping(BetType => mapping(uint8 => MatchedBetAmount[]))) matchedBets;
+    // Hold all matched bets: BetSide -> BetType -> Selection = MatchedBet[]
+    mapping(BetSide => mapping(BetType => mapping(uint8 => MatchedBet[]))) matchedBets;
+
+    // BetSide -> BetType -> Selection -> Odds -> Address = possible profit
+    mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => mapping(address => uint256))))) betPossibleProfit;
+    // nftBetIndex = possible profit
+    mapping(uint256 => uint256) nftPossibleProfit;
 
     // Array of all used bet types for withdrawing
     BetType[] public usedBetTypes;
@@ -53,6 +64,8 @@ contract Betting is Ownable {
     event UnmatchedBetRemoved(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
     // Matched bet has been placed.
     event MatchedBetPlaced(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount, address _fromAddr);
+    // Matched bet has been placed.
+    event BetMinted(uint256 tokenId);
 
     // Game has already ended.
     error GameAlreadyEnded();
@@ -80,11 +93,13 @@ contract Betting is Ownable {
     }
     
     // Create game struct and init vars
-    constructor(string memory _objectId, SoccerResolver _resolver) {
+    constructor(string memory _objectId, SoccerResolver _resolver, BetNFT _betNFT) {
         game.owner = msg.sender;
         game.objectId = _objectId;
         game.status = GameStatus.Open;
         resolver = _resolver;
+        betNFT = _betNFT;
+        nftBetIndex = 0;
     }
 
 
@@ -139,6 +154,8 @@ contract Betting is Ownable {
                 amountLeft -= matchingAmount;
             }
 
+            
+
             // place matched bets for participants
             placeMatchedBet(oppositeSide, _betType, _selection, _odds, matchingAmount, unmatchedBetsArray[i].fromAddr);
 
@@ -187,8 +204,9 @@ contract Betting is Ownable {
         if(_betSide == BetSide.Back){
             profit = (_amount * (_odds - 1000) / 1000);
         }
+        betPossibleProfit[_betSide][_betType][_selection][_odds][_fromAddr] += profit;
 
-        matchedBets[_betSide][_betType][_selection].push(MatchedBetAmount(profit, _fromAddr));
+        matchedBets[_betSide][_betType][_selection].push(MatchedBet(_amount, _odds, _fromAddr, false));
         emit MatchedBetPlaced(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
     }
     
@@ -216,12 +234,18 @@ contract Betting is Ownable {
 
                 // get only winning bets
                 BetSide winnerSide = (hasBackSideWon == true) ? BetSide.Back: BetSide.Lay;
-                MatchedBetAmount[] memory wonBets = matchedBets[winnerSide][betType][selection];
+                MatchedBet[] memory wonBets = matchedBets[winnerSide][betType][selection];
             
                 // loop over all wining bets and pay them
                 for (uint z = 0; z < wonBets.length; z++) {
-                    transferAmount(wonBets[z].fromAddr, wonBets[z].profit);
+                    // skip shifted to nft bets
+                    if(wonBets[z].shiftedToNFT) {
+                        continue;
+                    }
+                    transferAmount(wonBets[z].fromAddr, betPossibleProfit[winnerSide][betType][selection][wonBets[z].odds][wonBets[z].fromAddr]);
+                    delete betPossibleProfit[winnerSide][betType][selection][wonBets[z].odds][wonBets[z].fromAddr];
                 }
+                
             }
         }
     }
@@ -229,4 +253,43 @@ contract Betting is Ownable {
     function transferAmount(address addr, uint256 amount) internal {
         payable(addr).transfer(amount);
     }
+
+    function transferBetToNFT (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, string memory _tokenURI) external {
+
+        MatchedBet[] memory matchedBets = matchedBets[_betSide][_betType][_selection];
+
+        bool hasMatchedBet = false;
+        // Mark bets as shifted, possible > 1, because of partial matches
+        for (uint i=0; i < matchedBets.length; i++) {
+            if(matchedBets[i].fromAddr == msg.sender && matchedBets[i].odds == _odds){
+                matchedBets[i].fromAddr = address(0);
+                matchedBets[i].shiftedToNFT = true;
+                hasMatchedBet = true;
+            }
+        }
+        require(hasMatchedBet, "No Matched Bet");
+
+        uint256 nftBetId = nftBetIndex;
+        nftBetIndex++;
+        bytes32 tokenIdBytes = keccak256(abi.encode(game.objectId, msg.sender, _betSide, _betType, _selection, _odds));
+        uint256 tokenIdUint = (uint(tokenIdBytes) & 0xfff);
+    
+        betNFT.mint(msg.sender, tokenIdUint, game.objectId, nftBetId, _tokenURI);
+
+        // Look the profit from the bets to the nft
+        nftPossibleProfit[tokenIdUint] = betPossibleProfit[_betSide][_betType][_selection][_odds][msg.sender];
+        delete betPossibleProfit[_betSide][_betType][_selection][_odds][msg.sender];
+        emit BetMinted(tokenIdUint);
+    }
+
+    function withdrawWithNFT(uint256 tokenId) external payable {
+        betNFT.redeemCollectible(tokenId);
+
+        //TODO check if won
+
+        transferAmount(msg.sender, nftPossibleProfit[tokenId]);
+        delete nftPossibleProfit[tokenId];
+    }
+
+    
 }

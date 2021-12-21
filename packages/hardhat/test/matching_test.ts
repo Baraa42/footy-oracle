@@ -7,13 +7,17 @@ import crypto, { randomInt } from "crypto";
 
 import {
   Bet,
+  betFactory,
   checkBetEventFromExpectation,
+  deployBetNFTContract,
   deployBettingContract,
+  deploySoccerResolverContract,
   generateBet,
   getBetExpectation,
   mulMathSave,
 } from "./helpers";
 import { Betting } from "../typechain/Betting";
+import { BetNFT, SoccerResolver } from "../typechain";
 const { deployContract } = waffle;
 
 describe("BettingContract", function () {
@@ -24,13 +28,23 @@ describe("BettingContract", function () {
   let randomAmount: string;
   let randomBetType: number;
   let randomSelection: number;
+  let resolver: SoccerResolver;
+  let betNFT: BetNFT;
+
+  /**
+   * Generate resolver and betNFT Contract only once for all tests
+   */
+  before(async function () {
+    resolver = await deploySoccerResolverContract();
+    betNFT = await deployBetNFTContract();
+  });
 
   /**
    * Generate accounts, random values and deploys the contract for each test
    */
   beforeEach(async function () {
     accounts = await ethers.getSigners();
-    bettingContract = await deployBettingContract();
+    bettingContract = await deployBettingContract("12345", resolver, betNFT);
     randomBetSide = Math.random() >= 0.5 ? 1 : 0;
     randomOdds = utils.formatUnits(crypto.randomInt(110, 500).toString(), 2); // random odds from 1.10 to 5
     randomAmount = utils.formatUnits(crypto.randomInt(11, 200).toString(), 2); // random amount from 0.01 to 2
@@ -39,41 +53,29 @@ describe("BettingContract", function () {
   });
 
   it("Should full match a bet with an other", async function () {
-    /**
-     * Create two bets that can fully match with random values
-     */
-    const firstBet = generateBet(
-      randomBetSide,
-      randomBetType,
-      randomSelection,
-      randomOdds,
-      randomAmount,
-      accounts[0]
-    );
-    const secondBet = generateBet(
-      Number(!randomBetSide),
-      randomBetType,
-      randomSelection,
-      randomOdds,
-      randomAmount,
-      accounts[1]
-    );
+    const bets = await betFactory(1);
 
     /**
      * Places first bet and expect UnmatchedBetPlaced event emited with first bet values
      */
-    const firstExpectation = getBetExpectation(bettingContract, firstBet);
+    const firstExpectation = getBetExpectation(
+      bettingContract,
+      bets.layBets[0]
+    );
     await checkBetEventFromExpectation(
       firstExpectation,
       bettingContract,
       "UnmatchedBetPlaced",
-      firstBet
+      bets.layBets[0]
     );
 
     /**
      * Places second opposide bet
      */
-    const secondExpectation = getBetExpectation(bettingContract, secondBet);
+    const secondExpectation = getBetExpectation(
+      bettingContract,
+      bets.backBets[0]
+    );
 
     /**
      * Expect first event MatchedBetPlaced for first bet
@@ -82,7 +84,7 @@ describe("BettingContract", function () {
       secondExpectation,
       bettingContract,
       "MatchedBetPlaced",
-      firstBet
+      bets.layBets[0]
     );
 
     /**
@@ -92,7 +94,7 @@ describe("BettingContract", function () {
       secondExpectation,
       bettingContract,
       "UnmatchedBetRemoved",
-      firstBet
+      bets.layBets[0]
     );
 
     /**
@@ -102,7 +104,7 @@ describe("BettingContract", function () {
       secondExpectation,
       bettingContract,
       "MatchedBetPlaced",
-      secondBet
+      bets.backBets[0]
     );
   });
 

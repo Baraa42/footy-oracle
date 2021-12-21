@@ -1,10 +1,12 @@
 /* eslint-disable node/no-missing-import */
 /* eslint-disable no-undef */
 import { ethers } from "hardhat";
-import { BigNumberish, Signer, utils } from "ethers";
+import { BigNumberish, Event, Signer, utils } from "ethers";
 import { expect } from "chai";
 import { Betting } from "../typechain/Betting";
 import { SoccerResolver } from "../typechain/SoccerResolver";
+import { BetNFT } from "../typechain";
+import crypto, { randomInt } from "crypto";
 
 export interface Bet {
   betSide: BigNumberish;
@@ -19,22 +21,54 @@ export interface Bet {
   copyWithNewAmount(amount: string): Bet;
 }
 
+export interface BetFactory {
+  backBets: Bet[];
+  layBets: Bet[];
+}
+
 /**
- * Deploy contract helper
+ * Deploy BetNFT Contract helper
+ *
+ * @param eventId
+ * @returns
+ */
+export const deployBetNFTContract = async (): Promise<BetNFT> => {
+  const BetNFTContract = await ethers.getContractFactory("BetNFT");
+  const betNFTContract: BetNFT = await BetNFTContract.deploy("BetNFT", "BET");
+  await betNFTContract.deployed();
+  return betNFTContract;
+};
+
+/**
+ * Deploy SoccerResolver Contract helper
+ *
+ * @param eventId
+ * @returns
+ */
+export const deploySoccerResolverContract =
+  async (): Promise<SoccerResolver> => {
+    const ResolverContract = await ethers.getContractFactory("SoccerResolver");
+    const resolverContract: SoccerResolver = await ResolverContract.deploy();
+    await resolverContract.deployed();
+    return resolverContract;
+  };
+
+/**
+ * Deploy Betting Contract helper
  *
  * @param eventId
  * @returns
  */
 export const deployBettingContract = async (
-  eventId: string = "123456"
+  eventId: string = "123456",
+  resolver: SoccerResolver,
+  betNFT: BetNFT
 ): Promise<Betting> => {
-  const ResolverContract = await ethers.getContractFactory("SoccerResolver");
-  const resolverContract: SoccerResolver = await ResolverContract.deploy();
-
   const BettingContract = await ethers.getContractFactory("Betting");
   const bettingContract: Betting = await BettingContract.deploy(
     eventId,
-    resolverContract.address
+    resolver.address,
+    betNFT.address
   );
   await bettingContract.deployed();
   return bettingContract;
@@ -82,6 +116,34 @@ export const generateBet = (
 };
 
 /**
+ * Creates random bets that can match
+ * Same index in lay and back array can match
+ *
+ * After 5 their will be duplicated accounts, which can resolve in problems
+ *
+ * @param  {number=3} count
+ * @returns Promise
+ */
+export const betFactory = async (count: number = 5): Promise<BetFactory> => {
+  const factory: BetFactory = { backBets: [], layBets: [] };
+  const accounts = await ethers.getSigners();
+
+  for (let i = 0; i < count; i++) {
+    const betType = 0;
+    const selection = crypto.randomInt(0, 2);
+    const odds = utils.formatUnits(crypto.randomInt(110, 500).toString(), 2); // random odds from 1.10 to 5
+    const amount = utils.formatUnits(crypto.randomInt(11, 200).toString(), 2); // random amount from 0.01 to 2
+    factory.backBets.push(
+      generateBet(0, betType, selection, odds, amount, accounts[i])
+    );
+    factory.layBets.push(
+      generateBet(1, betType, selection, odds, amount, accounts[10 - i])
+    );
+  }
+  return factory;
+};
+
+/**
  * Places bet and wait for it
  *
  * @param  {Betting} contract
@@ -116,6 +178,61 @@ export const placeBet = async (contract: Betting, bet: Bet): Promise<void> => {
       );
   }
   await betTx.wait();
+};
+
+/**
+ * Mint bet and wait for it
+ *
+ * @param  {Betting} contract
+ * @param  {Bet} bet
+ * @returns Promise
+ */
+export const mintBet = async (
+  contract: Betting,
+  bet: Bet
+): Promise<BigNumberish> => {
+  const mintTx = await contract
+    .connect(bet.account)
+    .transferBetToNFT(
+      bet.betSide,
+      bet.betType,
+      bet.selection,
+      bet.oddsParsed,
+      ""
+    );
+  const waited = await mintTx.wait();
+
+  const event = waited.events?.filter(
+    (event: Event) => event.event === "BetMinted"
+  )[0];
+
+  const tokenId = event?.args?.tokenId;
+  return tokenId;
+};
+
+/**
+ * Mint bet and wrappes it into an expectation
+ *
+ * @param  {Betting} contract
+ * @param  {Bet} bet
+ * @returns Chai
+ */
+export const getMintExpectation = (
+  contract: Betting,
+  bet: Bet,
+  overrideAccount?: Signer
+): Chai.Assertion => {
+  return expect(
+    contract
+      .connect(overrideAccount || bet.account)
+      .transferBetToNFT(
+        bet.betSide,
+        bet.betType,
+        bet.selection,
+        bet.oddsParsed,
+        ""
+      )
+  );
 };
 
 /**
