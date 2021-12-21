@@ -16,6 +16,11 @@
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">NFTs Listed on Marketplace</h1>
            <div v-for="nft in listedNfts" class="flex flex-col items-center justify-center w-full cursor-pointer group">
             <ListedNftImage :nft="nft" @callback="toogleWithdraw"></ListedNftImage>
+            <button @click="buyNFT(nft)"
+                    type="button"
+                    class="w-full text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none">
+                    <span>Buy this NFT</span>
+            </button>
            </div> 
       </div>
     </div>
@@ -39,9 +44,11 @@ export default defineComponent({
     const { convertCurrency } = useCurrency();
     const activeMode = ref("");
     const nft_market_place_address = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
+    const web3 = await Moralis.Web3.enable();
  
-    const { isAuthenticated, nfts, listedNfts } = useMoralis();
+    const { isAuthenticated, nfts, listedNfts } = await useMoralis();
     const { toogleWithdraw } = useWithdraw();
+    console.log('In Marketplace. NFT count = ' + nfts.value.length);
 
     const listOnMarketplace = async (nft) => {
       console.log("ListOnMarketplace");
@@ -62,7 +69,7 @@ export default defineComponent({
 
     const approveMarketPlace = async (hostContract, tokenId) => {
       console.log('approveMarketPlace');
-      const web3 = await Moralis.Web3.enable();
+      
       const encodedFunction = web3.eth.abi.encodeFunctionCall({
           name: "approve",
           type: "function",
@@ -99,6 +106,40 @@ export default defineComponent({
           return result;          
     }
 
+    const buyNFT = async (nft) => {
+      console.log("buyNFT");
+      console.log(nft);
+      if (nft.attributes.offerer != moralisUser.value.get("ethAddress")) {
+        const priceHexString = BigInt(nft.attributes.price).toString(16);
+        console.log('priceHexString = ' + priceHexString);
+        const closedOffering = await closeOffering(nft.attributes.offeringId, priceHexString);
+        console.log('buy tx = ' + closedOffering);
+      }
+        //return some of kind of an error, you can't buy your own nft
+    }
+
+    const closeOffering = async (offeringId, priceEncoded) => {
+        const encodedFunction = web3.eth.abi.encodeFunctionCall({
+            name: "closeOffering",
+            type: "function",
+            inputs: [
+                {type: 'bytes32',
+                name: '_offeringId'}]
+        }, [offeringId]);
+        
+        const transactionParameters = {
+            to: nft_market_place_address,
+            from: moralisUser.value.get("ethAddress"),
+            value: priceEncoded,
+            data: encodedFunction
+        };
+        const txt = await ethereum.request({
+            method: 'eth_sendTransaction',
+            params: [transactionParameters]
+        });
+        return txt;
+    }
+
     return {
       activeMode,
       toogleWithdraw,
@@ -107,7 +148,9 @@ export default defineComponent({
       listOnMarketplace,
       approveMarketPlace,
       placeOffering,
-      listedNfts
+      listedNfts,
+      buyNFT,
+      closeOffering
     };
   },
   components: { RefreshIcon, NftImage, ListedNftImage },

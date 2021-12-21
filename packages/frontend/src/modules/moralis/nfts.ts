@@ -23,7 +23,8 @@ const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
 const nftSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
 const collectionName = "xyz";
 
-const listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
+var delistedOfferingIds : Array<string> = [];
+var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
 
 /**
  * Get user nfts and subscribe for new nfts
@@ -38,7 +39,7 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
      */
     const { Object: PolygonNFTOwners, createQuery } = useMoralisObject("PolygonNFTOwners");
     const nftQuery: MoralisTypes.Query<NftOwnerModel> = createQuery();
-    nftQuery.equalTo("name", collectionName);
+    //nftQuery.equalTo("name", collectionName);
     nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
     nftQuery.descending("block_number");
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
@@ -47,8 +48,17 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     /**
      * Resolve metadata from nft
      */
-    nfts.value.forEach(async (nft: NftOwnerModel) => {
+    nfts.value.forEach(async (nft: NftOwnerModel, index) => {
       nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.token_uri);
+      if (nft.parsed_metadata) {
+        console.log('printing metadata')
+        console.log(nft.parsed_metadata);        
+      }
+      else {
+        console.log("if metadata is undefined, don't bother with this nft. index = " + index);
+        nfts.value.splice(index, 1);
+        console.log('number of nfts are removing for metadata problem = ' + nfts.value.length);
+      }
     });
 
     /**
@@ -204,19 +214,65 @@ const resolveMetadataFromNft = async (uri: string): Promise<NftMetadata | undefi
   }
 };
 
+const getNFTsDeListedOnMarketplace = async ()  =>  {
+  const queryAll = new Moralis.Query("ClosedOfferings");
+  const deListedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
+  deListedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
+  console.log('getNFTsDeListedOnMarketplace');
+  console.log(deListedNfts);
+  deListedNfts.value.forEach((nft : ListedNftModel) => {
+    delistedOfferingIds.push(nft.attributes.offeringId);
+  });
+}
+
 const getNFTsListedOnMarketplace = async () : Promise<Ref<Array<ListedNftModel> | undefined>> =>  {
   const queryAll = new Moralis.Query("PlacedOfferings");
-  queryAll.equalTo("tokenId", "2");
-  queryAll.equalTo("hostContract", "0x802b6a0eeb65f58d93b6c443f1fa5424f3d71709");
+  //queryAll.equalTo("tokenId", "2");
+  //queryAll.equalTo("hostContract", "0x802b6a0eeb65f58d93b6c443f1fa5424f3d71709");
+  
   listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
-  //console.log(listedNfts);
+  console.log('getNFTsListedOnMarketplace');
+  console.log(listedNfts);
+  console.log('Total number of nfts fetched from db = ' + listedNfts.value.length);
+
+  await getNFTsDeListedOnMarketplace();
+  console.log(delistedOfferingIds);
   
   /**
    * Resolve metadata from nft
   */
-  listedNfts.value.forEach(async (nft: ListedNftModel) => {
-    nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
+  listedNfts.value.forEach(async (nft: ListedNftModel, index) => {
+    let notFound = true;
+    delistedOfferingIds.forEach((delistedOffering : string) => {
+      if (nft.attributes.offeringId == delistedOffering) {
+        notFound = false;
+      }
+    })
+    if (notFound) {
+      console.log('pushing this nft index = ' + index);
+      //console.log(nft);
+      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
+      //console.log(listedNfts);
+      if (nft.parsed_metadata) {
+        console.log('printing metadata')
+        console.log(nft.parsed_metadata);        
+      }
+      else {
+        console.log("if metadata is undefined, don't bother with this nft. index = " + index);
+        listedNfts.value.splice(index, 1);
+        console.log('number of nfts are removing for metadata problem = ' + listedNfts.value.length);
+      }
+    }
+    else {
+      console.log('Ignoring this nft since it is no longer listed, index = ' + index);
+      //console.log(nft);
+      listedNfts.value.splice(index, 1);
+      //console.log(listedNfts);
+    }    
   });
+
+  //console.log(listedNfts);
+  console.log('number of nfts are filtering = ' + listedNfts.value.length);
   return listedNfts;
 }
 
@@ -229,6 +285,7 @@ export const useNFTs = () => {
     collectionName,
     getOpenseaLink,
     resolveMetadataFromNft,
-    getNFTsListedOnMarketplace
+    getNFTsListedOnMarketplace,
+    getNFTsDeListedOnMarketplace
   };
 };
