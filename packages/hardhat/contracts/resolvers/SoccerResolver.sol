@@ -2,10 +2,19 @@
 pragma solidity 0.8.9;
 
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "./EnumDeclaration.sol";
+import "@chainlink/contracts/src/v0.8/dev/ChainlinkClient.sol";
+import "../EnumDeclaration.sol";
 import "hardhat/console.sol";
 
-contract SoccerResolver is Ownable {
+contract SoccerResolver is ChainlinkClient, Ownable {
+
+    using Chainlink for Chainlink.Request;
+
+    address private oracle;
+    bytes32 private jobId;
+    uint256 private fee;
+
+    event Test();
 
     struct TeamScores {
        uint8 home;
@@ -26,8 +35,14 @@ contract SoccerResolver is Ownable {
     mapping(BetType => string) functionMapping;
 
     // Initialize chainlink and functions mapping
-    constructor() {
+    constructor(address _oracle, bytes32 _jobId, address _link) {
         functionMapping[BetType.MatchWinner] = "hasMatchWinnerWon(string,uint8,uint8)";
+
+        // Chainlink related functions
+        setChainlinkToken(_link);
+        oracle = _oracle;
+        jobId = _jobId;
+        fee = 10 ** 16;
     }
 
     // will be called from the other contract 
@@ -49,8 +64,15 @@ contract SoccerResolver is Ownable {
 
     // requests the result by its objectId from chainlink
     function requestResult(string calldata _objectId) internal returns (Result memory) {
-        // TODO add chainlink logic
+        Chainlink.Request memory req =
+         buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
 
+        req.add("fixtureId", _objectId);
+         // Sends the request
+        bytes32 result = sendChainlinkRequestTo(oracle, req, fee);
+
+        console.log(uint(result));
+       
         // for better testing
         uint8 homeFirstHalf = 1;
         uint8 awayFirstHalf = 1;
@@ -67,6 +89,10 @@ contract SoccerResolver is Ownable {
                 }),
                 true
             );
+    }
+
+    function fulfill(bytes32 _requestId, bytes32 _data) public recordChainlinkFulfillment(_requestId) {
+        emit Test();
     }
 
     // internal helper for calling functions by its string name

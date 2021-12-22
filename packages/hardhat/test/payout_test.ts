@@ -3,26 +3,17 @@
 import { BigNumber, BigNumberish, Signer, utils } from "ethers";
 import { waffle, ethers } from "hardhat";
 import { expect } from "chai";
-import crypto, { randomInt } from "crypto";
-
 import {
   Bet,
   betFactory,
   BetFactory,
-  checkBetEventFromExpectation,
-  deployBetNFTContract,
   deployBettingContract,
-  deploySoccerResolverContract,
-  divMathSave,
-  generateBet,
-  getBetExpectation,
+  deployContracts,
   mintBet,
-  mulMathSave,
   placeBet,
 } from "./helpers";
 import { Betting } from "../typechain/Betting";
 import { BetNFT, SoccerResolver } from "../typechain";
-const { deployContract } = waffle;
 
 describe("BettingContract", function () {
   let resolver: SoccerResolver;
@@ -33,8 +24,9 @@ describe("BettingContract", function () {
   const maxBets = 5;
 
   before(async function () {
-    resolver = await deploySoccerResolverContract();
-    betNFT = await deployBetNFTContract();
+    const { resolver: _resolver, betNFT: _betNFT } = await deployContracts();
+    resolver = _resolver;
+    betNFT = _betNFT;
   });
 
   beforeEach(async function () {
@@ -82,8 +74,6 @@ describe("BettingContract", function () {
 
     const backTokenId = await mintBet(bettingContract, bets.backBets[0]);
     const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
-
-    console.log({ backTokenId, layTokenId });
 
     const payoutExpectation = expect(
       await bettingContract.connect(account).withdraw()

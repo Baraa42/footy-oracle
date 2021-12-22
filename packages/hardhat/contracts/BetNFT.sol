@@ -45,8 +45,9 @@ contract BetNFT is ERC721, Ownable {
       betId = _betIds[tokenId].betId;
     }
 
-    function redeemCollectible(uint256 tokenId) external {
+    function redeemCollectible(address from, uint256 tokenId) external {
         require(_exists(tokenId), "ERC721: token doesn't exist");
+        require(ownerOf(tokenId) == from, "ERC721: transfer caller is not owner");
         
         _burn(tokenId);
         delete _betIds[tokenId];

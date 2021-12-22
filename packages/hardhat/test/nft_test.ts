@@ -3,12 +3,12 @@
 import {
   BetFactory,
   betFactory,
-  deployBetNFTContract,
   deployBettingContract,
-  deploySoccerResolverContract,
+  deployContracts,
   getMintExpectation,
   mintBet,
   placeBet,
+  sendERC721,
 } from "./helpers";
 import { waffle, ethers } from "hardhat";
 import { Betting } from "../typechain/Betting";
@@ -24,8 +24,9 @@ describe("BettingContract", function () {
   let account: Signer;
 
   before(async function () {
-    resolver = await deploySoccerResolverContract();
-    betNFT = await deployBetNFTContract();
+    const { resolver: _resolver, betNFT: _betNFT } = await deployContracts();
+    resolver = _resolver;
+    betNFT = _betNFT;
   });
 
   beforeEach(async function () {
@@ -115,5 +116,61 @@ describe("BettingContract", function () {
     );
 
     await withdrawNFTExpectation.to.be.revertedWith("Bet lost");
+  });
+
+  it("Should withdraw winning NFT bet that was recived", async function () {
+    await placeBet(bettingContract, bets.backBets[0]);
+    await placeBet(bettingContract, bets.layBets[0]);
+
+    const backTokenId = await mintBet(bettingContract, bets.backBets[0]);
+    const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
+
+    const withdrawTx = await bettingContract.connect(account).withdraw();
+    await withdrawTx.wait();
+
+    const sendTx = await sendERC721(
+      betNFT,
+      bets.backBets[0].account,
+      account,
+      backTokenId
+    );
+    await sendTx.wait();
+
+    const withdrawNFTExpectation2 = expect(
+      await bettingContract.connect(account).withdrawWithNFT(backTokenId)
+    );
+    await withdrawNFTExpectation2.to.changeEtherBalance(
+      account,
+      bets.backBets[0].liabilityParsed
+    );
+  });
+
+  it("Should revert winning NFT bet that was sended", async function () {
+    await placeBet(bettingContract, bets.backBets[0]);
+    await placeBet(bettingContract, bets.layBets[0]);
+
+    const backTokenId = await mintBet(bettingContract, bets.backBets[0]);
+    const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
+
+    const withdrawTx = await bettingContract.connect(account).withdraw();
+    await withdrawTx.wait();
+
+    const sendTx = await sendERC721(
+      betNFT,
+      bets.backBets[0].account,
+      account,
+      backTokenId
+    );
+    await sendTx.wait();
+
+    const withdrawNFTExpectation = expect(
+      bettingContract
+        .connect(bets.backBets[0].account)
+        .withdrawWithNFT(backTokenId)
+    );
+
+    await withdrawNFTExpectation.to.be.revertedWith(
+      "ERC721: transfer caller is not owner"
+    );
   });
 });

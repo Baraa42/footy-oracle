@@ -5,8 +5,9 @@ import { BigNumberish, Event, Signer, utils } from "ethers";
 import { expect } from "chai";
 import { Betting } from "../typechain/Betting";
 import { SoccerResolver } from "../typechain/SoccerResolver";
-import { BetNFT } from "../typechain";
-import crypto, { randomInt } from "crypto";
+import { BetNFT, ERC721, LinkToken, MockOracle } from "../typechain";
+import crypto from "crypto";
+import { formatEther } from "ethers/lib/utils";
 
 export interface Bet {
   betSide: BigNumberish;
@@ -40,18 +41,52 @@ export const deployBetNFTContract = async (): Promise<BetNFT> => {
 };
 
 /**
+ * Deploy BetNFT Contract helper
+ *
+ * @param eventId
+ * @returns
+ */
+export const deployLinkToken = async (): Promise<LinkToken> => {
+  const LinkToken = await ethers.getContractFactory("LinkToken");
+  const linkToken: LinkToken = await LinkToken.deploy();
+  await linkToken.deployed();
+  return linkToken;
+};
+
+/**
+ * Deploy Oracle Test Client
+ *
+ * @param eventId
+ * @returns
+ */
+export const deployOracleContract = async (
+  linkToken: LinkToken
+): Promise<MockOracle> => {
+  const MockOracle = await ethers.getContractFactory("MockOracle");
+  const mockOracle: MockOracle = await MockOracle.deploy(linkToken.address);
+  await mockOracle.deployed();
+  return mockOracle;
+};
+
+/**
  * Deploy SoccerResolver Contract helper
  *
  * @param eventId
  * @returns
  */
-export const deploySoccerResolverContract =
-  async (): Promise<SoccerResolver> => {
-    const ResolverContract = await ethers.getContractFactory("SoccerResolver");
-    const resolverContract: SoccerResolver = await ResolverContract.deploy();
-    await resolverContract.deployed();
-    return resolverContract;
-  };
+export const deploySoccerResolverContract = async (
+  oracle: MockOracle,
+  linkToken: LinkToken
+): Promise<SoccerResolver> => {
+  const ResolverContract = await ethers.getContractFactory("SoccerResolver");
+  const resolverContract: SoccerResolver = await ResolverContract.deploy(
+    oracle.address,
+    ethers.utils.toUtf8Bytes("29fa9aa13bf1468788b7cc4a500a45b8"), // localhost jobId -> https://github.com/smartcontractkit/hardhat-starter-kit/blob/main/helper-hardhat-config.js
+    linkToken.address
+  );
+  await resolverContract.deployed();
+  return resolverContract;
+};
 
 /**
  * Deploy Betting Contract helper
@@ -72,6 +107,23 @@ export const deployBettingContract = async (
   );
   await bettingContract.deployed();
   return bettingContract;
+};
+
+export const deployContracts = async () => {
+  const linkToken = await deployLinkToken();
+  const oracle = await deployOracleContract(linkToken);
+  const resolver = await deploySoccerResolverContract(oracle, linkToken);
+
+  await linkToken.functions.transfer(resolver.address, "1000000000000000000");
+
+  const betNFT = await deployBetNFTContract();
+
+  return {
+    linkToken,
+    oracle,
+    resolver,
+    betNFT,
+  };
 };
 
 /**
@@ -119,14 +171,14 @@ export const generateBet = (
  * Creates random bets that can match
  * Same index in lay and back array can match
  *
- * After 5 their will be duplicated accounts, which can resolve in problems
+ * After 4 their will be duplicated accounts, which can resolve in problems
  *
- * @param  {number=3} count
+ * @param  {number=4} count
  * @returns Promise
  */
-export const betFactory = async (count: number = 5): Promise<BetFactory> => {
+export const betFactory = async (count: number = 4): Promise<BetFactory> => {
   const factory: BetFactory = { backBets: [], layBets: [] };
-  const accounts = await ethers.getSigners();
+  const accounts = await ethers.getSigners(); // accounts[0] is reserved as account for testing
 
   for (let i = 0; i < count; i++) {
     const betType = 0;
@@ -134,10 +186,10 @@ export const betFactory = async (count: number = 5): Promise<BetFactory> => {
     const odds = utils.formatUnits(crypto.randomInt(110, 500).toString(), 2); // random odds from 1.10 to 5
     const amount = utils.formatUnits(crypto.randomInt(11, 200).toString(), 2); // random amount from 0.01 to 2
     factory.backBets.push(
-      generateBet(0, betType, selection, odds, amount, accounts[i])
+      generateBet(0, betType, selection, odds, amount, accounts[i + 1])
     );
     factory.layBets.push(
-      generateBet(1, betType, selection, odds, amount, accounts[10 - i])
+      generateBet(1, betType, selection, odds, amount, accounts[10 - (i - 1)])
     );
   }
   return factory;
@@ -302,6 +354,26 @@ export const checkBetEventFromExpectation = async (
       bet.amountParsed,
       await bet.account.getAddress()
     );
+};
+
+/**
+ * Send ERC721 Token
+ *
+ * @param  {ERC721} contract
+ * @param  {number} tokenId
+ * @param  {Signer} from
+ * @param  {Signer} to
+ * @returns Promise
+ */
+export const sendERC721 = async (
+  contract: ERC721,
+  from: Signer,
+  to: Signer,
+  tokenId: BigNumberish
+): Promise<any> => {
+  const fromAddr = await from.getAddress();
+  const toAddr = await to.getAddress();
+  return await contract.connect(from).transferFrom(fromAddr, toAddr, tokenId);
 };
 
 /**

@@ -9,9 +9,8 @@ import {
   Bet,
   betFactory,
   checkBetEventFromExpectation,
-  deployBetNFTContract,
   deployBettingContract,
-  deploySoccerResolverContract,
+  deployContracts,
   generateBet,
   getBetExpectation,
   mulMathSave,
@@ -35,8 +34,9 @@ describe("BettingContract", function () {
    * Generate resolver and betNFT Contract only once for all tests
    */
   before(async function () {
-    resolver = await deploySoccerResolverContract();
-    betNFT = await deployBetNFTContract();
+    const { resolver: _resolver, betNFT: _betNFT } = await deployContracts();
+    resolver = _resolver;
+    betNFT = _betNFT;
   });
 
   /**

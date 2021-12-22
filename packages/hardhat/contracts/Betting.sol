@@ -4,7 +4,7 @@ pragma solidity 0.8.9;
 import "hardhat/console.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
 import '@openzeppelin/contracts/security/ReentrancyGuard.sol';
-import './SoccerResolver.sol';
+import './resolvers/SoccerResolver.sol';
 import './BetNFT.sol';
 
 contract Betting is Ownable {
@@ -137,7 +137,6 @@ contract Betting is Ownable {
         }
 
         uint256 amountLeft = _amount;
-        uint256 matchedIndex = matchedIndexes[_betType][_selection];
         
         for (uint i=0; i < unmatchedBetsArray.length; i++) {
 
@@ -245,7 +244,7 @@ contract Betting is Ownable {
             }
         }
     }
-
+ 
     function getTokenId (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, address _address)  view internal returns (uint256) {
         return (uint(keccak256(abi.encode(game.objectId, _address, _betSide, _betType, _selection, _odds))) & 0xfff);
     }
@@ -281,7 +280,7 @@ contract Betting is Ownable {
     }
 
     function withdrawWithNFT(uint256 tokenId) external payable {
-        betNFT.redeemCollectible(tokenId);
+        betNFT.redeemCollectible(msg.sender, tokenId);
         require(nftWon[tokenId], "Bet lost");
         transferAmount(msg.sender, nftPossibleProfit[tokenId]);
         delete nftPossibleProfit[tokenId];
