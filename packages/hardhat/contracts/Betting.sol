@@ -37,8 +37,6 @@ contract Betting is Ownable {
   
     // Hold all unmatched bets: BetSide -> BetType -> Selection -> Odds = UnmatchedBetAmount[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[])))) unmatchedBets;
-    // Hold all matched indexes: BetType -> Selection = matchedIndex
-    mapping(BetType => mapping(uint8 => uint256)) matchedIndexes;
     // Hold all matched bets: BetSide -> BetType -> Selection = MatchedBet[]
     mapping(BetSide => mapping(BetType => mapping(uint8 => MatchedBet[]))) matchedBets;
 
@@ -46,6 +44,8 @@ contract Betting is Ownable {
     mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => mapping(address => uint256))))) betPossibleProfit;
     // nftBetIndex = possible profit
     mapping(uint256 => uint256) nftPossibleProfit;
+     // nftBetIndex = won
+    mapping(uint256 => bool) nftWon;
 
     // Array of all used bet types for withdrawing
     BetType[] public usedBetTypes;
@@ -154,8 +154,6 @@ contract Betting is Ownable {
                 amountLeft -= matchingAmount;
             }
 
-            
-
             // place matched bets for participants
             placeMatchedBet(oppositeSide, _betType, _selection, _odds, matchingAmount, unmatchedBetsArray[i].fromAddr);
 
@@ -173,7 +171,6 @@ contract Betting is Ownable {
             // Place current fully matched bet and exit
             if(amountLeft == 0){
                 placeMatchedBet(_betSide, _betType, _selection, _odds, _amount, _fromAddr);
-                matchedIndex++;
                 return;
             }
         }
@@ -181,7 +178,6 @@ contract Betting is Ownable {
         // Place current partly matched bet and unmatched bet with remaining amount
         placeMatchedBet(_betSide, _betType, _selection, _odds, _amount - amountLeft, _fromAddr);
         placeUnmatchedBet(_betSide, _betType, _selection, _odds, amountLeft, _fromAddr);
-        matchedIndex++;
     }
 
     // Internal function for placing unmatched bet
@@ -196,8 +192,6 @@ contract Betting is Ownable {
             usedBetTypeSelections[_betType].push(_selection);
             isCombinationUsed[_betType][_selection] = true;
         }
-
-        // TODO do something with matchIndex = matchedIndexes[_betType][_selection]
 
         // profit for lay = amount, if back calculate
         uint256 profit = _amount;
@@ -238,8 +232,10 @@ contract Betting is Ownable {
             
                 // loop over all wining bets and pay them
                 for (uint z = 0; z < wonBets.length; z++) {
-                    // skip shifted to nft bets
+                    // mark shifted to NFT bets as won
                     if(wonBets[z].shiftedToNFT) {
+                        uint256 tokenId = getTokenId(winnerSide, betType, selection, wonBets[z].odds, wonBets[z].fromAddr);
+                        nftWon[tokenId] = true;
                         continue;
                     }
                     transferAmount(wonBets[z].fromAddr, betPossibleProfit[winnerSide][betType][selection][wonBets[z].odds][wonBets[z].fromAddr]);
@@ -250,20 +246,22 @@ contract Betting is Ownable {
         }
     }
 
+    function getTokenId (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, address _address)  view internal returns (uint256) {
+        return (uint(keccak256(abi.encode(game.objectId, _address, _betSide, _betType, _selection, _odds))) & 0xfff);
+    }
+
     function transferAmount(address addr, uint256 amount) internal {
         payable(addr).transfer(amount);
     }
 
-    function transferBetToNFT (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, string memory _tokenURI) external {
-
-        MatchedBet[] memory matchedBets = matchedBets[_betSide][_betType][_selection];
-
+    function transferBetToNFT (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, string memory _tokenURI) external returns (uint256)  {
         bool hasMatchedBet = false;
+
         // Mark bets as shifted, possible > 1, because of partial matches
-        for (uint i=0; i < matchedBets.length; i++) {
-            if(matchedBets[i].fromAddr == msg.sender && matchedBets[i].odds == _odds){
-                matchedBets[i].fromAddr = address(0);
-                matchedBets[i].shiftedToNFT = true;
+        for (uint i=0; i < matchedBets[_betSide][_betType][_selection].length; i++) {
+            if(matchedBets[_betSide][_betType][_selection][i].fromAddr == msg.sender && matchedBets[_betSide][_betType][_selection][i].odds == _odds){
+                //matchedBets[_betSide][_betType][_selection][i].fromAddr = address(0); TODO currently need the address
+                matchedBets[_betSide][_betType][_selection][i].shiftedToNFT = true;
                 hasMatchedBet = true;
             }
         }
@@ -271,22 +269,20 @@ contract Betting is Ownable {
 
         uint256 nftBetId = nftBetIndex;
         nftBetIndex++;
-        bytes32 tokenIdBytes = keccak256(abi.encode(game.objectId, msg.sender, _betSide, _betType, _selection, _odds));
-        uint256 tokenIdUint = (uint(tokenIdBytes) & 0xfff);
+        uint256 tokenId = getTokenId(_betSide, _betType, _selection, _odds, msg.sender);
     
-        betNFT.mint(msg.sender, tokenIdUint, game.objectId, nftBetId, _tokenURI);
+        betNFT.mint(msg.sender, tokenId, game.objectId, nftBetId, _tokenURI);
 
         // Look the profit from the bets to the nft
-        nftPossibleProfit[tokenIdUint] = betPossibleProfit[_betSide][_betType][_selection][_odds][msg.sender];
+        nftPossibleProfit[tokenId] = betPossibleProfit[_betSide][_betType][_selection][_odds][msg.sender];
         delete betPossibleProfit[_betSide][_betType][_selection][_odds][msg.sender];
-        emit BetMinted(tokenIdUint);
+        emit BetMinted(tokenId);
+        return tokenId;
     }
 
     function withdrawWithNFT(uint256 tokenId) external payable {
         betNFT.redeemCollectible(tokenId);
-
-        //TODO check if won
-
+        require(nftWon[tokenId], "Bet lost");
         transferAmount(msg.sender, nftPossibleProfit[tokenId]);
         delete nftPossibleProfit[tokenId];
     }

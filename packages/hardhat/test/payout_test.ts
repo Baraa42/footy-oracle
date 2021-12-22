@@ -80,8 +80,10 @@ describe("BettingContract", function () {
     await placeBet(bettingContract, bets.backBets[0]);
     await placeBet(bettingContract, bets.layBets[0]);
 
-    await mintBet(bettingContract, bets.backBets[0]);
-    await mintBet(bettingContract, bets.layBets[0]);
+    const backTokenId = await mintBet(bettingContract, bets.backBets[0]);
+    const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
+
+    console.log({ backTokenId, layTokenId });
 
     const payoutExpectation = expect(
       await bettingContract.connect(account).withdraw()

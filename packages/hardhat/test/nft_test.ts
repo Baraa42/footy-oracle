@@ -76,7 +76,7 @@ describe("BettingContract", function () {
     await mintExpectation.to.be.revertedWith("No Matched Bet");
   });
 
-  it("Should withdraw minted bet", async function () {
+  it("Should withdraw winning NFT bet", async function () {
     await placeBet(bettingContract, bets.backBets[0]);
     await placeBet(bettingContract, bets.layBets[0]);
 
@@ -96,5 +96,24 @@ describe("BettingContract", function () {
       bets.backBets[0].account,
       bets.backBets[0].liabilityParsed
     );
+  });
+
+  it("Should revert withdraw with lost NFT bet", async function () {
+    await placeBet(bettingContract, bets.backBets[0]);
+    await placeBet(bettingContract, bets.layBets[0]);
+
+    const backTokenId = await mintBet(bettingContract, bets.backBets[0]);
+    const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
+
+    const withdrawTx = await bettingContract.connect(account).withdraw();
+    await withdrawTx.wait();
+
+    const withdrawNFTExpectation = expect(
+      bettingContract
+        .connect(bets.layBets[0].account)
+        .withdrawWithNFT(layTokenId)
+    );
+
+    await withdrawNFTExpectation.to.be.revertedWith("Bet lost");
   });
 });
