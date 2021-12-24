@@ -377,6 +377,37 @@ export const sendERC721 = async (
 };
 
 /**
+ * Sets result base on bet selection
+ * Currently only works with BetType 0 Match Winners
+ *
+ * @param  {MockOracle} contract
+ * @param  {string} event
+ * @param  {BigNumberish} selection
+ * @returns Promise
+ */
+export const setOracleResult = async (
+  contract: MockOracle,
+  event: string,
+  selection: BigNumberish
+): Promise<any> => {
+  let parsedSelection;
+  if (selection === 0) {
+    parsedSelection = 1;
+  } else if (selection === 1) {
+    parsedSelection = 3;
+  } else {
+    parsedSelection = 2;
+  }
+  const resultTx = await contract.functions.setResult(event, parsedSelection);
+  await resultTx.wait();
+  return parsedSelection;
+};
+
+export const getRandomObjectId = (): string => {
+  return String(crypto.randomInt(100000, 999999));
+};
+
+/**
  * Muliplies math save a number with decimals inside a string
  *
  * @param  {string} value

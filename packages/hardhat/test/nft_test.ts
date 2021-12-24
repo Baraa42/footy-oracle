@@ -6,34 +6,51 @@ import {
   deployBettingContract,
   deployContracts,
   getMintExpectation,
+  getRandomObjectId,
   mintBet,
   placeBet,
   sendERC721,
+  setOracleResult,
 } from "./helpers";
 import { waffle, ethers } from "hardhat";
 import { Betting } from "../typechain/Betting";
-import { BetNFT, SoccerResolver } from "../typechain";
-import { Signer } from "ethers";
+import {
+  BetNFT,
+  MockOracle,
+  OracleInterface,
+  SoccerResolver,
+} from "../typechain";
+import { Event, Signer } from "ethers";
 import { expect } from "chai";
+import { AbiCoder } from "ethers/lib/utils";
 
 describe("BettingContract", function () {
+  let objectId: string;
   let bettingContract: Betting;
   let resolver: SoccerResolver;
   let betNFT: BetNFT;
   let bets: BetFactory;
+  let oracle: MockOracle;
   let account: Signer;
 
   before(async function () {
-    const { resolver: _resolver, betNFT: _betNFT } = await deployContracts();
+    objectId = getRandomObjectId();
+    const {
+      resolver: _resolver,
+      betNFT: _betNFT,
+      oracle: _oracle,
+    } = await deployContracts();
     resolver = _resolver;
     betNFT = _betNFT;
+    oracle = _oracle;
   });
 
   beforeEach(async function () {
     const [owner] = await ethers.getSigners();
     account = owner;
-    bettingContract = await deployBettingContract("abdg321", resolver, betNFT);
+    bettingContract = await deployBettingContract(objectId, resolver, betNFT);
     bets = await betFactory(1);
+    await setOracleResult(oracle, objectId, bets.backBets[0].selection);
   });
 
   it("Should mint two NFTs from a matched bet", async function () {
@@ -85,7 +102,7 @@ describe("BettingContract", function () {
     const layTokenId = await mintBet(bettingContract, bets.layBets[0]);
 
     const withdrawTx = await bettingContract.connect(account).withdraw();
-    await withdrawTx.wait();
+    const waited = await withdrawTx.wait();
 
     const withdrawNFTExpectation = expect(
       await bettingContract

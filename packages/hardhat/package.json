@@ -28,6 +28,7 @@
     "eslint-plugin-node": "^11.1.0",
     "eslint-plugin-prettier": "^3.4.1",
     "eslint-plugin-promise": "^5.2.0",
+    "@ensdomains/buffer": "0.0.10",
     "ethereum-waffle": "^3.4.0",
     "ethers": "^5.5.2",
     "hardhat": "^2.7.1",

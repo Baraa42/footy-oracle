@@ -11,10 +11,6 @@
     "coverage": "cd ./packages/hardhat && npx hardhat coverage"
   },
   "devDependencies": {
-    "hardhat-gas-reporter": "^1.0.6",
     "lerna": "^4.0.0"
-  },
-  "dependencies": {
-    "@openzeppelin/contracts": "^4.4.1"
   }
 }
