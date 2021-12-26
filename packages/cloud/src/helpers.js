@@ -15,12 +15,16 @@ const addAccount = async () => {
  */
 const sendLink = async (receiver) => {
   const gasPrice = await web3.eth.getGasPrice();
-  const gas = await chainlink.methods.transfer(receiver, "100000000000000000").estimateGas({ from: account });
-  const result = await chainlink.methods.transfer(receiver, "100000000000000000").send({
-    from: account,
-    gasPrice: gasPrice * 1.2,
-    gas: gas * 2,
-  });
+  const gas = await chainlink.methods
+    .transfer(receiver, "100000000000000000")
+    .estimateGas({ from: account });
+  const result = await chainlink.methods
+    .transfer(receiver, "100000000000000000")
+    .send({
+      from: account,
+      gasPrice: gasPrice * 1.2,
+      gas: gas * 2,
+    });
   return result;
 };
 

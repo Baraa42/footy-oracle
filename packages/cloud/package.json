@@ -1,0 +1,11 @@
+{
+  "name": "footy-oracle-cloud",
+  "version": "0.0.1",
+  "scripts": {
+    "cloud-watch": "moralis-admin-cli watch-cloud-folder  moralis-admin-cli watch-cloud-folder --autoSave 1 --moralisCloudfolder src",
+    "contract-update": "cp ../hardhat/artifacts/contracts/Betting.sol/Betting.json ./src/BettingContract.json"
+  },
+  "dependencies": {
+    "footy-oracle-contract": "0.0.1"
+  }
+}

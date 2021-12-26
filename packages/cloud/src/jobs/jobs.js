@@ -1,113 +1,4 @@
 /**
- * Add ETH Account
- */
-Moralis.Cloud.job("polygonAddAccount", async (request) => {
-  const { params, headers, log, message } = request;
-  try {
-    await addAccount();
-    message("Account added!");
-  } catch (e) {
-    message("Error occurred!");
-    log.error(e.toString());
-  }
-});
-
-/**
- * Call requestResult on smart contract 3 hours after a event started
- * This is scheduled inside moralis
- */
-Moralis.Cloud.job("polygonRequestResult", async (request) => {
-  const { params, headers, log, message } = request;
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  const futureTimestamp = currentTimestamp + 3 * 60 * 60;
-
-  const eventQuery = new Moralis.Query(Event);
-  eventQuery.notEqualTo("polygonContract", "");
-  eventQuery.notEqualTo("completed", true);
-  eventQuery.lessThan("start", futureTimestamp);
-  eventQuery.ascending("start");
-  const events = await eventQuery.find();
-
-  let updated = 0;
-  for await (eventItem of events) {
-    try {
-      const gasPrice = await web3.eth.getGasPrice();
-      const contract = new web3.eth.Contract(JSON.parse(abi), eventItem.get("polygonContract"));
-      const gas = await contract.methods.requestResult().estimateGas({ from: account });
-      const result = await contract.methods.requestResult().send({
-        from: account,
-        gasPrice: gasPrice * 1.2,
-        gas: gas * 2,
-      });
-      eventItem.set("completed", true);
-      await eventItem.save();
-      updated++;
-    } catch (e) {
-      message("Error occurred!");
-      log.error(e.toString());
-    }
-  }
-  log.info("Iteration " + counter + " after match events updated: " + updated);
-  message("After Match Events found: " + events.length);
-  counter++;
-});
-
-/**
- * Deploy contract for 10 events without contracts
- */
-Moralis.Cloud.job("polygonCreateContracts", async (request) => {
-  const { params, headers, log, message } = request;
-
-  const currentTimestamp = Math.floor(Date.now() / 1000);
-  const eventQuery = new Moralis.Query(Event);
-  eventQuery.greaterThanOrEqualTo("start", currentTimestamp);
-  eventQuery.equalTo("polygonContract", "");
-  eventQuery.ascending("start");
-  const events = await eventQuery.find();
-
-  let updated = 0;
-  for await (eventItem of events) {
-    try {
-      const contract = new web3.eth.Contract(JSON.parse(abi));
-      // Function Parameter
-      const payload = {
-        data: bytecode,
-        arguments: [String(eventItem.get("apiId"))],
-      };
-
-      const gas = await contract.deploy(payload).estimateGas();
-      const gasPrice = await web3.eth.getGasPrice();
-
-      // Deploy Parameter
-      const parameter = {
-        from: account,
-        gas: gas * 2,
-        gasPrice: gasPrice * 1.2,
-      };
-
-      log.info(JSON.stringify(parameter));
-
-      const response = await contract.deploy(payload).send(parameter);
-      eventItem.set("polygonContract", response.options.address);
-      await eventItem.save();
-      await sendLink(response.options.address);
-      log.info("Contract deployed for: " + response.options.address + " event:" + eventItem.get("apiId"));
-      updated++;
-
-      if (updated == 10) {
-        break;
-      }
-
-      await new Promise((r) => setTimeout(r, 10000));
-    } catch (err) {
-      log.error(err.toString());
-      message("Error occurred!");
-    }
-  }
-  message("Contract deployed: " + updated);
-});
-
-/**
  * Get teams from active leagues from external api and save in database
  */
 Moralis.Cloud.job("syncTeams", async (request) => {
@@ -149,7 +40,13 @@ Moralis.Cloud.job("syncTeams", async (request) => {
             const country = await countryQuery.first();
 
             if (country) {
-              await createTeam(item["team"].id, item["team"].name, item["team"].national, item["team"].logo, country);
+              await createTeam(
+                item["team"].id,
+                item["team"].name,
+                item["team"].national,
+                item["team"].logo,
+                country
+              );
               saved++;
             }
           }
@@ -247,13 +144,11 @@ Moralis.Cloud.job("syncPreEvents", async (request) => {
                 const event = new Event();
                 event.set("apiId", item["fixture"].id);
                 event.set("league", league);
-                event.set("home", item["teams"]["home"].name);
-                event.set("away", item["teams"]["away"].name);
+                event.set("home", homeResults);
+                event.set("away", awayResults);
                 event.set("start", item["fixture"].timestamp);
                 event.set("status", item["fixture"]["status"].short);
-                event.set("polygonContract", "");
                 event.set("polygonVolume", 0);
-                event.set("avaxContract", "");
                 event.set("avaxVolume", 0);
                 await event.save();
                 saved++;

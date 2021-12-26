@@ -19,7 +19,7 @@ const types = BetTypeEnum;
 
 export const useBetslip = () => {
   const { betslip, moralisUser } = useMoralis();
-  const { abi } = useContract();
+  const { bettingAbi } = useContract();
   const { showError, showSuccess } = useAlert();
   const { setActionBarItem, activeActionBarItem } = useActionBar();
 
@@ -93,7 +93,7 @@ export const useBetslip = () => {
     }
 
     const web3 = await Moralis.Web3.enable();
-    const contract = new web3.eth.Contract(JSON.parse(abi), betslipItem.event.attributes.polygonContract);
+    const contract = new web3.eth.Contract(bettingAbi, betslipItem.event.attributes.polygonContract);
 
     if (betslipItem.type === types.BACK) {
       contract.methods
@@ -139,7 +139,7 @@ export const useBetslip = () => {
   const removeUnmatchedBet = async (unmatchedBet: UnmatchedBetModel): Promise<void> => {
     if (moralisUser.value) {
       const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(JSON.parse(abi), unmatchedBet.event.get("polygonContract"));
+      const contract = new web3.eth.Contract(bettingAbi, unmatchedBet.event.get("polygonContract"));
       contract.methods
         .removeUnmatchedBet(unmatchedBet.get("odds"), unmatchedBet.get("amount"), unmatchedBet.get("selection"), unmatchedBet.get("betType"))
         .send(

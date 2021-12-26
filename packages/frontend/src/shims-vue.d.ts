@@ -13,6 +13,7 @@ declare module "body-scroll-lock";
 declare module "timezones-list";
 declare module "moralis";
 declare module "color";
+declare module "footy-oracle-contract";
 
 declare module "dom-to-image-more" {
   import domToImage = require("dom-to-image");
