@@ -32,10 +32,10 @@
       <div class="flex flex-row lg:items-center items-start w-full text-white lg:px-5 lg:mt-4 mt-8 px-3 space-x-4">
         <EventStartDetail :event="event" :inDetail="true" />
         <div class="lg:mb-1 -mt-1 lg:mt-0 flex flex-col gap-y-1">
-          <h2 class="font-semibold text-xl capitalize">{{ event.attributes.home }} vs. {{ event.attributes.away }}</h2>
+          <h2 class="font-semibold text-xl capitalize">{{ event.getName() }}</h2>
           <span class="text-sm"
             >Matched Volume:
-            <span v-if="event.attributes.polygonVolume">{{ event.attributes.polygonVolume }}</span>
+            <span v-if="event.attributes.polygonVolume">{{ convertCurrency(event.attributes.polygonVolume) }}</span>
             <span v-else>0</span>
             MATIC</span
           >

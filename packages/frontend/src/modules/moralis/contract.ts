@@ -1,4 +1,4 @@
-import BettingContractJson from "footy-oracle-contract/artifacts/contracts/Betting.sol/Betting.json";
+import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
 
 export const useContract = () => {
   return { bettingAbi: BettingContractJson.abi };

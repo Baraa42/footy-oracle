@@ -56,17 +56,10 @@
           <router-link
             @click="hideMobileOverlay()"
             class="leading-5 hover:text-gray-900 text-gray-700 font-medium max-w-[240px] w-max transition-colors"
-            :title="`Go to ${favorite.get('event').get('home')} vs. ${favorite.get('event').get('away')}`"
-            :to="{
-              name: 'event',
-              params: {
-                sport: 'soccer',
-                league: favorite.get('event').get('league').id,
-                event: favorite.get('event').id,
-              },
-            }"
+            :title="`Go to ${favorite.get('event').getName()}`"
+            :to="favorite.get('event').getDetailLink()"
           >
-            {{ favorite.get("event").get("home") }} vs {{ favorite.get("event").get("away") }}</router-link
+            {{ favorite.get("event").getName() }}</router-link
           >
           <router-link
             @click="hideMobileOverlay()"

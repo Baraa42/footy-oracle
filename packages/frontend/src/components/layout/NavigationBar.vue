@@ -1,5 +1,5 @@
 <template>
-  <div class="block w-full lg:h-full lg:fixed lg:left-0 lg:top-20 lg:bg-gradient-to-t lg:from-gray-900 lg:to-gray-800 lg:w-44 lg:flex lg:flex-col z-50">
+  <div class="block w-full lg:h-full lg:fixed lg:left-0 lg:top-20 lg:bg-gradient-to-t lg:from-gray-900 lg:to-gray-800 lg:w-52 lg:flex lg:flex-col z-50">
     <p class="font-semibold text-sm lg:text-gray-500 text-gray-700 mt-5 mb-3 ml-3 lg:mt-4 lg:mb-2 lg:ml-4">Populare</p>
 
     <div class="flex flex-col space-y-1">
@@ -45,7 +45,7 @@ import Basketball from "@/assets/svg/basketball.svg";
 import Baseball from "@/assets/svg/baseball.svg";
 import Football from "@/assets/svg/football.svg";
 import Gamepad from "@/assets/svg/gamepad.svg";
-import { RefreshIcon } from "@heroicons/vue/outline";
+import { RefreshIcon, LibraryIcon } from "@heroicons/vue/outline";
 import TennisBall from "@/assets/svg/tennis_ball.svg";
 import Boxing from "@/assets/svg/boxing.svg";
 import RacingHelmet from "@/assets/svg/racing_helmet.svg";
@@ -71,17 +71,17 @@ export default defineComponent({
         },
       },
       {
-        name: "Swap",
-        icon: markRaw(RefreshIcon),
+        name: "NFT Marketplace",
+        icon: markRaw(LibraryIcon),
         to: {
-          name: "swap",
+          name: "nftMarketplace",
         },
       },
       {
-        name: "NFT MarketPlace",
+        name: "Swap Tokens",
         icon: markRaw(RefreshIcon),
         to: {
-          name: "nftMarketplace",
+          name: "swap",
         },
       },
     ];

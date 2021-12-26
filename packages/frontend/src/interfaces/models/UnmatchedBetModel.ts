@@ -4,15 +4,16 @@ import { SelectionEnum } from "../enums/SelectionEnum";
 
 export interface UnmatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
   attributes: {
-    eventId: string;
-    betType: BetTypeEnum;
+    apiId: string;
+    betType: number;
+    betSide: BetTypeEnum;
     selection: SelectionEnum;
     odds: string;
     amount: string;
-    matched?: boolean;
-    partMatched?: boolean;
-    canceld?: boolean;
-    addr?: string; // from user
+    isMatched?: boolean;
+    isPartMatched?: boolean;
+    isCanceld?: boolean;
+    from?: string;
     address?: string; // from contract
     block_hash?: string;
     block_timestamp?: Date;

@@ -13,8 +13,9 @@ import { useOdds } from "../settings/odds";
 import { NFTMintStatus } from "../../interfaces/enums/NFTMintStatus";
 import { ref, Ref } from "vue";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
+import { useDownload } from "../download";
 
-const { abi } = useContract();
+const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
 const placeholder = "https://via.placeholder.com/600x600.png?text=Image%20not%20found";
 const NftMintStatus = NFTMintStatus;
@@ -23,7 +24,7 @@ const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
 const nftSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
 const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c097363c'
 
-var delistedOfferingIds : Array<string> = [];
+var delistedOfferingIds: Array<string> = [];
 var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
 
 /**
@@ -39,7 +40,7 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
      */
     const { Object: PolygonNFTOwners, createQuery } = useMoralisObject("PolygonNFTOwners");
     const nftQuery: MoralisTypes.Query<NftOwnerModel> = createQuery();
-    nftQuery.equalTo("name", collectionName);
+    //nftQuery.equalTo("name", collectionName);
     nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
     nftQuery.descending("block_number");
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
@@ -53,10 +54,9 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
       if (nft.parsed_metadata) {
         //console.log('printing metadata');
         //console.log(nft.parsed_metadata);
-      }
-      else {
+      } else {
         //console.log("if metadata is undefined, don't bother with this nft. index = " + index);
-        nfts.value.splice(index, 1);
+        nfts?.value?.splice(index, 1);
         //console.log('number of nfts are removing for metadata problem = ' + nfts.value.length);
       }
     });
@@ -87,31 +87,39 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
  * @param base64
  * @returns Promise
  */
-const mint = async (matchedBet: MatchedBetModel, base64: string): Promise<void> => {
+const mint = async (matchedBet: MatchedBetModel, blob: Blob): Promise<void> => {
   const { moralisUser } = useMoralis();
+  const { blobToB64 } = useDownload();
   if (moralisUser.value) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const polygonContract = config.get("polygon_contract");
+
     const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
     const fileName = matchedBet.get("eventId") + "-" + matchedBet.get("betId");
+    const base64 = (await blobToB64(blob)) as string;
     const image = await saveBase64ImageToIPFS(fileName, base64); // save image to ipfs
     const metadata = generateMetadata(matchedBet, image.ipfs()); // generate metadata with image
 
     if (metadata) {
       const tokenUri = await saveJsonToIPFS(fileName, metadata); // save metadata to ipfs
       const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(JSON.parse(abi), matchedBet.event?.get("polygonContract"));
+      const contract = new web3.eth.Contract(bettingAbi, polygonContract);
+      console.log(tokenUri.ipfs());
 
-      contract.methods.transferBetToNFT(matchedBet.get("betId"), tokenUri.ipfs()).send(
-        {
-          from: moralisUser.value.get("ethAddress"),
-        },
-        async (err: any, result: any) => {
-          if (!err) {
-            matchedBet.set("isMinted", true);
-            await matchedBet.save();
-            showSuccess("Bet successfully minted, wait for confirmation");
+      contract.methods
+        .transferBetToNFT(matchedBet.get("apiId"), matchedBet.get("betSide"), 0, matchedBet.get("selection"), matchedBet.get("odds"), tokenUri.ipfs())
+        .send(
+          {
+            from: moralisUser.value.get("ethAddress"),
+          },
+          async (err: any, result: any) => {
+            if (!err) {
+              matchedBet.set("isMinted", true);
+              await matchedBet.save();
+              showSuccess("Bet successfully minted, wait for confirmation");
+            }
           }
-        }
-      );
+        );
     }
   }
 };
@@ -126,23 +134,23 @@ const mint = async (matchedBet: MatchedBetModel, base64: string): Promise<void> 
 const generateMetadata = (matchedBet: MatchedBetModel, imageUrl: string): NftMetadata | undefined => {
   if (matchedBet.event) {
     const { convertCurrency } = useCurrency();
-    const { convertOdds } = useOdds();
-    const event = matchedBet.event.get("home") + " vs. " + matchedBet.event.get("away");
+    const { decodeOdds } = useOdds();
+    const event = matchedBet.event.getName();
 
     let selection = "";
-    if (matchedBet.get("betType") == 0) {
+    if (matchedBet.get("betSide") == 0) {
       if (matchedBet.get("selection") == 0) {
-        selection = matchedBet.event.get("home") + " win";
+        selection = matchedBet.event.get("home").get("name") + " win";
       } else if (matchedBet.get("selection") == 1) {
-        selection = matchedBet.event.get("away") + " win";
+        selection = matchedBet.event.get("away").get("name") + " win";
       } else {
         selection = "Draw win";
       }
     } else {
       if (matchedBet.get("selection") == 0) {
-        selection = matchedBet.event.get("home") + " lose";
+        selection = matchedBet.event.get("home").get("name") + " lose";
       } else if (matchedBet.get("selection") == 1) {
-        selection = matchedBet.event.get("away") + " lose";
+        selection = matchedBet.event.get("away").get("name") + " lose";
       } else {
         selection = "Draw lose";
       }
@@ -168,7 +176,7 @@ const generateMetadata = (matchedBet: MatchedBetModel, imageUrl: string): NftMet
         },
         {
           trait_type: "Odds",
-          value: new BigNumber(convertOdds(matchedBet.get("odds"))),
+          value: new BigNumber(decodeOdds(matchedBet.get("odds"))),
         },
         {
           trait_type: "Start",
@@ -176,7 +184,7 @@ const generateMetadata = (matchedBet: MatchedBetModel, imageUrl: string): NftMet
         },
         {
           trait_type: "Event Id",
-          value: matchedBet.get("eventId"),
+          value: matchedBet.get("apiId"),
         },
         {
           trait_type: "Bet Id",
@@ -210,72 +218,70 @@ const resolveMetadataFromNft = async (uri: string): Promise<NftMetadata | undefi
       return response.data;
     }
   } catch (err) {
-    console.log(uri + ' fetch resulted in error = ' + err);
+    console.log(uri + " fetch resulted in error = " + err);
   }
 };
 
-const getNFTsDeListedOnMarketplace = async ()  =>  {
+const getNFTsDeListedOnMarketplace = async () => {
   const queryAll = new Moralis.Query("ClosedOfferings");
   queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
 
   const deListedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
   deListedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
-  console.log('getNFTsDeListedOnMarketplace');
+  console.log("getNFTsDeListedOnMarketplace");
   console.log(deListedNfts);
-  deListedNfts.value.forEach((nft : ListedNftModel) => {
+  deListedNfts.value.forEach((nft: ListedNftModel) => {
     delistedOfferingIds.push(nft.attributes.offeringId);
   });
-}
+};
 
-const getNFTsListedOnMarketplace = async () : Promise<Ref<Array<ListedNftModel> | undefined>> =>  {
+const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> | undefined>> => {
   const queryAll = new Moralis.Query("PlacedOfferings");
   //queryAll.equalTo("tokenId", "2");
   queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
-  
+
   listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
-  console.log('getNFTsListedOnMarketplace');
+  console.log("getNFTsListedOnMarketplace");
   console.log(listedNfts);
   //console.log('Total number of nfts fetched from db = ' + listedNfts.value.length);
 
   await getNFTsDeListedOnMarketplace();
   //console.log(delistedOfferingIds);
-  
+
   /**
    * Resolve metadata from nft
-  */
+   */
   listedNfts.value.forEach(async (nft: ListedNftModel, index) => {
     let notFound = true;
-    delistedOfferingIds.forEach((delistedOffering : string) => {
+    delistedOfferingIds.forEach((delistedOffering: string) => {
       if (nft.attributes.offeringId == delistedOffering) {
         notFound = false;
       }
-    })
+    });
     if (notFound) {
-      console.log('pushing this nft index = ' + index);
+      console.log("pushing this nft index = " + index);
       //console.log(nft);
       nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
       if (nft.parsed_metadata) {
         //console.log('printing metadata')
         //console.log(nft.parsed_metadata);
-      }
-      else {
+      } else {
         //console.log("if metadata is undefined, don't bother with this nft. index = " + index);
-        listedNfts.value.splice(index, 1);
+        listedNfts?.value?.splice(index, 1);
         //console.log('number of nfts are removing for metadata problem = ' + listedNfts.value.length);
       }
-    }
-    else {
+    } else {
       //console.log('Ignoring this nft since it is no longer listed, index = ' + index);
       //console.log(nft);
-      listedNfts.value.splice(index, 1);
+      listedNfts?.value?.splice(index, 1);
       //console.log(listedNfts);
-    }    
+    }
   });
 
   //console.log(listedNfts);
-  console.log('number of nfts are filtering = ' + listedNfts.value.length);
+  console.log("number of nfts are filtering = " + listedNfts.value.length);
   return listedNfts;
-}
+};
 
 export const useNFTs = () => {
   return {
@@ -287,6 +293,6 @@ export const useNFTs = () => {
     getOpenseaLink,
     resolveMetadataFromNft,
     getNFTsListedOnMarketplace,
-    getNFTsDeListedOnMarketplace
+    getNFTsDeListedOnMarketplace,
   };
 };

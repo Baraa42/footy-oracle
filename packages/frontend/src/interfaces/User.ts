@@ -19,4 +19,5 @@ export interface User {
   matchedBets?: Array<MatchedBetModel>;
   nfts?: Array<NftOwnerModel>;
   betslip?: Array<Betslip>;
+  listedNfts?: Array<any>;
 }

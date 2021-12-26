@@ -11,8 +11,7 @@ const debounce = (fn: any, delay = 0, immediate = false) => {
     }, delay);
   };
 };
-
-const useDebouncedRef = (initialValue: any, delay: any, immediate: any) => {
+const debouncedRef = (initialValue: any, delay: any, immediate: any) => {
   const state = ref(initialValue);
   const debouncedRef = customRef((track, trigger) => ({
     get() {
@@ -31,4 +30,18 @@ const useDebouncedRef = (initialValue: any, delay: any, immediate: any) => {
   return debouncedRef;
 };
 
-export default useDebouncedRef;
+const debounceFunction = (fn: any, wait: number) => {
+  let timer: ReturnType<typeof setTimeout>;
+  return (event: Event) => {
+    if (timer) clearTimeout(timer);
+    timer = setTimeout(() => {
+      if (typeof fn === "function") {
+        fn(event);
+      }
+    }, wait);
+  };
+};
+
+export const useDebounce = () => {
+  return { debouncedRef, debounceFunction };
+};

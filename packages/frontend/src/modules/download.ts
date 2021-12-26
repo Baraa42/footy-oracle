@@ -18,6 +18,14 @@ export const useDownload = () => {
     return result.blob();
   };
 
+  const blobToB64 = (blob: Blob) =>
+    new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.readAsDataURL(blob);
+      reader.onload = () => resolve(reader.result);
+      reader.onerror = (error) => reject(error);
+    });
+
   const downloadText = (text: any, fileName: string, fileType: string = "txt") => {
     const file = new File([text], fileName + "." + fileType, {
       type: "text/plain;charset=utf-8",
@@ -50,5 +58,5 @@ export const useDownload = () => {
     });
   };
 
-  return { downloadText, downloadPNG, downloadSVG, downloadCanvas };
+  return { downloadText, downloadPNG, downloadSVG, downloadCanvas, blobToB64, b64toBlob };
 };

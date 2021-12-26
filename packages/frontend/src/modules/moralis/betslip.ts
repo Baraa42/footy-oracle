@@ -18,6 +18,7 @@ const selections = SelectionEnum;
 const types = BetTypeEnum;
 
 export const useBetslip = () => {
+  const { encodeOdds, decodeOdds, minOdds } = useOdds();
   const { betslip, moralisUser } = useMoralis();
   const { bettingAbi } = useContract();
   const { showError, showSuccess } = useAlert();
@@ -39,11 +40,9 @@ export const useBetslip = () => {
    * @returns void
    */
   const addToBetslip = (event: EventModel, type: BetTypeEnum, selection: SelectionEnum, unmatchedBet?: UnmatchedBetModel): void => {
-    const { convertOdds, minOdds } = useOdds();
-
     let odds: number = minOdds;
     if (unmatchedBet) {
-      odds = new BigNumber(convertOdds(unmatchedBet.get("odds"))).toNumber();
+      odds = Number(decodeOdds(unmatchedBet.get("odds")));
     }
 
     betslip.value?.push({
@@ -87,17 +86,26 @@ export const useBetslip = () => {
       return;
     }
 
-    if (!betslipItem.event.attributes.polygonContract) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const polygonContract = config.get("polygon_contract");
+
+    if (!polygonContract) {
       showError("No contract deployed for this game");
       return;
     }
 
     const web3 = await Moralis.Web3.enable();
-    const contract = new web3.eth.Contract(bettingAbi, betslipItem.event.attributes.polygonContract);
+    const contract = new web3.eth.Contract(bettingAbi, polygonContract);
 
     if (betslipItem.type === types.BACK) {
       contract.methods
-        .createBackBet(web3.utils.toWei(betslipItem.odds.toString(), "ether"), web3.utils.toWei(betslipItem.stake.toString(), "ether"), betslipItem.selection)
+        .createBackBet(
+          String(betslipItem.event.attributes.apiId),
+          0,
+          betslipItem.selection,
+          encodeOdds(betslipItem.odds),
+          web3.utils.toWei(betslipItem.stake.toString(), "ether")
+        )
         .send(
           {
             from: moralisUser.value.get("ethAddress"),
@@ -113,7 +121,13 @@ export const useBetslip = () => {
         );
     } else if (betslipItem.type === types.LAY) {
       contract.methods
-        .createLayBet(web3.utils.toWei(betslipItem.odds.toString(), "ether"), web3.utils.toWei(betslipItem.stake.toString(), "ether"), betslipItem.selection)
+        .createLayBet(
+          String(betslipItem.event.attributes.apiId),
+          0,
+          betslipItem.selection,
+          encodeOdds(betslipItem.odds),
+          web3.utils.toWei(betslipItem.stake.toString(), "ether")
+        )
         .send(
           {
             from: moralisUser.value.get("ethAddress"),
@@ -138,10 +152,18 @@ export const useBetslip = () => {
    */
   const removeUnmatchedBet = async (unmatchedBet: UnmatchedBetModel): Promise<void> => {
     if (moralisUser.value) {
+      const config = await Moralis.Config.get({ useMasterKey: false });
+      const polygonContract = config.get("polygon_contract");
       const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(bettingAbi, unmatchedBet.event.get("polygonContract"));
+      const contract = new web3.eth.Contract(bettingAbi, polygonContract);
       contract.methods
-        .removeUnmatchedBet(unmatchedBet.get("odds"), unmatchedBet.get("amount"), unmatchedBet.get("selection"), unmatchedBet.get("betType"))
+        .removeUnmatchedBet(
+          unmatchedBet.get("apiId"),
+          encodeOdds(unmatchedBet.get("odds")),
+          unmatchedBet.get("amount"),
+          unmatchedBet.get("selection"),
+          unmatchedBet.get("betType")
+        )
         .send(
           {
             from: moralisUser.value.get("ethAddress"),
@@ -149,7 +171,7 @@ export const useBetslip = () => {
           async (err: any, result: any) => {
             if (!err) {
               showSuccess("Bet successfully removed");
-              unmatchedBet.set("canceld", true);
+              unmatchedBet.set("isCanceld", true);
               await unmatchedBet.save();
             }
             console.log(result);

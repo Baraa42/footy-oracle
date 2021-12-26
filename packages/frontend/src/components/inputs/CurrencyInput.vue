@@ -67,7 +67,7 @@ export default defineComponent({
 
     const emitValue = (event: Event) => {
       const element: HTMLInputElement | null = event.target as HTMLInputElement;
-      modelValue.value = Number(element?.value);
+      modelValue.value = Number(element?.value.replaceAll(",", "."));
       emit("update:modelValue", modelValue.value);
     };
 

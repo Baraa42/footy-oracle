@@ -34,16 +34,22 @@ const oddsDecimals: number = 2;
  * @param  {string|number} amount
  * @returns string
  */
-const convertOdds = (amount: string | number): string => {
+const encodeOdds = (odds: string | number): string => {
   const web3 = new Moralis.Web3();
-  return web3.utils.fromWei(new BigNumber(amount).toString(), "ether");
+  return web3.utils.toWei(String(odds), "kwei");
+};
+
+const decodeOdds = (odds: string | number): string => {
+  const web3 = new Moralis.Web3();
+  return web3.utils.fromWei(String(odds), "kwei");
 };
 
 export const useOdds = () => {
   return {
     minOdds,
     oddsDecimals,
-    convertOdds,
+    encodeOdds,
+    decodeOdds,
     oddsFormats,
     selectedOddsFormat,
   };

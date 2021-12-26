@@ -167,7 +167,7 @@ export default defineComponent({
   async setup() {
     const web3 = new Moralis.Web3();
     const { selections, types } = useBetslip();
-    const { convertOdds } = useOdds();
+    const { decodeOdds } = useOdds();
     const { getEventQuery } = useEvents();
     const { getTeams } = useTeams();
     const { downloadText, downloadSVG, downloadPNG } = useDownload();
@@ -289,7 +289,7 @@ export default defineComponent({
     model.value.set("odds", web3.utils.toWei(odds.value));
     model.value.set("amount", web3.utils.toWei(amount.value));
     model.value.set("selection", selection.value);
-    model.value.set("betType", type.value);
+    model.value.set("betSide", type.value);
     model.value.set("addr", "");
     model.value.set("address", "");
     model.value.set("block_hash", "");
@@ -375,7 +375,7 @@ export default defineComponent({
       amount,
       selection,
       color,
-      convertOdds,
+      decodeOdds,
       texture,
       textureOpacity,
       borderThickness,

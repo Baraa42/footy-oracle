@@ -44,8 +44,9 @@ export default defineComponent({
      */
     const loadLeague = async (id: string) => {
       league.value = await getLeagueById(id);
+
       if (league.value) {
-        queryParms.value = Object.assign(queryParms.value, { filter: { league: league.value } });
+        queryParms.value = { filter: { league: league.value } };
       } else {
         const { showError } = useAlert();
         const router = useRouter();

@@ -16,7 +16,7 @@
     <input
       :disabled="disabled"
       :value="modelValue"
-      @input="emitEvent($event)"
+      @input="debouncedEmit($event)"
       :class="{
         'bg-blue-100 focus:ring-blue-400': type === betTypes.BACK,
         'bg-red-100 focus:ring-red-400': type === betTypes.LAY,
@@ -58,6 +58,7 @@ import { PlusIcon } from "@heroicons/vue/solid";
 import { MinusIcon } from "@heroicons/vue/solid";
 import { useMath } from "../../modules/math";
 import { useOdds } from "../../modules/settings/odds";
+import { useDebounce } from "@/modules/layout/debounce";
 
 export default defineComponent({
   props: {
@@ -85,65 +86,47 @@ export default defineComponent({
     const { round, countDecimals } = useMath();
     const { minOdds, oddsDecimals } = useOdds();
 
-    const modelValue = ref<any>(props.modelValue || minOdds);
+    const modelValue = ref<number>(props.modelValue || minOdds);
     const step: number = Number(props.step);
 
-    const isNumber = computed(() => {
-      if (!isNaN(modelValue.value)) {
-        return true;
-      }
-      return false;
-    });
-
-    const isValidOdds = computed(() => {
-      if (Number(modelValue.value) >= Number(minOdds)) {
-        return true;
-      }
-      return false;
-    });
-
-    const isValidDecimals = computed(() => {
-      if (countDecimals(modelValue.value) < oddsDecimals) {
-        return true;
-      }
-      return false;
-    });
-
     const emitValue = () => {
-      if (isNumber.value) {
-        if (isValidDecimals.value) {
-          if (isValidOdds.value) {
-            emit("update:modelValue", modelValue.value);
-          } else {
-            modelValue.value = Number(minOdds);
-            emitValue();
-          }
-        } else {
-          modelValue.value = round(modelValue.value, oddsDecimals);
-          emitValue();
+      emit("update:modelValue", modelValue.value);
+    };
+
+    const emitEvent = (event: Event) => {
+      console.log("emit");
+      const element: HTMLInputElement | null = event.target as HTMLInputElement;
+
+      if (element.value) {
+        let value = Number(element.value.replaceAll(",", "."));
+
+        if (isNaN(value)) {
+          value = minOdds;
+        } else if (value <= minOdds) {
+          value = minOdds;
+        } else if (countDecimals(value) > oddsDecimals) {
+          value = round(value, oddsDecimals);
         }
-      } else {
-        modelValue.value = Number(minOdds);
+
+        modelValue.value = 0;
+        modelValue.value = value;
         emitValue();
       }
     };
 
-    const emitEvent = (event: Event) => {
-      const element: HTMLInputElement | null = event.target as HTMLInputElement;
-      modelValue.value = Number(element?.value);
-      emitValue();
-    };
+    const { debounceFunction } = useDebounce();
+    const debouncedEmit = debounceFunction(emitEvent, 500);
 
     const increment = () => {
-      modelValue.value = Number(modelValue.value) + step;
+      modelValue.value = round(modelValue.value + step, oddsDecimals);
       emitValue();
     };
     const decrement = () => {
-      modelValue.value = Number(modelValue.value) - step;
+      modelValue.value = round(modelValue.value - step, oddsDecimals);
       emitValue();
     };
 
-    return { modelValue, betTypes, emitValue, emitEvent, increment, decrement };
+    return { modelValue, betTypes, emitValue, emitEvent, increment, decrement, debouncedEmit };
   },
   components: { PlusIcon, MinusIcon },
 });

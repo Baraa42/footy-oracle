@@ -28,10 +28,9 @@ const selectedCurrency: Ref<SelectOption> = ref(currencies[0]);
  * @param  {string} amount
  * @returns string
  */
-const convertCurrency = (amount: string): string => {
-  console.log(amount);
+const convertCurrency = (amount: string | number): string => {
   const web3 = new Moralis.Web3();
-  return web3.utils.fromWei(amount, "ether");
+  return web3.utils.fromWei(String(amount), "ether");
 };
 
 /**

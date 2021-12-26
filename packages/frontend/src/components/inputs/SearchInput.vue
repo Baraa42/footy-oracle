@@ -25,17 +25,7 @@
           <MenuItems
             static
             v-if="query && loaded"
-            class="
-              lg:absolute lg:left-0 lg:w-96
-              w-full
-              mt-2
-              origin-top-right
-              lg:bg-white lg:hover:bg-white
-              divide-y divide-gray-100
-              lg:rounded-md lg:shadow-lg lg:ring-1
-              ring-black ring-opacity-5
-              focus:outline-none
-            "
+            class="lg:absolute lg:left-0 lg:w-96 w-full mt-2 origin-top-right lg:bg-white lg:hover:bg-white divide-y divide-gray-100 lg:rounded-md lg:shadow-lg lg:ring-1 ring-black ring-opacity-5 focus:outline-none"
           >
             <div class="px-1 lg:py-1">
               <div class="flex flex-col space-y-2 lg:my-1 mx-1">
@@ -75,7 +65,7 @@ import { defineComponent, Ref, ref, watch } from "vue";
 import { SearchIcon } from "@heroicons/vue/outline";
 import { useEvents } from "../../modules/moralis/event";
 import SoccerBall from "../../assets/svg/soccer_ball.svg";
-import useDebouncedRef from "../../modules/layout/debounce";
+import { useDebounce } from "../../modules/layout/debounce";
 import { useBreakpoint } from "../../modules/layout/tailwindBreakpoints";
 import { useActionBar } from "../../modules/layout/actionBar";
 
@@ -84,7 +74,10 @@ export default defineComponent({
     const button = <Ref<any | null>>ref(null);
     const input = <Ref<any | null>>ref(null);
     const searchInput = ref("");
-    const query = useDebouncedRef("", 400, false);
+
+    const { debouncedRef } = useDebounce();
+
+    const query = debouncedRef("", 400, false);
     const loaded = ref(false);
     const searchResults = ref();
     const { search: searchEvents } = useEvents();

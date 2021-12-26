@@ -2,8 +2,8 @@
   <div class="flex lg:flex-row flex-col items-center justify-between w-full">
     <div class="flex lg:flex-row justify-between lg:justify-start lg:items-center lg:space-x-4 w-full">
       <span class="font-semibold text-lg ml-auto md:ml-0 text-gray-800 mr-1 md:mr-1">
-        <template v-if="selection == selections.HOME">{{ event.attributes.home }}</template>
-        <template v-if="selection == selections.AWAY">{{ event.attributes.away }}</template>
+        <template v-if="selection == selections.HOME">{{ event.attributes.home.attributes.name }}</template>
+        <template v-if="selection == selections.AWAY">{{ event.attributes.away.attributes.name }}</template>
         <template v-if="selection == selections.DRAW">Draw</template>
       </span>
     </div>

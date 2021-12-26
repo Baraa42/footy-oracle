@@ -10,33 +10,16 @@
         <router-link to="/" class="font-bold text-2xl tracking-wide">Footy Oracle</router-link>
       </div>
 
-      <div class="hidden lg:flex flex-grow mx-[40px]">
+      <div class="hidden lg:flex flex-grow mx-[52px]">
         <SearchInput />
       </div>
 
-      <FundsDropdown class="mr-[109px] hidden lg:block" />
+      <FundsDropdown class="mr-[120px] hidden lg:block" />
 
       <button
         @click="toggleLoginDialog()"
         v-if="!isAuthenticated"
-        class="
-          w-auto
-          px-4
-          h-10
-          shadow-sm
-          font-medium
-          rounded-md
-          bg-gradient-to-b
-          from-indigo-600
-          to-indigo-700
-          text-gray-50
-          focus:outline-none
-          transition-all
-          hover:bg-gradient-to-t
-          border-2 border-indigo-600
-          focus:ring-2 focus:ring-indigo-700
-          ring-offset-4 ring-offset-gray-800
-        "
+        class="w-auto px-4 h-10 shadow-sm font-medium rounded-md bg-gradient-to-b from-indigo-600 to-indigo-700 text-gray-50 focus:outline-none transition-all hover:bg-gradient-to-t border-2 border-indigo-600 focus:ring-2 focus:ring-indigo-700 ring-offset-4 ring-offset-gray-800"
       >
         <span class="hidden lg:block">Connect to a wallet</span>
         <span class="block lg:hidden">Connect</span>

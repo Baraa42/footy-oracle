@@ -14,7 +14,7 @@ export class EventClass extends Moralis.Object {
   }
 
   getName() {
-    return `${this.get("home")} vs. ${this.get("away")}`;
+    return `${this.get("home").get("name")} vs. ${this.get("away").get("name")}`;
   }
 
   getDetailLink() {
@@ -42,8 +42,8 @@ const getUnmatchedBets = async (event: EventClass): Promise<UnmatchedBetModel[][
   /**
    * Get unmatched bets from event
    */
-  const relation = event.relation("unmatchedBets");
-  const unmatchedBetsQuery = relation.query().notEqualTo("matched", true).equalTo("confirmed", true).select("amount", "betType", "odds", "selection");
+  const relation = event.relation("polygonUnmatchedBets");
+  const unmatchedBetsQuery = relation.query().notEqualTo("isMatched", true).equalTo("confirmed", true).select("amount", "betType", "odds", "selection");
   const unmatchedBets = await unmatchedBetsQuery.find();
 
   /**

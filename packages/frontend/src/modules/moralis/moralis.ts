@@ -31,6 +31,7 @@ const user: Ref<User> = ref({
   betslip: [],
   unmatchedBets: [],
   matchedBets: [],
+  listedNfts: [],
   nfts: [],
 });
 
@@ -180,6 +181,6 @@ export const useMoralis = () => {
     tokens,
     nfts,
     loadNfts,
-    listedNfts
+    listedNfts,
   };
 };

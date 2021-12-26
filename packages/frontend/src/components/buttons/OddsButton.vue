@@ -9,7 +9,7 @@
     class="group flex flex-col w-20 items-center h-12 justify-evenly transition-colors focus:outline-none"
   >
     <span class="flex flex-col" v-if="bet">
-      <span class="text-gray-700 group-hover:text-gray-800 text-sm font-bold tracking-wide">{{ convertOdds(bet.attributes.odds) }}</span>
+      <span class="text-gray-700 group-hover:text-gray-800 text-sm font-bold tracking-wide">{{ decodeOdds(bet.attributes.odds) }}</span>
       <div class="text-xs text-gray-600 font-medium flex flex-row items-center group-hover:text-gray-800">
         <span>{{ new BigNumber(convertCurrency(bet.attributes.amount)).toFixed(2) }}</span>
         <Matic class="w-[10px] h-[11px] ml-[3px]" />
@@ -36,9 +36,9 @@ export default defineComponent({
   },
   setup() {
     const { convertCurrency } = useCurrency();
-    const { convertOdds } = useOdds();
+    const { decodeOdds } = useOdds();
     const betTypes = BetTypeEnum;
-    return { betTypes, convertOdds, convertCurrency, BigNumber };
+    return { betTypes, decodeOdds, convertCurrency, BigNumber };
   },
   components: { Ethereum, Matic },
 });

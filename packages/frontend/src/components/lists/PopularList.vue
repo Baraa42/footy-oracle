@@ -79,7 +79,7 @@ export default defineComponent({
       limit: pageSize.value,
       sort: {
         key: "polygonVolume",
-        direction: "ASC",
+        direction: "DESC",
       },
       filter: {
         onlyFutureEvents: true,

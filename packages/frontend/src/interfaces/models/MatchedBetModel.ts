@@ -7,15 +7,16 @@ import { NftOwnerModel } from "./NftOwnerModel";
 
 export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
   attributes: {
-    eventId: string;
-    betType: BetTypeEnum;
+    apiId: string;
+    betType: number;
+    betSide: BetTypeEnum;
     selection: SelectionEnum;
     odds: string;
     amount: string;
     isMinted: boolean;
     won?: boolean;
     nft?: NftOwnerModel;
-    addr: string; // from user
+    from: string; // from user
     address: string; // from contract
     block_hash: string;
     block_timestamp: Date;
@@ -23,7 +24,8 @@ export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attrib
     transaction_index: number;
     log_index: number;
     confirmed: boolean;
-    mintStatus?: NFTMintStatus;
+    polygonMintStatus?: NFTMintStatus;
+    avaxMintStatus?: NFTMintStatus;
   };
   event?: EventModel;
 }

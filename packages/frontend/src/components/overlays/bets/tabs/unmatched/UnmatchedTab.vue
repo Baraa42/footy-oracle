@@ -1,12 +1,15 @@
 <template>
   <div>
-    <UnmatchedItem
-      v-if="isAuthenticated"
-      v-for="bet in unmatchedBets"
-      :data="bet"
-      :key="`${bet.attributes.eventId}-${bet.attributes.selection}-${bet.attributes.betType}`"
-    />
-    <InfoMessage v-else class="m-3" message="You need to connect to your wallet to see your unmatched events." />
+    <div v-if="isAuthenticated && unmatchedBets">
+      <UnmatchedItem
+        v-for="bet in unmatchedBets"
+        :data="bet"
+        :key="`${bet.attributes.apiId}-${bet.attributes.betType}-${bet.attributes.selection}-${bet.attributes.betSide}`"
+      />
+    </div>
+    <div v-else>
+      <InfoMessage class="m-3" message="You need to connect to your wallet to see your unmatched events." />
+    </div>
   </div>
 </template>
 

@@ -11,19 +11,19 @@
       </div>
       <span class="text-sm mt-1">Placed: {{ bet.get("createdAt") }}</span>
     </div>
-    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betType') == '1'">Lay</div>
-    <div class="flex items-center text-blue-600 font-semibold" v-if="bet.get('betType') == '0'">Back</div>
-    <div class="flex items-center">{{ convertOdds(bet.get("odds")) }}</div>
+    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betSide') == '1'">Lay</div>
+    <div class="flex items-center text-blue-600 font-semibold" v-if="bet.get('betSide') == '0'">Back</div>
+    <div class="flex items-center">{{ decodeOdds(bet.get("odds")) }}</div>
     <div class="flex items-center">{{ convertCurrency(bet.get("amount")) }} ETH</div>
-    <div class="flex items-center" v-if="bet.get('betType') == '0'">{{ convertCurrency(bet.get("amount")) }} ETH</div>
-    <div class="flex items-center" v-if="bet.get('betType') == '1'">
-      {{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(convertOdds(bet.get("odds"))).minus(1)).toNumber() }}
+    <div class="flex items-center" v-if="bet.get('betSide') == '0'">{{ convertCurrency(bet.get("amount")) }} ETH</div>
+    <div class="flex items-center" v-if="bet.get('betSide') == '1'">
+      {{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(decodeOdds(bet.get("odds"))).minus(1)).toNumber() }}
       ETH
     </div>
     <div class="flex items-center" v-if="bet.get('won') == true">{{ convertCurrency(bet.get("amount")) }} ETH</div>
-    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betType') == '0'">- {{ convertCurrency(bet.get("amount")) }} ETH</div>
-    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betType') == '1'">
-      -{{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(convertOdds(bet.get("odds"))).minus(1)).toNumber() }}
+    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betSide') == '0'">- {{ convertCurrency(bet.get("amount")) }} ETH</div>
+    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betSide') == '1'">
+      -{{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(decodeOdds(bet.get("odds"))).minus(1)).toNumber() }}
       ETH
     </div>
     <div class="flex items-center text-green-600 font-semibold" v-if="bet.get('won') == true">Won</div>
@@ -46,9 +46,9 @@ export default defineComponent({
   },
   setup() {
     const { convertCurrency } = useCurrency();
-    const { convertOdds } = useOdds();
+    const { decodeOdds } = useOdds();
 
-    return { convertOdds, convertCurrency, BigNumber };
+    return { decodeOdds, convertCurrency, BigNumber };
   },
 });
 </script>

@@ -102,17 +102,20 @@ export default defineComponent({
     /**
      * Create query for events, fetch it and subscribe to it
      */
-    const queryParms: EventQueryParms = Object.assign(props.queryParms, {
-      sort: {
-        key: "start",
-        direction: "ASC",
+    const queryParms: EventQueryParms = Object.assign(
+      {
+        sort: {
+          key: "start",
+          direction: "ASC",
+        },
+        filter: {
+          onlyFutureEvents: true,
+        },
+        limit: pageSize.value,
+        inlcude: ["home", "away", "league.country"],
       },
-      filter: {
-        onlyFutureEvents: true,
-      },
-      limit: pageSize.value,
-      inlcude: ["home", "away", "league.country"],
-    });
+      props.queryParms
+    );
     const query = getEventQuery(queryParms);
     query.find().then((data: any) => {
       events.value = data as EventModel[];
