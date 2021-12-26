@@ -5,11 +5,12 @@
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">My NFTs</h1>
           <div v-for="nft in nfts" class="flex flex-col items-center justify-center w-full cursor-pointer group">
             <NftImage :nft="nft" @callback="toogleWithdraw"></NftImage>
-            <button @click="listOnMarketplace(nft)"
+            <button @click="listOnMarketplace(nft, price)"
                     type="button"
                     class="w-full text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none">
                     <span>List on Marketplace</span>
             </button>
+            <input v-model="price" placeholder="Price" />
           </div>
       </div>
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6">
@@ -19,7 +20,7 @@
             <button @click="buyNFT(nft)"
                     type="button"
                     class="w-full text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none">
-                    <span>Buy this NFT</span>
+                   <span> {{getBuyText(nft)}} </span>
             </button>
            </div> 
       </div>
@@ -50,13 +51,15 @@ export default defineComponent({
     const { toogleWithdraw } = useWithdraw();
     console.log('In Marketplace. NFT count = ' + nfts.value.length);
 
-    const listOnMarketplace = async (nft) => {
+    const listOnMarketplace = async (nft, price) => {
       console.log("ListOnMarketplace");
       console.log(nft);
-      console.log('token addr = ' + nft.attributes.token_address)
+      console.log('token addr = ' + nft.attributes.token_address);
+      console.log('entered price = ' + price);
+
 
       // Need a text field to set price
-      const price = "0.001";
+      //const price = "0.001";
       const contract = nft.attributes.token_address;
       const tokenId = nft.attributes.token_id;
       
@@ -64,7 +67,15 @@ export default defineComponent({
       console.log('approval tx = ' + approval);
       
       const offering = await placeOffering(contract,tokenId, price);
-      console.log(offering)
+      console.log(offering);
+    }
+
+    const getBuyText = (nft) => {
+      const ethPrice = web3.utils.fromWei(nft.attributes.price);
+      console.log('getBuyText');
+      console.log(nft);
+      console.log(ethPrice);
+      return 'Buy this NFT at '+ ethPrice + ' MATIC';
     }
 
     const approveMarketPlace = async (hostContract, tokenId) => {
@@ -99,7 +110,6 @@ export default defineComponent({
                           offerer: moralisUser.value.get("ethAddress"),
                           tokenId: _tokenId,
                           price: _price};
-          const web3 = await Moralis.Web3.enable();
           console.log(params);
           console.log('Calling cloud function placeOffering');
           const result = await Moralis.Cloud.run("placeOffering", params);
@@ -150,7 +160,8 @@ export default defineComponent({
       placeOffering,
       listedNfts,
       buyNFT,
-      closeOffering
+      closeOffering,
+      getBuyText
     };
   },
   components: { RefreshIcon, NftImage, ListedNftImage },
