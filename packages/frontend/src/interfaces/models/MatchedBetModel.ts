@@ -24,8 +24,8 @@ export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attrib
     transaction_index: number;
     log_index: number;
     confirmed: boolean;
-    polygonMintStatus?: NFTMintStatus;
-    avaxMintStatus?: NFTMintStatus;
+    mintStatus?: NFTMintStatus;
+    tokenId?: string;
   };
   event?: EventModel;
 }

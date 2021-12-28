@@ -40,14 +40,14 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
         polygonContract
       );
       const gas = await contract.methods
-        .requestResult(eventItem.get("apiId"))
+        .requestResult(String(eventItem.get("apiId")))
         .estimateGas({ from: account });
       const result = await contract.methods
-        .requestResult(eventItem.get("apiId"))
+        .requestResult(String(eventItem.get("apiId")))
         .send({
           from: account,
-          gasPrice: gasPrice * 1.2,
-          gas: gas * 2,
+          gasPrice: Math.round(gasPrice * 1.2),
+          gas: Math.round(gas * 2),
         });
       eventItem.set("isCompleted", true);
       await eventItem.save();
@@ -58,7 +58,9 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
     }
   }
   log.info(
-    "After Match Events found: " + events.length + " updated:" + updated
+    "After Match Events found: " + events.length + " updated: " + updated
   );
-  message("After Match Events found: " + events.length + " updated:" + updated);
+  message(
+    "After Match Events found: " + events.length + " updated: " + updated
+  );
 });

@@ -50,23 +50,25 @@ const resolveMetadataFromNft = async (nft) => {
 };
 
 /**
- * Parse event api id from nft name
+ * Parse event api id from nft metadata
  *
  * @param {*} string
  * @returns
  */
-const parseEventApiIdFromNFTName = (string) => {
-  return string.match(/(?<=Event\s+).*?(?=\s+Bet)/gs)[0];
+const parseEventApiIdFromMetadata = (metadata) => {
+  return metadata.attributes.filter(
+    (attribute) => attribute.trait_type === "Event Id"
+  )[0].value;
 };
 
 /**
- * Parse bet id from nft name
+ * Parse token id from nft metadata
  *
  * @param {*} string
  * @returns
  */
-const parseBetIdFromNFTName = (string) => {
-  return string.match(/(?<=Bet).*$/gs)[0].trim();
+const parseTokenIdFromMetadata = (metadata) => {
+  return metadata.name.match(/(?<=#).*$/gs)[0].trim();
 };
 
 /**

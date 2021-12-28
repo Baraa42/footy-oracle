@@ -29,6 +29,7 @@
         :type="data.get('betSide') == 0 ? types.BACK : types.LAY"
       />
     </div>
+
     <div class="flex flex-row w-full space-x-3" v-if="data.get('confirmed')">
       <button
         v-if="data.get('mintStatus') == NftMintStatus.COMPLETED"
@@ -37,7 +38,8 @@
       >
         Show NFT
       </button>
-      <WaitingButton v-else-if="data.get('mintStatus') == NftMintStatus.PENDING || data.get('isMinted')" text="Waiting for nft confirmation" />
+      <WaitingButton v-else-if="data.get('mintStatus') == NftMintStatus.PENDING || data.get('isMinted')" text="Waiting for confirmation" />
+      <WaitingButton v-else-if="customMessage.show" :text="customMessage.message" />
       <button
         v-else
         @click="initMinting(data)"
@@ -45,9 +47,6 @@
       >
         Mint
       </button>
-    </div>
-    <div v-else>
-      <WaitingButton text="Waiting for confirmation" />
     </div>
 
     <div class="relative">
@@ -63,7 +62,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, ref } from "vue";
+import { defineComponent, reactive, ref } from "vue";
 import OddsInput from "../../../../inputs/OddsInput.vue";
 import CurrencyInput from "../../../../inputs/CurrencyInput.vue";
 import { useBetslip } from "../../../../../modules/moralis/betslip";
@@ -89,15 +88,20 @@ export default defineComponent({
     const { NftMintStatus, mint } = useNFTs();
     const { showError, showSuccess } = useAlert();
 
+    const customMessage = reactive({
+      show: false,
+      message: "",
+    });
     const isMinting = ref(false);
 
     const initMinting = async (data: any) => {
       isMinting.value = true;
+      customMessage.message = "Generating NFT";
+      customMessage.show = true;
     };
 
     const mintIt = async (blob: Blob) => {
-      await mint(props.data, blob);
-      isMinting.value = false;
+      await mint(props.data, blob, customMessage);
     };
 
     const showNft = async (matchedBet: MatchedBetModel) => {
@@ -110,7 +114,7 @@ export default defineComponent({
 
     return {
       NftMintStatus,
-      isMinting,
+      customMessage,
       showNft,
       mint,
       decodeOdds,
@@ -120,6 +124,7 @@ export default defineComponent({
       BigNumber,
       initMinting,
       mintIt,
+      isMinting,
     };
   },
   components: { OddsInput, CurrencyInput, WaitingButton, Nft },

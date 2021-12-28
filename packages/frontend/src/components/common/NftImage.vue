@@ -1,5 +1,5 @@
 <template>
-  <img v-if="nft.parsed_metadata" @click="click()" :src="nft.parsed_metadata.image" class="rounded opacity-75 group-hover:opacity-100 transition w-full" />
+  <img v-if="nft.parsed_metadata" @click="click()" :src="nft.parsed_metadata.image" class="rounded transition w-full" />
 </template>
 
 <script lang="ts">

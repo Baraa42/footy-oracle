@@ -14,6 +14,7 @@ import { NFTMintStatus } from "../../interfaces/enums/NFTMintStatus";
 import { ref, Ref } from "vue";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import { useDownload } from "../download";
+import { useTimezone } from "../settings/timezone";
 
 const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
@@ -82,29 +83,35 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
 
 /**
  * Mint nft from matched bet
+ * TODO can be more then one matched bet, becuase of partial matches
  *
  * @param object
  * @param base64
  * @returns Promise
  */
-const mint = async (matchedBet: MatchedBetModel, blob: Blob): Promise<void> => {
+const mint = async (matchedBet: MatchedBetModel, blob: Blob, customMessage: any): Promise<void> => {
   const { moralisUser } = useMoralis();
   const { blobToB64 } = useDownload();
+  const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
   if (moralisUser.value) {
     const config = await Moralis.Config.get({ useMasterKey: false });
     const polygonContract = config.get("polygon_contract");
 
-    const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
-    const fileName = matchedBet.get("eventId") + "-" + matchedBet.get("betId");
+    const tokenId = getTokenId(matchedBet, moralisUser.value.get("ethAddress"));
     const base64 = (await blobToB64(blob)) as string;
-    const image = await saveBase64ImageToIPFS(fileName, base64); // save image to ipfs
-    const metadata = generateMetadata(matchedBet, image.ipfs()); // generate metadata with image
+    const image = await saveBase64ImageToIPFS(matchedBet.id, base64); // save image to ipfs
+    const metadata = generateMetadata(matchedBet, tokenId, image.ipfs()); // generate metadata with image
 
     if (metadata) {
-      const tokenUri = await saveJsonToIPFS(fileName, metadata); // save metadata to ipfs
+      const tokenUri = await saveJsonToIPFS(matchedBet.id, metadata); // save metadata to ipfs
       const web3 = await Moralis.Web3.enable();
       const contract = new web3.eth.Contract(bettingAbi, polygonContract);
+
       console.log(tokenUri.ipfs());
+
+      setTimeout(() => {
+        customMessage.message = "Waiting for user confirmation";
+      }, 2000);
 
       contract.methods
         .transferBetToNFT(matchedBet.get("apiId"), matchedBet.get("betSide"), 0, matchedBet.get("selection"), matchedBet.get("odds"), tokenUri.ipfs())
@@ -115,13 +122,47 @@ const mint = async (matchedBet: MatchedBetModel, blob: Blob): Promise<void> => {
           async (err: any, result: any) => {
             if (!err) {
               matchedBet.set("isMinted", true);
+              matchedBet.set("tokenId", tokenId);
               await matchedBet.save();
+              customMessage.show = false;
               showSuccess("Bet successfully minted, wait for confirmation");
+            } else {
+              showError(err.message);
+              customMessage.show = false;
             }
           }
         );
     }
   }
+};
+
+/**
+ * Generates NFT Token Id from matched bet
+ *
+ * @param  {MatchedBetModel} matchedBet
+ * @returns string
+ */
+const getTokenId = (matchedBet: MatchedBetModel, address: string): string => {
+  const { web3 } = useMoralis();
+  const hashedTokenId = web3.value.utils.keccak256(
+    web3.value.eth.abi.encodeParameters(
+      ["string", "address", "uint8", "uint8", "uint8", "uint16"],
+      [
+        matchedBet.attributes.apiId,
+        address,
+        Number(matchedBet.attributes.betSide),
+        Number(matchedBet.attributes.betType),
+        Number(matchedBet.attributes.selection),
+        Number(matchedBet.attributes.odds),
+      ]
+    )
+  );
+
+  const converted = web3.value.utils.toBN(hashedTokenId);
+  const convertedAnd = web3.value.utils.toBN("0xfff");
+
+  const tokenId = converted.and(convertedAnd).toNumber();
+  return String(tokenId);
 };
 
 /**
@@ -131,64 +172,67 @@ const mint = async (matchedBet: MatchedBetModel, blob: Blob): Promise<void> => {
  * @param  {string} imageUrl
  * @returns NftMetadata
  */
-const generateMetadata = (matchedBet: MatchedBetModel, imageUrl: string): NftMetadata | undefined => {
+const generateMetadata = (matchedBet: MatchedBetModel, tokenId: string, imageUrl: string): NftMetadata | undefined => {
   if (matchedBet.event) {
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
-    const event = matchedBet.event.getName();
+    const { format, selectedTimezone } = useTimezone();
+    const eventName = matchedBet.event.getName();
 
-    let selection = "";
-    if (matchedBet.get("betSide") == 0) {
-      if (matchedBet.get("selection") == 0) {
-        selection = matchedBet.event.get("home").get("name") + " win";
-      } else if (matchedBet.get("selection") == 1) {
-        selection = matchedBet.event.get("away").get("name") + " win";
-      } else {
-        selection = "Draw win";
-      }
-    } else {
-      if (matchedBet.get("selection") == 0) {
-        selection = matchedBet.event.get("home").get("name") + " lose";
-      } else if (matchedBet.get("selection") == 1) {
-        selection = matchedBet.event.get("away").get("name") + " lose";
-      } else {
-        selection = "Draw lose";
-      }
+    let position = "";
+    if (matchedBet.get("selection") == 1) {
+      position = "Home";
+    } else if (matchedBet.get("selection") == 2) {
+      position = "Away";
+    } else if (matchedBet.get("selection") == 3) {
+      position = "Draw";
     }
 
     return {
-      name: "Event " + matchedBet.get("eventId") + " Bet " + matchedBet.get("betId"),
-      description: "Bet Details from Match " + event,
-      external_url: "https://openseacreatures.io/3",
+      name: eventName + " Bet #" + tokenId,
+      description: "Bet Details from Match " + eventName,
+      external_url: "",
       image: imageUrl,
       attributes: [
         {
           trait_type: "Match",
-          value: event,
-        },
-        {
-          trait_type: "Position",
-          value: selection,
-        },
-        {
-          trait_type: "Amount",
-          value: new BigNumber(convertCurrency(matchedBet.get("amount"))),
-        },
-        {
-          trait_type: "Odds",
-          value: new BigNumber(decodeOdds(matchedBet.get("odds"))),
-        },
-        {
-          trait_type: "Start",
-          value: matchedBet.event.get("start"),
+          value: eventName,
         },
         {
           trait_type: "Event Id",
           value: matchedBet.get("apiId"),
         },
         {
-          trait_type: "Bet Id",
-          value: matchedBet.get("betId"),
+          trait_type: "Start",
+          value: format(matchedBet.event.get("start"), "YYYY-MM-DD HH:mm") + " " + selectedTimezone.value.tzCode,
+        },
+        {
+          trait_type: "League",
+          value: matchedBet.event.attributes.league.attributes.name,
+        },
+        {
+          trait_type: "Season",
+          value: String(matchedBet.event.attributes.league.attributes.season),
+        },
+        {
+          trait_type: "Side",
+          value: matchedBet.get("betSide") == 0 ? "Back" : "Lay",
+        },
+        {
+          trait_type: "Bet Type",
+          value: "Match Winner",
+        },
+        {
+          trait_type: "Position",
+          value: position,
+        },
+        {
+          trait_type: "Odds",
+          value: new BigNumber(decodeOdds(matchedBet.get("odds"))),
+        },
+        {
+          trait_type: "Amount",
+          value: new BigNumber(convertCurrency(matchedBet.get("amount"))),
         },
       ],
     };
@@ -288,6 +332,7 @@ export const useNFTs = () => {
     NftMintStatus,
     placeholder,
     getNFTs,
+    getTokenId,
     mint,
     collectionName,
     getOpenseaLink,

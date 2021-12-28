@@ -133,18 +133,17 @@ Moralis.Cloud.afterSave("PolygonMatchedBets", async (request) => {
 Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
   const pendingNFT = request.object;
   const metadata = await resolveMetadataFromNft(pendingNFT);
-  if (metadata.name) {
-    const eventApiId = parseEventApiIdFromNFTName(metadata.name);
-    const betId = parseBetIdFromNFTName(metadata.name);
+  if (metadata) {
+    const eventApiId = parseEventApiIdFromMetadata(metadata);
 
     const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
     matcheBetQuery.equalTo("apiId", eventApiId);
-    matcheBetQuery.equalTo("betId", betId);
-    matcheBetQuery.equalTo("polygonMintStatus", undefined);
+    matcheBetQuery.equalTo("tokenId", pendingNFT.get("token_id"));
+    matcheBetQuery.equalTo("mintStatus", undefined);
     const matchedBet = await matcheBetQuery.first();
 
     if (matchedBet) {
-      matchedBet.set("polygonMintStatus", "pending");
+      matchedBet.set("mintStatus", "pending");
       await matchedBet.save();
     }
   }
@@ -157,21 +156,18 @@ Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
 Moralis.Cloud.afterSave("PolygonNFTOwners", async (request) => {
   const NFT = request.object;
   const metadata = await resolveMetadataFromNft(NFT);
-  if (metadata.name) {
-    const eventApiId = parseEventApiIdFromNFTName(metadata.name);
-    const betId = parseBetIdFromNFTName(metadata.name);
+  if (metadata) {
+    const eventApiId = parseEventApiIdFromMetadata(metadata);
+    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
 
-    const matcheBetQuery = new Moralis.Query(
-      Moralis.Object.extend(chainClass + "MatchedBets")
-    );
     matcheBetQuery.equalTo("apiId", eventApiId);
-    matcheBetQuery.equalTo("betId", betId);
-    matcheBetQuery.equalTo("polygonMintStatus", "pending");
+    matcheBetQuery.equalTo("tokenId", NFT.get("token_id"));
+    matcheBetQuery.equalTo("mintStatus", "pending");
     const matchedBet = await matcheBetQuery.first();
 
     if (matchedBet) {
       matchedBet.set("nft", NFT);
-      matchedBet.set("polygonMintStatus", "completed");
+      matchedBet.set("mintStatus", "completed");
       await matchedBet.save();
     }
   }
