@@ -72,6 +72,71 @@ const parseTokenIdFromMetadata = (metadata) => {
 };
 
 /**
+ * Before Save Trigger for matched and unmatched bets
+ *
+ * @param  {} bet
+ *
+ */
+const beforeSaveBet = async (bet) => {
+  const event = await getEventByApiId(bet.get("apiId"));
+  bet.set("event", event);
+  const user = await getUserByAddress(bet.get("from"));
+  bet.set("user", user);
+};
+
+/**
+ * After Save Trigger for matched and unmatched bets
+ *
+ * @param  {} bet
+ *
+ */
+const afterSaveBet = async (bet, relation) => {
+  // get event from api id and add relation
+  const event = await getEventByApiId(bet.get("apiId"));
+  const eventRelation = event.relation(relation);
+  eventRelation.add(bet);
+  await event.save();
+
+  // get user from address and add relation
+  const user = await getUserByAddress(bet.get("from"));
+  const userRelation = user.relation(relation);
+  userRelation.add(bet);
+  await user.save(null, { useMasterKey: true });
+
+  return event;
+};
+
+/**
+ * Get event by its api id
+ *
+ * @param  {} apiId
+ * @returns
+ */
+const getEventByApiId = async (apiId) => {
+  const eventQuery = new Moralis.Query(Event);
+  eventQuery.equalTo("apiId", Number(apiId));
+  const eventResult = await eventQuery.first();
+
+  if (!eventResult) throw "No valid event id";
+  return eventResult;
+};
+
+/**
+ * Get user by its address
+ *
+ * @param  {} address
+ * @returns
+ */
+const getUserByAddress = async (address) => {
+  const userQuery = new Moralis.Query(Moralis.User);
+  userQuery.equalTo("ethAddress", address);
+  const user = await userQuery.first({ useMasterKey: true });
+
+  if (!user) throw "No valid address";
+  return user;
+};
+
+/**
  * Helper for create new team
  *
  * @param  {} apiId

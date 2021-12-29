@@ -22,39 +22,20 @@ const unmatchedBetsSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefi
  */
 const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefined>> => {
   const { moralisUser } = useMoralis();
-  const { getEventByApiId } = useEvents();
 
   if (moralisUser.value) {
-    /**
-     * Get unmatched bets from user
-     */
-    const relation: Moralis.Relation = moralisUser.value.relation("polygonUnmatchedBets");
-    const unmatchedBetsQuery: Moralis.Query<any> = relation
-      .query()
-      .notEqualTo("isMatched", true)
-      .notEqualTo("isCanceld", true)
-      .select("amount", "betType", "betSide", "odds", "selection", "apiId", "confirmed");
+    const { createQuery } = useMoralisObject("PolygonUnmatchedBets");
+    const query: MoralisTypes.Query<UnmatchedBetModel> = await createQuery();
+    const unmatchedBetsQuery: Moralis.Query<any> = query
+      .equalTo("from", moralisUser.value.get("ethAddress"))
+      .include("event")
+      .select("amount", "betType", "betSide", "odds", "selection", "apiId", "confirmed", "isPartMatched", "event");
     unmatchedBets.value = (await unmatchedBetsQuery.find()) as Array<UnmatchedBetModel>;
-
-    /**
-     * Append event to bet
-     */
-    unmatchedBets.value.forEach(async (bet: UnmatchedBetModel) => {
-      const event = await getEventByApiId(Number(bet.attributes.apiId));
-      bet.event = event;
-    });
-
-    /**
-     * Create live subscription
-     */
-    const { Object: Unmatchedbet, createQuery } = useMoralisObject("PolygonUnmatchedBets");
-    const subscriptionQuery: MoralisTypes.Query<UnmatchedBetModel> = await createQuery();
-    subscriptionQuery.equalTo("from", moralisUser.value.get("ethAddress")).notEqualTo("isMatched", true).notEqualTo("isCanceld", true);
 
     if (unmatchedBetsSubscription.value) {
       unmatchedBetsSubscription.value.unsubscribe();
     }
-    unmatchedBetsSubscription.value = await subscriptionQuery.subscribe();
+    unmatchedBetsSubscription.value = await unmatchedBetsQuery.subscribe();
 
     /**
      * Subscription on create
@@ -62,8 +43,6 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
     unmatchedBetsSubscription.value.on("create", async (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
       if (unmatchedBets.value) {
         const bet = object as UnmatchedBetModel;
-        const event = await getEventByApiId(Number(bet.attributes.apiId));
-        bet.event = event;
         unmatchedBets.value.push(bet);
         console.log("Subscription: UnmatchedBet created " + bet.id);
       }
@@ -76,21 +55,19 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
       if (unmatchedBets.value) {
         const bet = object as UnmatchedBetModel;
         const index = unmatchedBets.value.findIndex((item: UnmatchedBetModel) => item.id == bet.id);
-        const event = await getEventByApiId(Number(bet.attributes.apiId));
-        bet.event = event;
         unmatchedBets.value[index] = bet;
         console.log("Subscription: UnmatchedBet updated " + object.id);
       }
     });
 
     /**
-     * Subscription on leave
+     * Subscription on delete
      */
-    unmatchedBetsSubscription.value.on("leave", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
+    unmatchedBetsSubscription.value.on("delete", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
       if (unmatchedBets.value) {
-        const index = unmatchedBets.value.findIndex((item: any) => item.id == object.id);
+        const index = unmatchedBets.value.findIndex((item: UnmatchedBetModel) => item.id == object.id);
         unmatchedBets.value.splice(index, 1);
-        console.log("Subscription: UnmatchedBet leaved " + object.id);
+        console.log("Subscription: UnmatchedBet deleted " + object.id);
       }
     });
   }
@@ -108,27 +85,21 @@ const matchedBetsSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefine
  */
 const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
   const { moralisUser } = useMoralis();
-  const { getEventByApiId } = useEvents();
   const { resolveMetadataFromNft } = useNFTs();
 
   if (moralisUser.value) {
-    /**
-     * Get matched bets from user
-     */
-    const relation: Moralis.Relation = moralisUser.value.relation("polygonMatchedBets");
-    const matchedBetsQuery: MoralisTypes.Query<any> = relation
-      .query()
-      .equalTo("won", undefined)
-      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus");
-    matchedBets.value = await matchedBetsQuery.find();
+    const { createQuery } = useMoralisObject("PolygonMatchedBets");
+    const query: MoralisTypes.Query<any> = await createQuery();
+    const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
+      .equalTo("from", moralisUser.value.get("ethAddress"))
+      .include("event")
+      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus", "event");
+    matchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
 
     /**
      * Append event to bet
      */
     matchedBets.value.forEach(async (bet: MatchedBetModel) => {
-      const event = await getEventByApiId(Number(bet.get("apiId")));
-      bet.event = event;
-
       if (bet.attributes.nft) {
         const metadata = await resolveMetadataFromNft(bet.attributes.nft.attributes.token_uri);
         if (metadata) {
@@ -137,17 +108,10 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
       }
     });
 
-    /**
-     * Create live subscription
-     */
-    const { Object: MatchedBets, createQuery } = useMoralisObject("PolygonMatchedBet");
-    const subscriptionQuery: MoralisTypes.Query<MatchedBetModel> = await createQuery();
-    subscriptionQuery.equalTo("from", moralisUser.value.get("ethAddress"));
-
     if (matchedBetsSubscription.value) {
       matchedBetsSubscription.value.unsubscribe();
     }
-    matchedBetsSubscription.value = await subscriptionQuery.subscribe();
+    matchedBetsSubscription.value = await matchedBetsQuery.subscribe();
 
     /**
      * Subscription on create
@@ -155,8 +119,6 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
     matchedBetsSubscription.value.on("create", async (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
       if (matchedBets.value) {
         const bet = object as MatchedBetModel;
-        const event = await getEventByApiId(Number(bet.attributes.apiId));
-        bet.event = event;
         if (bet.attributes.nft) {
           const metadata = await resolveMetadataFromNft(bet.attributes.nft.attributes.token_uri);
           if (metadata) {
@@ -175,8 +137,6 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
       if (matchedBets.value) {
         const bet = object as MatchedBetModel;
         const index = matchedBets.value.findIndex((item: MatchedBetModel) => item.id == object.id);
-        const event = await getEventByApiId(Number(object.get("apiId")));
-        bet.event = event;
         if (bet.attributes.nft) {
           const metadata = await resolveMetadataFromNft(bet.attributes.nft.attributes.token_uri);
           if (metadata) {

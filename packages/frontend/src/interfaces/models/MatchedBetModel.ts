@@ -4,6 +4,7 @@ import { NFTMintStatus } from "../enums/NFTMintStatus";
 import { SelectionEnum } from "../enums/SelectionEnum";
 import { EventModel } from "./EventModel";
 import { NftOwnerModel } from "./NftOwnerModel";
+import { UserModel } from "./UserModel";
 
 export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
   attributes: {
@@ -26,6 +27,7 @@ export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attrib
     confirmed: boolean;
     mintStatus?: NFTMintStatus;
     tokenId?: string;
+    event?: EventModel;
+    user?: UserModel;
   };
-  event?: EventModel;
 }

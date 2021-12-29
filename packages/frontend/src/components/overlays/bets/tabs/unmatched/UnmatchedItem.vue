@@ -1,9 +1,13 @@
 <template>
   <div class="m-2 px-3 py-3 bg-gray-100 border border-gray-200 flex flex-col space-y-3 rounded-sm">
-    <div class="flex flex-col space-y-1 text-gray-800" v-if="data.event">
-      <span class="text-sm font-bold">{{ data.event.getName() }}</span>
-      <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.HOME">{{ data.event.get("home").get("name") }}</span>
-      <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.AWAY">{{ data.event.get("away").get("name") }}</span>
+    <div class="flex flex-col space-y-1 text-gray-800" v-if="data.attributes.event">
+      <span class="text-sm font-bold">{{ data.attributes.event.getName() }}</span>
+      <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.HOME">{{
+        data.attributes.event.get("home").get("name")
+      }}</span>
+      <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.AWAY">{{
+        data.attributes.event.get("away").get("name")
+      }}</span>
       <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.DRAW">Draw</span>
     </div>
     <div class="flex flex-row pt-1 w-full space-x-3 justify-between">

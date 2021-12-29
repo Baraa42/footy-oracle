@@ -1,40 +1,45 @@
 /**
- * After save trigger for unmatched bet
- *
- * Create realation from user to unmatched bet
- * and event to unmatched bet
+ * Adds pointer from event and user to unmatched bet
+ */
+Moralis.Cloud.beforeSave("PolygonUnmatchedBets", async (request) => {
+  await beforeSaveBet(request.object);
+});
+
+/**
+ * Adds pointer from event and user to unmatched bet
+ */
+Moralis.Cloud.beforeSave("PolygonMatchedBets", async (request) => {
+  await beforeSaveBet(request.object);
+});
+
+/**
+ * Create realation from user and event to unmatched bet
  */
 Moralis.Cloud.afterSave("PolygonUnmatchedBets", async (request) => {
-  const unmatchedBet = request.object;
+  if (
+    request.object.get("isPartMatched") == undefined &&
+    request.object.get("confirmed") == undefined
+  ) {
+    await afterSaveBet(request.object, "polygonUnmatchedBets");
+  }
+});
 
-  /**
-   * Only real unmatched bets
-   */
-  if (unmatchedBet.get("isPartMatched") == undefined) {
-    /**
-     * Create relation to event
-     */
-    const eventQuery = new Moralis.Query(Event);
-    eventQuery.equalTo("apiId", Number(unmatchedBet.get("apiId")));
-    const eventResult = await eventQuery.first();
-    if (eventResult) {
-      const relation = eventResult.relation("polygonUnmatchedBets");
-      relation.add(unmatchedBet);
-      await eventResult.save();
+/**
+ * Create realation from user and event to matched bet
+ * Also calulates volume
+ */
+Moralis.Cloud.afterSave("PolygonMatchedBets", async (request) => {
+  if (request.object.get("confirmed") == undefined) {
+    const event = await afterSaveBet(request.object, "polygonMatchedBets");
+
+    // sum volume for event
+    let volume = 0;
+    if (event.get("polygonVolume")) {
+      volume = event.get("polygonVolume");
     }
-
-    /**
-     * Create relation to user
-     */
-    const userQuery = new Moralis.Query(Moralis.User);
-    userQuery.equalTo("ethAddress", unmatchedBet.get("from"));
-    const user = await userQuery.first({ useMasterKey: true });
-
-    if (user) {
-      const userRelation = user.relation("polygonUnmatchedBets");
-      userRelation.add(unmatchedBet);
-      await user.save(null, { useMasterKey: true });
-    }
+    volume = Number(volume) + Number(request.object.get("amount"));
+    event.set("polygonVolume", volume);
+    await event.save();
   }
 });
 
@@ -76,53 +81,6 @@ Moralis.Cloud.afterSave("PolygonUnmatchedBetsUpdated", async (request) => {
     bet.set("amount", unmatchedBet.get("amount"));
     bet.set("isPartMatched", true);
     await bet.save();
-  }
-});
-
-/**
- * After save trigger for matched bet
- *
- * Mark opposite bet as matched or part matched
- * and create relations to user and event
- */
-Moralis.Cloud.afterSave("PolygonMatchedBets", async (request) => {
-  const matchedBet = request.object;
-
-  /**
-   * Create relation to event
-   */
-  const eventQuery = new Moralis.Query(Event);
-  eventQuery.equalTo("apiId", Number(matchedBet.get("apiId")));
-  const eventResult = await eventQuery.first();
-
-  if (eventResult) {
-    const newReleation = eventResult.relation("polygonMatchedBets");
-    newReleation.add(matchedBet);
-    await eventResult.save();
-
-    /**
-     * Sum volume for event
-     */
-    let volume = 0;
-    if (eventResult.get("polygonVolume")) {
-      volume = eventResult.get("polygonVolume");
-    }
-    volume = Number(volume) + Number(matchedBet.get("amount"));
-    eventResult.set("polygonVolume", volume);
-    await eventResult.save();
-  }
-
-  /**
-   * Create relation to user
-   */
-  const userQuery = new Moralis.Query(Moralis.User);
-  userQuery.equalTo("ethAddress", matchedBet.get("from"));
-  const user = await userQuery.first({ useMasterKey: true });
-
-  if (user) {
-    const userRelation = user.relation("polygonMatchedBets");
-    userRelation.add(matchedBet);
-    await user.save(null, { useMasterKey: true });
   }
 });
 
