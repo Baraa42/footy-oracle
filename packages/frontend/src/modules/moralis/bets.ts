@@ -187,7 +187,6 @@ const getHistoryBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefine
 
 const getMatchedBetFromNft = async (nft: NftOwnerModel): Promise<MatchedBetModel | undefined> => {
   const { moralisUser } = useMoralis();
-  const { getEventByApiId } = useEvents();
   if (moralisUser.value) {
     /**
      * Get matched bets from nft
@@ -196,19 +195,11 @@ const getMatchedBetFromNft = async (nft: NftOwnerModel): Promise<MatchedBetModel
     const matchedBetsQuery: MoralisTypes.Query<any> = relation
       .query()
       .equalTo("nft", nft)
-      .include("nft")
-      .select("amount", "betType", "odds", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus");
+      .include("nft", "bet")
+      .select("amount", "bet", "betType", "odds", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus");
 
     const matchedBet: MatchedBetModel | undefined = await matchedBetsQuery.first();
-
-    /**
-     * Append event to matched bet
-     */
-    if (matchedBet) {
-      const event = await getEventByApiId(Number(matchedBet.get("apiId")));
-      matchedBet.event = event;
-      return matchedBet;
-    }
+    return matchedBet;
   }
 };
 

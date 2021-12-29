@@ -1,5 +1,5 @@
 <template>
-  <div v-if="nft && nft.event" class="w-full h-full">
+  <div v-if="nft && nft.attributes.event" class="w-full h-full">
     <div
       id="nonPrintable"
       ref="printMe"
@@ -17,7 +17,7 @@
       <!-- Forward Layers -->
       <div class="relative flex flex-col z-50 w-full">
         <Logo class="flex h-10 w-max z-50" />
-        <span class="absolute -right-6 top-6 transform rotate-90 text-xs text-white">{{ format(nft.event.attributes.start, "YYYY-MM-DD") }}</span>
+        <span class="absolute -right-6 top-6 transform rotate-90 text-xs text-white">{{ format(nft.attributes.event.attributes.start, "YYYY-MM-DD") }}</span>
 
         <div class="w-full">
           <div class="flex flex-row relative h-32 mt-6 mb-6">
@@ -36,11 +36,11 @@
           </div>
 
           <div class="flex text-white text-2xl font-bold">
-            <span v-if="nft.attributes.selection == selections.HOME">{{ nft.event.attributes.home.attributes.name }}</span>
-            <span v-if="nft.attributes.selection == selections.AWAY">{{ nft.event.attributes.away.attributes.name }}</span>
+            <span v-if="nft.attributes.selection == selections.HOME">{{ nft.attributes.event.attributes.home.attributes.name }}</span>
+            <span v-if="nft.attributes.selection == selections.AWAY">{{ nft.attributes.event.attributes.away.attributes.name }}</span>
             <span v-if="nft.attributes.selection == selections.DRAW">Draw</span>
           </div>
-          <span class="flex mt-1 text-white">{{ nft.event.getName() }}</span>
+          <span class="flex mt-1 text-white">{{ nft.attributes.event.getName() }}</span>
           <span class="flex text-[8px] mt-4" :style="{ color: palette[50] }">231/31232</span>
           <hr class="w-full border-2 mt-2 opacity-50" :style="{ 'background-color': palette[200], 'border-color': palette[200] }" />
 

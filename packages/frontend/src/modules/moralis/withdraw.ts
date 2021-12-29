@@ -41,11 +41,11 @@ const withdraw = async (nft: NftOwnerModel): Promise<void> => {
 
     console.log(matchedBet);
 
-    if (matchedBet && matchedBet.event && matchedBet.event.attributes.isCompleted) {
+    if (matchedBet && matchedBet.attributes.event && matchedBet.attributes.event.attributes.isCompleted) {
       const web3 = await Moralis.Web3.enable();
       const contract = new web3.eth.Contract(bettingAbi, polygonContract);
 
-      contract.methods.withdrawWithNFT(String(matchedBet.event.attributes.apiId), nft.attributes.token_id).send(
+      contract.methods.withdrawWithNFT(String(matchedBet.attributes.event.attributes.apiId), nft.attributes.token_id).send(
         {
           from: moralisUser.value.get("ethAddress"),
         },

@@ -173,11 +173,11 @@ const getTokenId = (matchedBet: MatchedBetModel, address: string): string => {
  * @returns NftMetadata
  */
 const generateMetadata = (matchedBet: MatchedBetModel, tokenId: string, imageUrl: string): NftMetadata | undefined => {
-  if (matchedBet.event) {
+  if (matchedBet.attributes.event) {
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
     const { format, selectedTimezone } = useTimezone();
-    const eventName = matchedBet.event.getName();
+    const eventName = matchedBet.attributes.event.getName();
 
     let position = "";
     if (matchedBet.get("selection") == 1) {
@@ -204,15 +204,15 @@ const generateMetadata = (matchedBet: MatchedBetModel, tokenId: string, imageUrl
         },
         {
           trait_type: "Start",
-          value: format(matchedBet.event.get("start"), "YYYY-MM-DD HH:mm") + " " + selectedTimezone.value.tzCode,
+          value: format(matchedBet.attributes.event.get("start"), "YYYY-MM-DD HH:mm") + " " + selectedTimezone.value.tzCode,
         },
         {
           trait_type: "League",
-          value: matchedBet.event.attributes.league.attributes.name,
+          value: matchedBet.attributes.event.attributes.league.attributes.name,
         },
         {
           trait_type: "Season",
-          value: String(matchedBet.event.attributes.league.attributes.season),
+          value: String(matchedBet.attributes.event.attributes.league.attributes.season),
         },
         {
           trait_type: "Side",
