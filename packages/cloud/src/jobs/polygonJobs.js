@@ -64,3 +64,24 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
     "After Match Events found: " + events.length + " updated: " + updated
   );
 });
+
+Moralis.Cloud.job("polygonReolveMetadata", async (request) => {
+  const { params, headers, log, message } = request;
+
+  const query = new Moralis.Query(PolygonNFTOwners);
+  query.descending("block_number");
+  const nfts = await query.find();
+
+  let updated = 0;
+  for await (nft of nfts) {
+    try {
+      const metadata = await resolveMetadataFromNft(nft);
+      nft.set("metadata", metadata);
+      await nft.save(null, { useMasterKey: true });
+    } catch (e) {
+      message("Error occurred!");
+      log.error(e.toString());
+    }
+  }
+  message("Polygon reolved metadata: " + updated);
+});

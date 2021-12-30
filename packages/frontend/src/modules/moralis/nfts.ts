@@ -11,10 +11,11 @@ import { BigNumber } from "bignumber.js";
 import { useMoralisObject } from "./moralisObject";
 import { useOdds } from "../settings/odds";
 import { NFTMintStatus } from "../../interfaces/enums/NFTMintStatus";
-import { ref, Ref } from "vue";
+import { ref, Ref, watch } from "vue";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import { useDownload } from "../download";
 import { useTimezone } from "../settings/timezone";
+import { useSubscription } from "./subscription";
 
 const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
@@ -22,7 +23,7 @@ const placeholder = "https://via.placeholder.com/600x600.png?text=Image%20not%20
 const NftMintStatus = NFTMintStatus;
 
 const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
-const nftSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
+
 const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c097363c'
 
 var delistedOfferingIds: Array<string> = [];
@@ -36,10 +37,8 @@ var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
 const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
   const { moralisUser } = useMoralis();
   if (moralisUser.value) {
-    /**
-     * Get nfts from user
-     */
-    const { Object: PolygonNFTOwners, createQuery } = useMoralisObject("PolygonNFTOwners");
+    // Get nfts from user
+    const { createQuery } = useMoralisObject("PolygonNFTOwners");
     const nftQuery: MoralisTypes.Query<NftOwnerModel> = createQuery();
     //nftQuery.equalTo("name", collectionName);
     nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
@@ -47,34 +46,10 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
     console.log(nfts.value);
 
-    /**
-     * Resolve metadata from nft
-     */
-    nfts.value.forEach(async (nft: NftOwnerModel, index) => {
-      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.token_uri);
-      if (nft.parsed_metadata) {
-        //console.log('printing metadata');
-        //console.log(nft.parsed_metadata);
-      } else {
-        //console.log("if metadata is undefined, don't bother with this nft. index = " + index);
-        nfts?.value?.splice(index, 1);
-        //console.log('number of nfts are removing for metadata problem = ' + nfts.value.length);
-      }
-    });
-
-    /**
-     * Create live subscription
-     */
-    if (nftSubscription.value) {
-      nftSubscription.value.unsubscribe();
-    }
-    nftSubscription.value = await nftQuery.subscribe();
-
-    nftSubscription.value.on("create", async (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
-      const nft = object as NftOwnerModel;
-      //console.log("Subscription: NFT created " + nft.attributes.token_id);
-      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.token_uri);
-      nfts.value?.push(nft);
+    // Create live subscriptions
+    const { subscribe, subscribeToCreate } = useSubscription();
+    subscribe(nftQuery).then((subscription: MoralisTypes.LiveQuerySubscription) => {
+      subscribeToCreate(subscription, nfts.value);
     });
   }
 

@@ -35,12 +35,30 @@ const sendLink = async (receiver) => {
  * @returns
  */
 const resolveMetadataFromNft = async (nft) => {
+  const urlReg = /^(https):\/\/[^ "]+$/;
+  if (
+    !nft.get("token_uri") ||
+    nft.get("token_uri") == "" ||
+    !urlReg.test(nft.get("token_uri"))
+  ) {
+    return {};
+  }
+
+  const timeout = new Promise(function (resolve, reject) {
+    setTimeout(function () {
+      reject("Time out! Your promise couldnt be fulfilled in 10 seconds :c");
+    }, 10000);
+  });
+
+  const request = Moralis.Cloud.httpRequest({
+    url: nft.get("token_uri"),
+    followRedirects: true,
+  });
+
   try {
-    const response = await Moralis.Cloud.httpRequest({
-      url: nft.get("token_uri"),
-    });
+    const response = await Promise.race([request, timeout]);
     if (response) {
-      return response.data;
+      return Object.assign({}, response.data);
     }
   } catch (e) {
     const logger = Moralis.Cloud.getLogger();
@@ -56,9 +74,13 @@ const resolveMetadataFromNft = async (nft) => {
  * @returns
  */
 const parseEventApiIdFromMetadata = (metadata) => {
-  return metadata.attributes.filter(
-    (attribute) => attribute.trait_type === "Event Id"
-  )[0].value;
+  try {
+    return metadata.attributes.filter(
+      (attribute) => attribute.trait_type === "Event Id"
+    )[0].value;
+  } catch (e) {
+    return undefined;
+  }
 };
 
 /**

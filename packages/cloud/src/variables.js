@@ -14,6 +14,7 @@ const League = Moralis.Object.extend("League");
 const Country = Moralis.Object.extend("Country");
 const Team = Moralis.Object.extend("Team");
 const Sport = Moralis.Object.extend("Sport");
+const PolygonNFTOwners = Moralis.Object.extend("PolygonNFTOwners");
 
 const PolygonMatchedBets = Moralis.Object.extend("PolygonMatchedBets");
 const PolygonUnmatchedBets = Moralis.Object.extend("PolygonUnmatchedBets");

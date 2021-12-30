@@ -26,7 +26,7 @@
       </div>
       <div class="flex lg:flex-row flex-col lg:space-x-3 lg:space-y-0 space-y-2 mt-6 lg:mt-0 w-full lg:w-auto lg:absolute lg:right-0">
         <div class="flex flex-row justify-between items-center lg:bg-gray-50 lg:pl-1">
-          <span class="lg:hidden font-semibold text-sm">{{ event.attributes.home }}</span>
+          <span class="lg:hidden font-semibold text-sm">{{ event.attributes.home.attributes.name }}</span>
           <div class="flex flex-row">
             <OddsButton
               :bet="firstUnmatchedBet(event, types.LAY, selections.HOME)"
@@ -58,7 +58,7 @@
           </div>
         </div>
         <div class="flex flex-row justify-between items-center">
-          <span class="lg:hidden font-semibold text-sm">{{ event.attributes.away }}</span>
+          <span class="lg:hidden font-semibold text-sm">{{ event.attributes.away.attributes.name }}</span>
           <div class="flex flex-row">
             <OddsButton
               :bet="firstUnmatchedBet(event, types.LAY, selections.AWAY)"

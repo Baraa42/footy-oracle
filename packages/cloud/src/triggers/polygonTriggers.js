@@ -108,23 +108,30 @@ Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
 });
 
 /**
+ * Resolves metadata to object before save
+ */
+Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
+  const metadata = await resolveMetadataFromNft(request.object);
+  request.object.set("metadata", metadata);
+});
+
+/**
  * Check nfts owner for the minting indicator
  * From pending to completed
  */
 Moralis.Cloud.afterSave("PolygonNFTOwners", async (request) => {
-  const NFT = request.object;
-  const metadata = await resolveMetadataFromNft(NFT);
-  if (metadata) {
-    const eventApiId = parseEventApiIdFromMetadata(metadata);
-    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
+  const nft = request.object;
+  if (nft.get("metadata") && nft.get("metadata") != {}) {
+    const eventApiId = parseEventApiIdFromMetadata(nft.get("metadata"));
 
+    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
     matcheBetQuery.equalTo("apiId", eventApiId);
-    matcheBetQuery.equalTo("tokenId", NFT.get("token_id"));
+    matcheBetQuery.equalTo("tokenId", nft.get("token_id"));
     matcheBetQuery.equalTo("mintStatus", "pending");
     const matchedBet = await matcheBetQuery.first();
 
     if (matchedBet) {
-      matchedBet.set("nft", NFT);
+      matchedBet.set("nft", nft);
       matchedBet.set("mintStatus", "completed");
       await matchedBet.save();
     }

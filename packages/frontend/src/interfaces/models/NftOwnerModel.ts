@@ -25,8 +25,8 @@ export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attribut
     synced_at: Date;
     name: string;
     symbol: string;
+    metadata?: NftMetadata;
   };
-  parsed_metadata?: NftMetadata;
 }
 
 export interface NftOwnerPendingModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
@@ -40,28 +40,26 @@ export interface NftOwnerPendingModel extends MoralisTypes.Object<MoralisTypes.A
     name: string;
     symbol: string;
   };
-  parsed_metadata?: NftMetadata;
 }
-
 
 export interface ListedNftModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
   attributes: {
-    createdAt: string,
-    updatedAt: string,
-    transaction_hash: string,
-    log_index: number,
-    offeringId: string,
-    hostContract: string,
-    offerer: string,
-    tokenId: string,
-    price: string,
-    uri: string,
-    address: string,
-    block_hash: string,
-    block_number: string,
-    transaction_index: number,
-    block_timestamp: string,
-    confirmed: boolean
+    createdAt: string;
+    updatedAt: string;
+    transaction_hash: string;
+    log_index: number;
+    offeringId: string;
+    hostContract: string;
+    offerer: string;
+    tokenId: string;
+    price: string;
+    uri: string;
+    address: string;
+    block_hash: string;
+    block_number: string;
+    transaction_index: number;
+    block_timestamp: string;
+    confirmed: boolean;
   };
   parsed_metadata?: NftMetadata;
 }
