@@ -44,7 +44,7 @@ import { useWithdraw } from "../modules/moralis/withdraw";
 
 export default defineComponent({
   async setup() {
-    let ethereum: any;
+    const ethereum = window.ethereum;
 
     const route = useRoute();
     const { Moralis, moralisUser } = useMoralis();
