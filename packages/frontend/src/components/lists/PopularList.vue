@@ -39,10 +39,12 @@ import { EventModel } from "../../interfaces/models/EventModel";
 import PulseEventListItem from "../transitions/pulse/PulseEventListItem.vue";
 import FadeTransition from "../transitions/FadeTransition.vue";
 import { EventQueryParms } from "../../interfaces/EventQueryParms";
+import { useSubscription } from "@/modules/moralis/subscription";
 
 export default defineComponent({
   setup() {
     const { getEventQuery } = useEvents();
+    const { onUpdateFunction } = useSubscription();
     const events: Ref<EventModel[] | undefined> = ref();
     const eventSubsriptions: Ref<Array<any>> = ref([]);
     const page = ref(1);
@@ -62,13 +64,9 @@ export default defineComponent({
      * On subsription update
      */
     const onUpdate = async (object: any) => {
-      const event = object as EventModel;
-      if (events.value) {
-        const index = events.value?.findIndex((item: EventModel) => item.id == event.id);
-        if (index != undefined) {
-          events.value[index] = event;
-          event.loadUnmatchedBets();
-        }
+      const event = onUpdateFunction(object, events.value, "id");
+      if (event) {
+        event.loadUnmatchedBets();
       }
     };
 
@@ -106,10 +104,11 @@ export default defineComponent({
       triggerPulse.value = true;
 
       const query = getEventQuery(Object.assign(queryParms, { skip: pageSize.value * page.value }));
+      page.value++;
+
       query.find().then((data: any) => {
         if (data && data?.length != 0) {
           events.value?.push(...(data as EventModel[]));
-          page.value++;
           loadUnmatchedBets();
         } else {
           bottomHit.value = true;

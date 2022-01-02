@@ -20,9 +20,9 @@ const onCreateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, 
  * @param  {MoralisTypes.array<MoralisTypes.Attributes>} object
  * @param  {Array<any>} array
  * @param  {string} findByKey
- * @returns void
+ * @returns
  */
-const onUpdateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, array: Array<any> | undefined, findByKey: string): void => {
+const onUpdateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, array: Array<any> | undefined, findByKey: string) => {
   if (array) {
     let check = (object as any)[findByKey];
     if (!check) {
@@ -32,6 +32,7 @@ const onUpdateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, 
 
     if (index != -1) {
       array[index] = object;
+      return array[index];
     }
   }
 };
