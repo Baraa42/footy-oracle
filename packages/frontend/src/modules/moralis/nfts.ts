@@ -16,6 +16,7 @@ import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import { useDownload } from "../download";
 import { useTimezone } from "../settings/timezone";
 import { useSubscription } from "./subscription";
+import { QueryParms } from "@/interfaces/QueryParms";
 
 const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
@@ -54,6 +55,13 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
   }
 
   return nfts;
+};
+
+const getNFTQuery = (parms: QueryParms): MoralisTypes.Query => {
+  const { createQuery, handleQuery } = useMoralisObject("PolygonNFTOwners");
+  const query: MoralisTypes.Query = createQuery();
+  handleQuery(query, parms);
+  return query;
 };
 
 /**
@@ -307,6 +315,7 @@ export const useNFTs = () => {
     NftMintStatus,
     placeholder,
     getNFTs,
+    getNFTQuery,
     getTokenId,
     mint,
     collectionName,

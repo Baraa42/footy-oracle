@@ -1,6 +1,7 @@
 import { LeagueModel } from "./models/LeagueModel";
+import { QueryParms } from "./QueryParms";
 
-export interface EventQueryParms {
+export interface EventQueryParms extends QueryParms {
   select?: string[];
   filter?: {
     id?: string;

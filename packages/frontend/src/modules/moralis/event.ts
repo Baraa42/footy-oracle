@@ -6,16 +6,13 @@ import { Moralis as MoralisTypes } from "moralis/types";
 import { EventQueryParms } from "../../interfaces/EventQueryParms";
 import { EventClass } from "../../interfaces/classes/EventClass";
 
-const { Object: Event, createQuery } = useMoralisObject("Event");
+const { Object: Event, createQuery, handleQuery } = useMoralisObject("Event");
 Moralis.Object.registerSubclass("Event", EventClass);
 
 const getEventQuery = (parms: EventQueryParms): MoralisTypes.Query => {
   const query: MoralisTypes.Query = createQuery();
 
-  if (parms.select) {
-    query.select(parms.select);
-  }
-
+  handleQuery(query, parms);
   if (parms.filter?.onlyFutureEvents) {
     const { currentTimestamp } = useTimezone();
     query.greaterThan("start", currentTimestamp);
@@ -25,33 +22,10 @@ const getEventQuery = (parms: EventQueryParms): MoralisTypes.Query => {
     query.equalTo("apiId", parms.filter?.apiId);
   }
 
-  if (parms.filter?.id) {
-    query.equalTo("objectId", parms.filter?.id);
-  }
-
   if (parms.filter?.league) {
     query.equalTo("league", parms.filter?.league);
   }
 
-  if (parms.sort) {
-    if (parms.sort.direction == "ASC") {
-      query.ascending(parms.sort.key);
-    } else if (parms.sort.direction == "DESC") {
-      query.descending(parms.sort.key);
-    }
-  }
-
-  if (parms.skip) {
-    query.skip(parms.skip);
-  }
-
-  if (parms.limit) {
-    query.limit(parms.limit);
-  }
-
-  if (parms.inlcude) {
-    query.include(parms.inlcude);
-  }
   return query;
 };
 
