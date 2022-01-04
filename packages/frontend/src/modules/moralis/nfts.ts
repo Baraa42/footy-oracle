@@ -250,8 +250,8 @@ const resolveMetadataFromNft = async (uri: string): Promise<NftMetadata | undefi
 };
 
 const getNFTsDeListedOnMarketplace = async () => {
-  const queryAll = new Moralis.Query("ClosedOfferings");
-  queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
+  const queryAll = new Moralis.Query("MumbaiClosedOfferings");
+  //queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
 
   const deListedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
   deListedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
@@ -263,9 +263,9 @@ const getNFTsDeListedOnMarketplace = async () => {
 };
 
 const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> | undefined>> => {
-  const queryAll = new Moralis.Query("PlacedOfferings");
+  const queryAll = new Moralis.Query("MumbaiPlacedOfferings");
   //queryAll.equalTo("tokenId", "2");
-  queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
+  //queryAll.equalTo("hostContract", "0xec3cd0be96e26841ed17cf9e8585b00926488cd5");
 
   listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
   console.log("getNFTsListedOnMarketplace");

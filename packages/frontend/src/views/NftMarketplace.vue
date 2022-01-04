@@ -53,6 +53,13 @@ export default defineComponent({
     const nft_market_place_address = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
     const web3 = await Moralis.Web3.enable();
 
+    const cloudTest = await Moralis.Cloud.run("HelloWorld");
+    console.log(cloudTest); 
+
+    const frankAccount = "0x55C2fC277f27e915cB9C7cE40ed744d5CA04C660";
+    const nonceFrankAccount = (await web3.eth.getTransactionCount(frankAccount));
+    console.log('nonceFrankAccount = ' + nonceFrankAccount);
+
     const prices = ref([]);
 
     const { isAuthenticated, nfts, listedNfts } = await useMoralis();
@@ -70,11 +77,17 @@ export default defineComponent({
       const contract = nft.attributes.token_address;
       const tokenId = nft.attributes.token_id;
 
+
+
       const approval = await approveMarketPlace(contract, tokenId);
       console.log("approval tx = " + approval);
 
       const offering = await placeOffering(contract, tokenId, price);
       console.log(offering);
+      /*
+      const result = await Moralis.Cloud.run("HelloWorld");
+      console.log(result); 
+      */
     };
 
     const getBuyText = (nft: any) => {
