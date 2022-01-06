@@ -1,9 +1,10 @@
 <template>
-  <img v-if="nft.attributes.metadata" @click="click()" :src="nft.attributes.metadata.image" class="rounded transition w-full" />
+  <img @click="click()" :src="image" class="rounded transition w-full" />
 </template>
 
 <script lang="ts">
 import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
+import { computed } from "vue";
 export default {
   props: {
     nft: {
@@ -16,7 +17,16 @@ export default {
       emit("callback", props.nft);
     };
 
-    return { click };
+    const image = computed((): string | undefined => {
+      if (props.nft.attributes.metadata[0]) {
+        console.log(props.nft.attributes.metadata[0].image);
+        return props.nft.attributes.metadata[0].image;
+      } else {
+        return props.nft.attributes.metadata.image;
+      }
+    });
+
+    return { click, image };
   },
 };
 </script>

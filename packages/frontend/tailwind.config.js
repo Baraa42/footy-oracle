@@ -17,6 +17,7 @@ module.exports = {
       indigo: colors.indigo,
       yellow: colors.amber,
       green: colors.emerald,
+      polygon: "#8247E5",
     },
     extend: {
       screens: {

@@ -29,7 +29,7 @@ import NowNextList from "../components/lists/NowNextList.vue";
 import { useLeagues } from "../modules/moralis/leagues";
 import { useAlert } from "../modules/layout/alert";
 import { LeagueModel } from "../interfaces/models/LeagueModel";
-import { EventQueryParms } from "../interfaces/EventQueryParms";
+import { EventQueryParms } from "../interfaces/queries/EventQueryParms";
 
 export default defineComponent({
   setup() {

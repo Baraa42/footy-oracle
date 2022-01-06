@@ -161,7 +161,7 @@ import { useTeams } from "../../../modules/moralis/teams";
 import { useOdds } from "../../../modules/settings/odds";
 import Nft from "../Nft.vue";
 import NftBackgroundLayerEditor from "./NftBackgroundLayerEditor.vue";
-import { EventQueryParms } from "@/interfaces/EventQueryParms";
+import { EventQueryParms } from "@/interfaces/queries/EventQueryParms";
 
 export default defineComponent({
   async setup() {

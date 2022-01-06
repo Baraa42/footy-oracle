@@ -85,3 +85,32 @@ Moralis.Cloud.job("polygonReolveMetadata", async (request) => {
   }
   message("Polygon reolved metadata: " + updated);
 });
+
+Moralis.Cloud.job("polygonCreateBetRelationInNFTs", async (request) => {
+  const { params, headers, log, message } = request;
+
+  const query = new Moralis.Query(PolygonNFTOwners);
+  query.descending("block_number");
+  const nfts = await query.find();
+
+  let updated = 0;
+  for await (nft of nfts) {
+    const eventApiId = parseEventApiIdFromMetadata(nft.get("metadata"));
+    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
+    matcheBetQuery.equalTo("apiId", eventApiId);
+    matcheBetQuery.equalTo("tokenId", nft.get("token_id"));
+    const matchedBet = await matcheBetQuery.first();
+    if (matchedBet) {
+      nft.set("bet", matchedBet);
+      await nft.save(null, { useMasterKey: true });
+      updated++;
+    }
+
+    try {
+    } catch (e) {
+      message("Error occurred!");
+      log.error(e.toString());
+    }
+  }
+  message("Polygon nfts relations added: " + updated);
+});

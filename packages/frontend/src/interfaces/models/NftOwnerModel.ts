@@ -1,4 +1,5 @@
 import { Moralis as MoralisTypes } from "moralis/types";
+import { MatchedBetModel } from "./MatchedBetModel";
 
 export interface NftMetadataAttribute {
   [key: string]: string;
@@ -26,6 +27,8 @@ export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attribut
     name: string;
     symbol: string;
     metadata?: NftMetadata;
+    bet?: MatchedBetModel;
+    offer?: ListedNftModel;
   };
 }
 

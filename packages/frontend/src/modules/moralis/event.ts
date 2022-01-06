@@ -3,8 +3,8 @@ import { EventModel } from "../../interfaces/models/EventModel";
 import { useTimezone } from "../settings/timezone";
 import { useMoralisObject } from "./moralisObject";
 import { Moralis as MoralisTypes } from "moralis/types";
-import { EventQueryParms } from "../../interfaces/EventQueryParms";
 import { EventClass } from "../../interfaces/classes/EventClass";
+import { EventQueryParms } from "@/interfaces/queries/EventQueryParms";
 
 const { Object: Event, createQuery, handleQuery } = useMoralisObject("Event");
 Moralis.Object.registerSubclass("Event", EventClass);

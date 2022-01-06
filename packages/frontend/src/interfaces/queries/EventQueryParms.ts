@@ -1,5 +1,5 @@
-import { LeagueModel } from "./models/LeagueModel";
-import { QueryParms } from "./QueryParms";
+import { LeagueModel } from "../models/LeagueModel";
+import { InnerQuery, QueryParms } from "./QueryParms";
 
 export interface EventQueryParms extends QueryParms {
   select?: string[];
@@ -16,4 +16,5 @@ export interface EventQueryParms extends QueryParms {
   limit?: number;
   skip?: number;
   inlcude?: string[];
+  innerQuery?: InnerQuery[];
 }

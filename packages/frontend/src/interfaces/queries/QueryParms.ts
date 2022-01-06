@@ -1,3 +1,9 @@
+import { Moralis as MoralisTypes } from "moralis/types";
+export interface InnerQuery {
+  relation: string;
+  query: MoralisTypes.Query;
+}
+
 export interface QueryParms {
   select?: string[];
   filter?: {
@@ -10,4 +16,5 @@ export interface QueryParms {
   limit?: number;
   skip?: number;
   inlcude?: string[];
+  innerQuery?: InnerQuery[];
 }

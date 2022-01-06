@@ -9,6 +9,9 @@ import { EventModel } from "../../interfaces/models/EventModel";
 import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { SelectionEnum } from "../../interfaces/enums/SelectionEnum";
 import { useSubscription } from "./subscription";
+import { BetQueryParms } from "@/interfaces/queries/BetQueryParms";
+import { useCurrency } from "../settings/currency";
+import { BigNumber } from "bignumber.js";
 
 const unmatchedBets: Ref<Array<UnmatchedBetModel> | undefined> = ref();
 const matchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
@@ -94,6 +97,16 @@ const getMatchedBetFromNft = async (nft: NftOwnerModel): Promise<MatchedBetModel
   }
 };
 
+const calculatePotentialProfit = (bet: MatchedBetModel | UnmatchedBetModel): string | undefined => {
+  const { convertCurrency } = useCurrency();
+  if (bet.attributes.betSide == BetTypeEnum.LAY) {
+    return convertCurrency(bet.attributes.amount);
+  } else if (bet.attributes.betSide == BetTypeEnum.BACK) {
+    const oddsTimes = new BigNumber(bet.attributes.odds).minus(1000);
+    return convertCurrency(new BigNumber(bet.attributes.amount).times(oddsTimes).div(1000).toString());
+  }
+};
+
 /**
  * Get unmatched bet by index for specific arguments
  * Used for Odds Button
@@ -124,6 +137,26 @@ const firstUnmatchedBet = (event: EventModel, type: BetTypeEnum, selection: Sele
   return getUnmatchedBetByIndex(event, type, selection, 0);
 };
 
+const getMatchedBetQuery = (parms: BetQueryParms): MoralisTypes.Query => {
+  const { createQuery, handleQuery } = useMoralisObject("PolygonMatchedBets");
+  const query: MoralisTypes.Query = createQuery();
+  handleQuery(query, parms);
+
+  if (parms.filter?.betSide) {
+    query.equalTo("betSide", parms.filter?.betSide);
+  }
+
+  if (parms.filter?.betType) {
+    query.equalTo("betType", parms.filter?.betType);
+  }
+
+  if (parms.filter?.selection) {
+    query.equalTo("betType", parms.filter?.selection);
+  }
+
+  return query;
+};
+
 export const useBet = () => {
-  return { getUnmatchedBets, getMatchedBets, getMatchedBetFromNft, getUnmatchedBetByIndex, firstUnmatchedBet };
+  return { getUnmatchedBets, getMatchedBets, getMatchedBetFromNft, getUnmatchedBetByIndex, firstUnmatchedBet, getMatchedBetQuery, calculatePotentialProfit };
 };

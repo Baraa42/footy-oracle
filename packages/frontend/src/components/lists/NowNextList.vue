@@ -34,7 +34,7 @@ import CardSubHeader from "../common/CardSubHeader.vue";
 import { useEvents } from "../../modules/moralis/event";
 import { EventModel } from "../../interfaces/models/EventModel";
 import PulseEventListItem from "../transitions/pulse/PulseEventListItem.vue";
-import { EventQueryParms } from "../../interfaces/EventQueryParms";
+import { EventQueryParms } from "../../interfaces/queries/EventQueryParms";
 import { useTimezone } from "../../modules/settings/timezone";
 import { useInfiniteScroll } from "../../modules/layout/infiniteScroll";
 import { useSubscription } from "@/modules/moralis/subscription";

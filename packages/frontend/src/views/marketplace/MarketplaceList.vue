@@ -1,34 +1,109 @@
 <template>
-  <MarketplaceFilter>
-    <div v-if="nfts" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5" ref="infiniteScroll">
-      <div v-for="nft in nfts" :key="nft.id" class="p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all">
-        <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
-        <div class="flex justify-between items-center flex-row h-8 mt-3">
-          <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
-          <div class="flex flex-row items-center space-x-1">
-            <span class="font-bold text-sm">1</span>
-            <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center"><Matic class="w-3 h-3 text-white" /></div>
+  <div class="mx-auto px-4 sm:px-6 lg:px-8">
+    <div class="relative z-10 flex items-baseline justify-between pt-8 pb-6 border-b border-gray-200">
+      <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">NFT Marketplace</h1>
+
+      <div class="flex items-center">
+        <Menu as="div" class="relative inline-block text-left">
+          <div>
+            <MenuButton class="group inline-flex justify-center text-sm font-medium text-gray-700 hover:text-gray-900">
+              Sort
+              <ChevronDownIcon class="flex-shrink-0 -mr-1 ml-1 h-5 w-5 text-gray-400 group-hover:text-gray-500" aria-hidden="true" />
+            </MenuButton>
           </div>
+
+          <transition
+            enter-active-class="transition ease-out duration-100"
+            enter-from-class="transform opacity-0 scale-95"
+            enter-to-class="transform opacity-100 scale-100"
+            leave-active-class="transition ease-in duration-75"
+            leave-from-class="transform opacity-100 scale-100"
+            leave-to-class="transform opacity-0 scale-95"
+          >
+            <MenuItems class="origin-top-right absolute right-0 mt-2 w-40 rounded-md shadow-2xl bg-white ring-1 ring-black ring-opacity-5 focus:outline-none">
+              <div class="py-1">
+                <MenuItem v-for="option in sortOptions" :key="option.name" v-slot="{ active }">
+                  <a :class="[option.current ? 'font-medium text-gray-900' : 'text-gray-500', active ? 'bg-gray-100' : '', 'block px-4 py-2 text-sm']">
+                    {{ option.name }}
+                  </a>
+                </MenuItem>
+              </div>
+            </MenuItems>
+          </transition>
+        </Menu>
+
+        <button type="button" class="p-2 -m-2 ml-5 sm:ml-7 text-gray-400 hover:text-gray-500">
+          <span class="sr-only">View grid</span>
+          <ViewGridIcon class="w-5 h-5" aria-hidden="true" />
+        </button>
+        <button type="button" class="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden" @click="mobileFiltersOpen = true">
+          <span class="sr-only">Filters</span>
+          <FilterIcon class="w-5 h-5" aria-hidden="true" />
+        </button>
+      </div>
+    </div>
+
+    <div class="pt-6 pb-24">
+      <div class="grid grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10">
+        <MarketplaceFilter v-model="filters" />
+
+        <!-- NFT List -->
+        <div v-if="nfts" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5" ref="infiniteScroll">
+          <router-link
+            :to="{
+              name: 'marketplace-detail',
+              params: { tokenId: nft.attributes.token_id },
+            }"
+            v-for="nft in nfts"
+            :key="nft.id"
+            class="p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
+          >
+            <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
+            <div class="flex justify-between items-center flex-row h-8 mt-3">
+              <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
+              <div class="flex flex-row items-center space-x-1">
+                <span class="font-bold text-sm">1</span>
+                <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center"><Matic class="w-3 h-3 text-white" /></div>
+              </div>
+            </div>
+          </router-link>
         </div>
       </div>
     </div>
-  </MarketplaceFilter>
+  </div>
 </template>
 
 <script lang="ts">
 import NftImage from "@/components/common/NftImage.vue";
 import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
-import { QueryParms } from "@/interfaces/QueryParms";
+import { InnerQuery, QueryParms } from "@/interfaces/queries/QueryParms";
 import { useInfiniteScroll } from "@/modules/layout/infiniteScroll";
 import { useNFTs } from "@/modules/moralis/nfts";
 import Matic from "@/assets/svg/matic.svg";
 import { useSubscription } from "@/modules/moralis/subscription";
-import { defineComponent, onUnmounted, Ref, ref } from "vue";
+import { defineComponent, onUnmounted, reactive, Ref, ref, watch, watchEffect } from "vue";
 import MarketplaceFilter from "@/components/marketplace/MarketplaceFilter.vue";
+import { useBet } from "@/modules/moralis/bets";
+import {
+  Dialog,
+  DialogOverlay,
+  Disclosure,
+  DisclosureButton,
+  DisclosurePanel,
+  Menu,
+  MenuButton,
+  MenuItem,
+  MenuItems,
+  TransitionChild,
+  TransitionRoot,
+} from "@headlessui/vue";
+import { XIcon } from "@heroicons/vue/outline";
+import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from "@heroicons/vue/solid";
 
 export default defineComponent({
   setup() {
     const { getNFTQuery } = useNFTs();
+    const { getMatchedBetQuery } = useBet();
     const { onUpdateFunction } = useSubscription();
     const nfts: Ref<NftOwnerModel[] | undefined> = ref();
     const subsriptions: Ref<Array<any>> = ref([]);
@@ -37,13 +112,22 @@ export default defineComponent({
     const bottomHit = ref(false);
     const infiniteScroll = ref(null);
     const triggerPulse = ref(false);
+    const mobileFiltersOpen = ref(false);
 
-    /**
-     * On subsription update
-     */
-    const onUpdate = async (object: any) => {
-      onUpdateFunction(object, nfts.value, "id");
-    };
+    const filters = reactive({
+      betSides: [],
+      selections: [],
+    });
+
+    const sortOptions = [
+      { name: "Recently Listed", href: "#", current: true },
+      { name: "Recently Created", href: "#", current: false },
+      { name: "Recently Sold", href: "#", current: false },
+      { name: "Recently Received", href: "#", current: false },
+      { name: "Price: Low to High", href: "#", current: false },
+      { name: "Price: High to Low", href: "#", current: false },
+      { name: "Highest Last Sale", href: "#", current: false },
+    ];
 
     const queryParms: QueryParms = {
       limit: pageSize.value,
@@ -51,20 +135,28 @@ export default defineComponent({
         key: "block_number",
         direction: "DESC",
       },
+      inlcude: ["bet", "offer"],
     };
-    const query = getNFTQuery(queryParms);
-    query.find().then((data: any) => {
-      nfts.value = data as NftOwnerModel[];
-    });
-    query.subscribe().then((subsription) => {
-      subsription.on("update", onUpdate);
-      subsriptions.value.push(subsription);
-    });
 
-    /**
-     * Load more events callback function
-     */
-    const loadMoreEvents = () => {
+    const loadNfts = (mergingParms?: QueryParms, resetSubsriptions = false) => {
+      const mergedParms = Object.assign(queryParms, mergingParms);
+      const query = getNFTQuery(mergedParms);
+      query.find().then((data: any) => {
+        nfts.value = data as NftOwnerModel[];
+      });
+
+      if (resetSubsriptions) {
+        subsriptions.value.forEach((subsription) => subsription.unsubscribe());
+      }
+
+      query.subscribe().then((subsription) => {
+        subsription.on("update", onUpdate);
+        subsriptions.value.push(subsription);
+      });
+    };
+
+    // TODO implement handling filters
+    const paginateNfts = () => {
       if (bottomHit.value) {
         return;
       }
@@ -87,10 +179,37 @@ export default defineComponent({
       });
     };
 
+    const onUpdate = async (object: any) => {
+      onUpdateFunction(object, nfts.value, "id");
+    };
+
+    /**
+     * Load NFT at mount and reload if filter changes
+     */
+    watchEffect(() => {
+      let filter = false;
+      const betQuery = getMatchedBetQuery({});
+      if (filters.betSides && filters.betSides.length != 0) {
+        betQuery.containedIn("betSide", filters.betSides);
+        filter = true;
+      }
+      if (filters.selections && filters.selections.length != 0) {
+        console.log(filters.selections);
+        betQuery.containedIn("selection", filters.selections);
+        filter = true;
+      }
+
+      if (filter) {
+        loadNfts({ innerQuery: [{ relation: "bet", query: betQuery }] });
+      } else {
+        loadNfts({ innerQuery: [] });
+      }
+    });
+
     /**
      * Mount infinte scroll to container
      */
-    useInfiniteScroll(infiniteScroll, loadMoreEvents);
+    useInfiniteScroll(infiniteScroll, paginateNfts);
 
     /**
      * Unsubscribe to subsriptions when unmounted
@@ -99,8 +218,29 @@ export default defineComponent({
       subsriptions.value.forEach((subsription) => subsription.unsubscribe());
     });
 
-    return { nfts, infiniteScroll, triggerPulse, pageSize };
+    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen };
   },
-  components: { NftImage, Matic, MarketplaceFilter },
+  components: {
+    NftImage,
+    Matic,
+    MarketplaceFilter,
+    Dialog,
+    DialogOverlay,
+    Disclosure,
+    DisclosureButton,
+    DisclosurePanel,
+    Menu,
+    MenuButton,
+    MenuItem,
+    MenuItems,
+    TransitionChild,
+    TransitionRoot,
+    ChevronDownIcon,
+    FilterIcon,
+    MinusSmIcon,
+    PlusSmIcon,
+    ViewGridIcon,
+    XIcon,
+  },
 });
 </script>

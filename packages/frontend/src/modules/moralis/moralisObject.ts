@@ -1,4 +1,4 @@
-import { QueryParms } from "@/interfaces/QueryParms";
+import { InnerQuery, QueryParms } from "@/interfaces/queries/QueryParms";
 import Moralis from "moralis/dist/moralis.js";
 import { Moralis as MoralisTypes } from "moralis/types";
 
@@ -35,6 +35,12 @@ export const useMoralisObject = (object: string) => {
 
     if (parms.inlcude) {
       query.include(parms.inlcude);
+    }
+
+    if (parms.innerQuery) {
+      parms.innerQuery.forEach((inner: InnerQuery) => {
+        query.matchesQuery(inner.relation, inner.query);
+      });
     }
 
     return query;

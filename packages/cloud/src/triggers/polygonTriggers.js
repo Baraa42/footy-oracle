@@ -108,11 +108,20 @@ Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
 });
 
 /**
- * Resolves metadata to object before save
+ * Resolves metadata and bet to object before save
  */
 Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
   const metadata = await resolveMetadataFromNft(request.object);
   request.object.set("metadata", metadata);
+
+  const eventApiId = parseEventApiIdFromMetadata(metadata);
+  const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
+  matcheBetQuery.equalTo("apiId", eventApiId);
+  matcheBetQuery.equalTo("tokenId", request.object.get("token_id"));
+  const matchedBet = await matcheBetQuery.first();
+  if (matchedBet) {
+    request.object.set("bet", matchedBet);
+  }
 });
 
 /**
@@ -135,5 +144,19 @@ Moralis.Cloud.afterSave("PolygonNFTOwners", async (request) => {
       matchedBet.set("mintStatus", "completed");
       await matchedBet.save();
     }
+  }
+});
+
+Moralis.Cloud.afterSave("MumbaiPlacedOfferings", async (request) => {
+  const offer = request.object;
+
+  const nftsQuery = new Moralis.Query(PolygonNFTOwners);
+  nftsQuery.equalTo("token_id", offer.get("tokenId"));
+  nftsQuery.equalTo("token_address", offer.get("hostContract"));
+  const nft = await nftsQuery.first();
+
+  if (nft) {
+    nft.set("offer", offer);
+    await nft.save(null, { useMasterKey: true });
   }
 });
