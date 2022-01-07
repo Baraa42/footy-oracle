@@ -61,8 +61,8 @@
             <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
             <div class="flex justify-between items-center flex-row h-8 mt-3">
               <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
-              <div class="flex flex-row items-center space-x-1">
-                <span class="font-bold text-sm">1</span>
+              <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
+                <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
                 <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center"><Matic class="w-3 h-3 text-white" /></div>
               </div>
             </div>
@@ -99,12 +99,14 @@ import {
 } from "@headlessui/vue";
 import { XIcon } from "@heroicons/vue/outline";
 import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from "@heroicons/vue/solid";
+import { useCurrency } from "@/modules/settings/currency";
 
 export default defineComponent({
   setup() {
     const { getNFTQuery } = useNFTs();
     const { getMatchedBetQuery } = useBet();
     const { onUpdateFunction } = useSubscription();
+    const { convertCurrency } = useCurrency();
     const nfts: Ref<NftOwnerModel[] | undefined> = ref();
     const subsriptions: Ref<Array<any>> = ref([]);
     const page = ref(1);
@@ -218,7 +220,7 @@ export default defineComponent({
       subsriptions.value.forEach((subsription) => subsription.unsubscribe());
     });
 
-    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen };
+    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen, convertCurrency };
   },
   components: {
     NftImage,

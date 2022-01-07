@@ -32,14 +32,13 @@ import { CogIcon } from "@heroicons/vue/outline";
 import { CashIcon } from "@heroicons/vue/outline";
 import { RefreshIcon } from "@heroicons/vue/outline";
 import { BookmarkIcon } from "@heroicons/vue/outline";
-import WithdrawOverlay from "../overlays/WithdrawOverlay.vue";
+import WithdrawOverlay from "../overlays/NFTOverlay.vue";
 import SettingsOverlay from "../overlays/SettingsOverlay.vue";
 import FavoritesOverlay from "../overlays/FavoritesOverlay.vue";
 import SearchOverlay from "../overlays/SearchOverlay.vue";
 import MyBetsOverlay from "../overlays/bets/MyBetsOverlay.vue";
 import { useActionBar } from "../../modules/layout/actionBar";
 import { ActionBarItem } from "../../interfaces/layout/ActionBarItem";
-import SwapOverlay from "../overlays/SwapOverlay.vue";
 
 export default defineComponent({
   setup() {
@@ -56,7 +55,7 @@ export default defineComponent({
         component: markRaw(MyBetsOverlay),
       },
       {
-        name: "Withdraw",
+        name: "NFTs",
         icon: CashIcon,
         component: markRaw(WithdrawOverlay),
       },

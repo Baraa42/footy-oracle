@@ -4,20 +4,57 @@
     <div class="md:col-span-4 flex flex-col space-y-4">
       <div class="flex justify-between items-center">
         <span class="text-2xl font-semibold">Bet #{{ nft.attributes.token_id }}</span>
-        <button class="px-8 py-2 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors hidden md:block">Buy</button>
+        <div>
+          <div v-if="userAddress == nft.attributes.owner_of && !nft.attributes.offer" class="flex flex-row space-x-4">
+            <button
+              @click="onSell()"
+              class="px-8 py-2 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors hidden md:block"
+            >
+              Sell
+            </button>
+            <button class="px-8 py-2 shadow-sm rounded bg-gray-700 text-white font-bold hover:bg-gray-800 transition-colors hidden md:block">Withdraw</button>
+          </div>
+          <button
+            @click="onBuy()"
+            v-if="nft.attributes.offer && userAddress != nft.attributes.owner_of"
+            class="px-8 py-2 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors hidden md:block"
+          >
+            Buy
+          </button>
+          <button
+            @click="onClose()"
+            v-if="nft.attributes.offer && userAddress == nft.attributes.owner_of"
+            class="px-8 py-2 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors hidden md:block"
+          >
+            Close
+          </button>
+        </div>
       </div>
-
-      <div class="bg-gray-50 rounded shadow-sm w-full h-full p-3 flex flex-col justify-around">
+      <div class="bg-gray-50 rounded shadow-sm w-full h-full p-3 flex flex-col justify-around" v-if="nft.attributes.offer">
         <span class="text-gray-500">Current Price</span>
 
-        <div class="flex flex-row items-center space-x-1">
+        <div class="flex flex-row items-center space-x-2 mt-2">
           <Matic class="w-6 h-6 text-polygon" />
-          <span class="text-2xl font-bold tracking-wider text-number">1.00</span>
+          <span class="text-2xl font-bold tracking-wider text-number">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
         </div>
-        <button class="px-8 py-2 mt-4 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors block md:hidden">Buy</button>
+
+        <button
+          @click="onSell()"
+          v-if="userAddress == nft.attributes.owner_of"
+          class="px-8 py-2 mt-4 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors block md:hidden"
+        >
+          Sell
+        </button>
+        <button
+          @click="onBuy()"
+          v-else
+          class="px-8 py-2 mt-4 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors block md:hidden"
+        >
+          Buy
+        </button>
       </div>
 
-      <div class="flex flex-col space-y-4 h-full justify-end order-4">
+      <div class="flex flex-col space-y-4 h-full">
         <div class="bg-gray-50 rounded shadow-sm w-full">
           <div class="p-3">
             <span class="font-semibold text-gray-700">Match Details</span>
@@ -86,6 +123,37 @@
         </div>
       </div>
     </div>
+
+    <teleport to="#app">
+      <ConfirmationDialog
+        :type="confirmDialog.type"
+        :color="confirmDialog.color"
+        :icon="confirmDialog.icon"
+        :title="confirmDialog.title"
+        :description="confirmDialog.description"
+        :buttonText="confirmDialog.buttonText"
+        :isOpen="confirmDialog.isToggled"
+        @onConfirm="confirmDialog.onConfirm"
+        @onClose="confirmDialog.toggle()"
+      >
+        <div v-if="confirmDialog.action == 'sell'" class="mt-4">
+          <label for="price" class="block text-sm font-medium text-gray-700">Price</label>
+          <div class="mt-1 relative rounded-md shadow-sm">
+            <input
+              v-model="sellPrice"
+              type="number"
+              name="price"
+              id="price"
+              class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+              placeholder="0.00"
+            />
+            <div class="absolute inset-y-0 right-3 flex items-center">
+              <Matic class="w-4 h-4 text-polygon" />
+            </div>
+          </div>
+        </div>
+      </ConfirmationDialog>
+    </teleport>
   </div>
 </template>
 
@@ -94,19 +162,25 @@ import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { useNFTs } from "@/modules/moralis/nfts";
 import { Moralis as MoralisTypes } from "moralis/types";
 import { useSubscription } from "@/modules/moralis/subscription";
-import { defineComponent, onUnmounted, ref, watchEffect } from "vue";
+import { defineComponent, onUnmounted, reactive, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import NftImage from "@/components/common/NftImage.vue";
 import { useTimezone } from "@/modules/settings/timezone";
 import { useOdds } from "@/modules/settings/odds";
 import { useCurrency } from "@/modules/settings/currency";
 import { useBet } from "@/modules/moralis/bets";
+import { useMarketplace } from "@/modules/moralis/marketplace";
 import Matic from "@/assets/svg/matic.svg";
+import { useMoralis } from "@/modules/moralis/moralis";
+import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
+import { CashIcon, XIcon, CheckIcon } from "@heroicons/vue/outline";
+import { useToggle } from "@/modules/layout/toggle";
 
 export default defineComponent({
   setup() {
+    const { userAddress } = useMoralis();
     const route = useRoute();
-
+    const { listOnMarketplace, buyNFT } = useMarketplace();
     const { calculatePotentialProfit } = useBet();
     const { getDateTime } = useTimezone();
     const { decodeOdds } = useOdds();
@@ -115,6 +189,64 @@ export default defineComponent({
     const { getNFTQuery } = useNFTs();
     const { subscribe, unsubscribe } = useSubscription();
     const nft = ref<NftOwnerModel>();
+
+    const sellPrice = ref();
+
+    const { isToggled: isConfirmDialogOpen, toggle: toggleConfrimDialog } = useToggle();
+    const confirmDialog = reactive({
+      type: "",
+      action: "",
+      icon: undefined,
+      color: "",
+      title: "",
+      description: "",
+      buttonText: "",
+      onConfirm: async () => {},
+      isToggled: isConfirmDialogOpen,
+      toggle: toggleConfrimDialog,
+    });
+
+    const onSell = () => {
+      confirmDialog.action = "sell";
+      confirmDialog.title = "List NFT for sale";
+      confirmDialog.icon = CashIcon;
+      confirmDialog.color = "gray";
+      confirmDialog.buttonText = "Confirm";
+      confirmDialog.onConfirm = async () => {
+        if (nft.value) {
+          const listing = await listOnMarketplace(nft.value, String(sellPrice.value));
+          toggleConfrimDialog();
+        }
+      };
+      toggleConfrimDialog();
+    };
+
+    const onClose = () => {
+      confirmDialog.action = "close";
+      confirmDialog.title = "Are you sure you want to close your NFT listing?";
+      confirmDialog.icon = XIcon;
+      confirmDialog.color = "red";
+      confirmDialog.buttonText = "Confirm";
+      confirmDialog.onConfirm = async () => {
+        toggleConfrimDialog();
+      };
+      toggleConfrimDialog();
+    };
+
+    const onBuy = () => {
+      confirmDialog.action = "buy";
+      confirmDialog.title = `Are you sure you want to buy this NFT for ${convertCurrency(nft.value?.attributes.offer?.attributes.price || "")} Matic?`;
+      confirmDialog.icon = CheckIcon;
+      confirmDialog.color = "green";
+      confirmDialog.buttonText = "Confirm";
+      confirmDialog.onConfirm = async () => {
+        if (nft.value) {
+          const buying = await buyNFT(nft.value);
+          toggleConfrimDialog();
+        }
+      };
+      toggleConfrimDialog();
+    };
 
     watchEffect(() => {
       const tokenId = route.params.tokenId;
@@ -139,8 +271,8 @@ export default defineComponent({
       unsubscribe();
     });
 
-    return { nft, getDateTime, decodeOdds, convertCurrency, calculatePotentialProfit };
+    return { nft, getDateTime, decodeOdds, convertCurrency, calculatePotentialProfit, userAddress, confirmDialog, onSell, onClose, sellPrice, onBuy };
   },
-  components: { NftImage, Matic },
+  components: { NftImage, Matic, ConfirmationDialog },
 });
 </script>

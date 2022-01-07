@@ -62,7 +62,7 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
     const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
       .equalTo("from", moralisUser.value.get("ethAddress"))
       .include("event")
-      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus", "event");
+      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
     matchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
 
     // Create live subscriptions
@@ -90,7 +90,7 @@ const getMatchedBetFromNft = async (nft: NftOwnerModel): Promise<MatchedBetModel
       .query()
       .equalTo("nft", nft)
       .include("nft", "bet")
-      .select("amount", "bet", "betType", "odds", "selection", "apiId", "isMinted", "nft", "confirmed", "mintStatus");
+      .select("amount", "bet", "betType", "odds", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus");
 
     const matchedBet: MatchedBetModel | undefined = await matchedBetsQuery.first();
     return matchedBet;

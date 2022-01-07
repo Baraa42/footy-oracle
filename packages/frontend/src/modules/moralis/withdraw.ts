@@ -1,26 +1,10 @@
-import { Ref, ref } from "vue";
 import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
 import { useContract } from "./contract";
-import { useToggle } from "../layout/toggle";
 import Moralis from "moralis/dist/moralis.js";
 import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
 import { useBet } from "./bets";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
-
-const selectedNft: Ref<NftOwnerModel | undefined> = ref();
-const { isToggled: isWithdrawDialogOpen, toggle: toggleWithdrawDialog } = useToggle();
-
-/**
- * Toggle withdraw dialog for NFT
- *
- * @param  {NftOwnerModel} nft
- * @returns void
- */
-const toogleWithdraw = (nft: NftOwnerModel): void => {
-  selectedNft.value = nft;
-  toggleWithdrawDialog();
-};
 
 /**
  * Withdraw with NFT
@@ -65,5 +49,5 @@ const withdraw = async (nft: NftOwnerModel): Promise<void> => {
 };
 
 export const useWithdraw = () => {
-  return { selectedNft, toogleWithdraw, isWithdrawDialogOpen, toggleWithdrawDialog, withdraw };
+  return { withdraw };
 };

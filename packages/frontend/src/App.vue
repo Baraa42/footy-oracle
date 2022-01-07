@@ -17,7 +17,6 @@
       </template>
     </router-view>
   </main>
-  <WithdrawDialog v-if="selectedNft" :nft="selectedNft" :isOpen="isWithdrawDialogOpen" @onClose="toggleWithdrawDialog()" />
   <Alert />
   <ActionBar />
 </template>
@@ -30,27 +29,19 @@ import Navigation from "./components/layout/Navigation.vue";
 import NavigationBar from "./components/layout/NavigationBar.vue";
 import FadeTransition from "./components/transitions/FadeTransition.vue";
 import { useActionBar } from "./modules/layout/actionBar";
-import WithdrawDialog from "./components/dialogs/WithdrawDialog.vue";
-import { useWithdraw } from "./modules/moralis/withdraw";
 import { useMoralis } from "./modules/moralis/moralis";
 
 export default defineComponent({
   setup() {
     const { isActionBarActive } = useActionBar();
-    const { toogleWithdraw, isWithdrawDialogOpen, selectedNft, toggleWithdrawDialog } = useWithdraw();
     const { initUserFromCache } = useMoralis();
     initUserFromCache();
 
     return {
       isActionBarActive,
-      toogleWithdraw,
-      toggleWithdrawDialog,
-      isWithdrawDialogOpen,
-      selectedNft,
     };
   },
   components: {
-    WithdrawDialog,
     ActionBar,
     Alert,
     Navigation,

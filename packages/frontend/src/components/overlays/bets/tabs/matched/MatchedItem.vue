@@ -1,5 +1,5 @@
 <template>
-  <div class="m-2 px-3 py-3 bg-gray-100 border border-gray-200 flex flex-col space-y-3 rounded-sm">
+  <div class="m-2 px-3 py-3 bg-gray-100 border border-gray-200 flex flex-col space-y-3 rounded-sm relative">
     <div class="flex flex-col space-y-1 text-gray-800" v-if="data.attributes.event">
       <span class="text-sm font-bold">{{ data.attributes.event.getName() }}</span>
       <span class="text-xs font-semibold text-gray-800" v-if="data.get('selection') == selections.HOME">{{
@@ -35,13 +35,16 @@
     </div>
 
     <div class="flex flex-row w-full space-x-3" v-if="data.get('confirmed')">
-      <button
+      <router-link
+        :to="{
+          name: 'marketplace-detail',
+          params: { tokenId: data.attributes.tokenId || -1 },
+        }"
         v-if="data.get('mintStatus') == NftMintStatus.COMPLETED"
-        @click="showNft(data)"
         class="inline-flex w-full justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-sm text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors"
       >
         Show NFT
-      </button>
+      </router-link>
       <WaitingButton v-else-if="data.get('mintStatus') == NftMintStatus.PENDING || data.get('isMinted')" text="Waiting for confirmation" />
       <WaitingButton v-else-if="customMessage.show" :text="customMessage.message" />
       <button
@@ -56,14 +59,8 @@
       <WaitingButton text="Waiting for confirmation" />
     </div>
 
-    <div class="relative">
-      <Nft
-        class="absolute bottom-[1000px]"
-        :data="data"
-        v-if="isMinting"
-        @converted="mintIt"
-        :color="data.attributes.event?.get('home').get('primaryColor') || '#111827'"
-      />
+    <div class="opacity-0">
+      <nft v-if="isMinting" :data="data" @converted="mintIt" :color="data.attributes.event?.get('home').get('primaryColor') || '#111827'" />
     </div>
   </div>
 </template>
@@ -76,8 +73,6 @@ import { useBetslip } from "../../../../../modules/moralis/betslip";
 import { useCurrency } from "../../../../../modules/settings/currency";
 import { BigNumber } from "bignumber.js";
 import { useNFTs } from "../../../../../modules/moralis/nfts";
-import { useWithdraw } from "../../../../../modules/moralis/withdraw";
-import { useAlert } from "../../../../../modules/layout/alert";
 import { useOdds } from "../../../../../modules/settings/odds";
 import { MatchedBetModel } from "../../../../../interfaces/models/MatchedBetModel";
 import WaitingButton from "../../../../buttons/WaitingButton.vue";
@@ -89,11 +84,9 @@ export default defineComponent({
   },
   setup(props) {
     const { selections, types } = useBetslip();
-    const { toogleWithdraw } = useWithdraw();
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
     const { NftMintStatus, mint } = useNFTs();
-    const { showError, showSuccess } = useAlert();
 
     const customMessage = reactive({
       show: false,
@@ -109,20 +102,12 @@ export default defineComponent({
 
     const mintIt = async (blob: Blob) => {
       await mint(props.data, blob, customMessage);
-    };
-
-    const showNft = async (matchedBet: MatchedBetModel) => {
-      if (matchedBet.attributes.nft) {
-        toogleWithdraw(matchedBet.attributes.nft);
-      } else {
-        showError("Hash not found, please try again later.");
-      }
+      isMinting.value = false;
     };
 
     return {
       NftMintStatus,
       customMessage,
-      showNft,
       mint,
       decodeOdds,
       convertCurrency,

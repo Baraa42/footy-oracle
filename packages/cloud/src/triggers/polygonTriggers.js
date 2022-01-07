@@ -16,10 +16,7 @@ Moralis.Cloud.beforeSave("PolygonMatchedBets", async (request) => {
  * Create realation from user and event to unmatched bet
  */
 Moralis.Cloud.afterSave("PolygonUnmatchedBets", async (request) => {
-  if (
-    request.object.get("isPartMatched") == undefined &&
-    request.object.get("confirmed") == undefined
-  ) {
+  if (request.object.get("isPartMatched") == undefined) {
     await afterSaveBet(request.object, "polygonUnmatchedBets");
   }
 });

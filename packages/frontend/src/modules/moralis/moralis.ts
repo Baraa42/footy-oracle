@@ -59,6 +59,7 @@ const balance = computed(() => user.value.balances);
 const tokens = computed((): Array<TokenBalance> => user.value.balances.tokens);
 const unmatchedBets = computed((): Array<UnmatchedBetModel> | undefined => user.value.unmatchedBets);
 const matchedBets = computed((): Array<MatchedBetModel> | undefined => user.value.matchedBets);
+const userAddress = computed((): string | undefined => user.value.moralis?.get("ethAddress"));
 
 const chainOptions: any = {
   chain: "mumbai",
@@ -166,6 +167,7 @@ const loadUnmatchedBets = async () => {
 export const useMoralis = () => {
   return {
     Moralis,
+    userAddress,
     chainOptions,
     login,
     initUserFromCache,

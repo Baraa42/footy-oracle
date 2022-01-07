@@ -20,6 +20,7 @@ export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attribut
     amount: string;
     owner_of: string;
     block_number: string;
+    token_address: string;
     block_number_minted: string;
     contract_type: string;
     token_uri: string;

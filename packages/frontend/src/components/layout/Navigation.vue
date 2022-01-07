@@ -34,7 +34,9 @@
     </div>
   </nav>
 
-  <LoginDialog :isOpen="isLoginDialogOpen" @onClose="toggleLoginDialog()" />
+  <teleport to="#app">
+    <LoginDialog :isOpen="isLoginDialogOpen" @onClose="toggleLoginDialog()" />
+  </teleport>
 </template>
 
 <script lang="ts">

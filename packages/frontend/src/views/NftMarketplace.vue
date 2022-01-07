@@ -4,7 +4,7 @@
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6" v-if="nfts">
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">My NFTs</h1>
         <div v-for="(nft, id) in nfts" :key="nft.attributes.token_id" class="flex flex-col items-center justify-center w-full cursor-pointer group">
-          <NftImage :nft="nft" @callback="toogleWithdraw"></NftImage>
+          <NftImage :nft="nft"></NftImage>
           <button
             @click="listOnMarketplace(nft, prices[id])"
             type="button"
@@ -18,7 +18,7 @@
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6" v-if="listedNfts">
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">NFTs Listed on Marketplace</h1>
         <div v-for="nft in listedNfts" :key="nft.attributes.tokenId" class="flex flex-col items-center justify-center w-full cursor-pointer group">
-          <ListedNftImage :nft="nft" @callback="toogleWithdraw"></ListedNftImage>
+          <ListedNftImage :nft="nft"></ListedNftImage>
           <button
             @click="buyNFT(nft)"
             type="button"
@@ -40,7 +40,6 @@ import { useMoralis } from "../modules/moralis/moralis";
 import { useRoute } from "vue-router";
 import ListedNftImage from "../components/common/ListedNftImage.vue";
 import NftImage from "../components/common/NftImage.vue";
-import { useWithdraw } from "../modules/moralis/withdraw";
 
 export default defineComponent({
   async setup() {
@@ -54,16 +53,15 @@ export default defineComponent({
     const web3 = await Moralis.Web3.enable();
 
     const cloudTest = await Moralis.Cloud.run("HelloWorld");
-    console.log(cloudTest); 
+    console.log(cloudTest);
 
     const frankAccount = "0x55C2fC277f27e915cB9C7cE40ed744d5CA04C660";
-    const nonceFrankAccount = (await web3.eth.getTransactionCount(frankAccount));
-    console.log('nonceFrankAccount = ' + nonceFrankAccount);
+    const nonceFrankAccount = await web3.eth.getTransactionCount(frankAccount);
+    console.log("nonceFrankAccount = " + nonceFrankAccount);
 
     const prices = ref([]);
 
     const { isAuthenticated, nfts, listedNfts } = await useMoralis();
-    const { toogleWithdraw } = useWithdraw();
     console.log("In Marketplace. NFT count = " + nfts?.value?.length);
 
     const listOnMarketplace = async (nft: any, price: any) => {
@@ -76,8 +74,6 @@ export default defineComponent({
       //const price = "0.001";
       const contract = nft.attributes.token_address;
       const tokenId = nft.attributes.token_id;
-
-
 
       const approval = await approveMarketPlace(contract, tokenId);
       console.log("approval tx = " + approval);
@@ -172,7 +168,6 @@ export default defineComponent({
 
     return {
       activeMode,
-      toogleWithdraw,
       isAuthenticated,
       nfts,
       listOnMarketplace,
