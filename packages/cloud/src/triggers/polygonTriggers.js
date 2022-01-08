@@ -154,6 +154,24 @@ Moralis.Cloud.afterSave("MumbaiPlacedOfferings", async (request) => {
 
   if (nft) {
     nft.set("offer", offer);
+    nft.set("closedOffer", undefined);
+    await nft.save(null, { useMasterKey: true });
+  }
+});
+
+Moralis.Cloud.afterSave("MumbaiClosedOfferings", async (request) => {
+  const closedOffer = request.object;
+
+  const innerQuery = new Moralis.Query(MumbaiPlacedOfferings);
+  innerQuery.equalTo("offeringId", closedOffer.get("offeringId"));
+
+  const nftsQuery = new Moralis.Query(PolygonNFTOwners);
+  nftsQuery.matchesQuery("offer", innerQuery);
+  const nft = await nftsQuery.first();
+
+  if (nft) {
+    nft.set("closedOffer", closedOffer);
+    nft.set("offer", undefined);
     await nft.save(null, { useMasterKey: true });
   }
 });

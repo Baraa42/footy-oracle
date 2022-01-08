@@ -65,6 +65,8 @@ contract BettingAIO is Ownable, ChainlinkClient
     event MatchedBetPlaced(string apiId, BetSide betSide, BetType betType, uint8 selection, uint16 odds, uint256 amount, address from);
     // Matched bet has been converted to NFT
     event BetConverted(string apiId, uint256 tokenId);
+    
+    //TODO add event for game ended
 
     // Game has already ended.
     error GameAlreadyEnded(string apiId);
@@ -271,6 +273,7 @@ contract BettingAIO is Ownable, ChainlinkClient
         return tokenId;
     }
 
+    // TODO remove payable
     function withdrawWithNFT(string calldata _objectId, uint256 tokenId) external payable
     {
         betNFT.redeemCollectible(msg.sender, tokenId);

@@ -3,6 +3,7 @@ import { ActionBarItem } from "../../interfaces/layout/ActionBarItem";
 
 const activeActionBarItem = ref<string | null>(null);
 const activeActionBarComponent = ref<any>(null);
+const isActionBarMovement = ref<boolean>(true);
 const isActionBarActive = computed(() => !!activeActionBarItem.value);
 
 const closeActionBar = (): void => {
@@ -19,6 +20,10 @@ const setActionBarItem = (item: ActionBarItem): void => {
   }
 };
 
+const toggleMovement = (): void => {
+  isActionBarMovement.value = !isActionBarMovement.value;
+};
+
 export const useActionBar = () => {
   return {
     activeActionBarItem,
@@ -26,5 +31,7 @@ export const useActionBar = () => {
     closeActionBar,
     setActionBarItem,
     isActionBarActive,
+    isActionBarMovement,
+    toggleMovement,
   };
 };

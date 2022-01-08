@@ -30,6 +30,7 @@ export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attribut
     metadata?: NftMetadata;
     bet?: MatchedBetModel;
     offer?: ListedNftModel;
+    closedOffer?: ListedNftModel;
   };
 }
 

@@ -1,10 +1,7 @@
 import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
 import { useContract } from "./contract";
-import Moralis from "moralis/dist/moralis.js";
 import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
-import { useBet } from "./bets";
-import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 
 /**
  * Withdraw with NFT
@@ -13,31 +10,30 @@ import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
  * @returns Promise
  */
 const withdraw = async (nft: NftOwnerModel): Promise<void> => {
-  const { moralisUser } = useMoralis();
-  if (moralisUser.value) {
-    const { getMatchedBetFromNft } = useBet();
-    const { showSuccess, showError } = useAlert();
-    const { bettingAbi } = useContract();
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const polygonContract = config.get("polygon_contract");
+  const { userAddress, web3 } = useMoralis();
+  const { showSuccess, showError } = useAlert();
 
-    const matchedBet: MatchedBetModel | undefined = await getMatchedBetFromNft(nft);
+  if (userAddress.value) {
+    if (nft?.attributes.bet?.attributes.event?.attributes.isCompleted) {
+      const { bettingAbi, getBettingContract } = useContract();
+      const contractAddr = await getBettingContract();
 
-    console.log(matchedBet);
+      const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
 
-    if (matchedBet && matchedBet.attributes.event && matchedBet.attributes.event.attributes.isCompleted) {
-      const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(bettingAbi, polygonContract);
+      console.log(contractAddr);
+      console.log(String(nft?.attributes.bet?.attributes.event?.attributes.apiId));
+      console.log(Number(nft.attributes.token_id));
 
-      contract.methods.withdrawWithNFT(String(matchedBet.attributes.event.attributes.apiId), nft.attributes.token_id).send(
+      contract.methods.withdrawWithNFT(String(nft?.attributes.bet?.attributes.event?.attributes.apiId), Number(nft.attributes.token_id)).send(
         {
-          from: moralisUser.value.get("ethAddress"),
+          from: userAddress.value,
         },
         async (err: any, result: any) => {
           if (!err) {
-            showSuccess("Bet successfully withdrawn.");
+            showSuccess("Profits successfully withdrawn.");
             console.log(result);
           } else {
+            showError("No profits withdrawn, your bet lost.");
             console.log(err);
           }
         }

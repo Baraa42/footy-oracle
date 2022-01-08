@@ -12,7 +12,12 @@
             >
               Sell
             </button>
-            <button class="px-8 py-2 shadow-sm rounded bg-gray-700 text-white font-bold hover:bg-gray-800 transition-colors hidden md:block">Withdraw</button>
+            <button
+              @click="onWithdraw()"
+              class="px-8 py-2 shadow-sm rounded bg-gray-700 text-white font-bold hover:bg-gray-800 transition-colors hidden md:block"
+            >
+              Withdraw
+            </button>
           </div>
           <button
             @click="onBuy()"
@@ -23,14 +28,23 @@
           </button>
           <button
             @click="onClose()"
-            v-if="nft.attributes.offer && userAddress == nft.attributes.owner_of"
+            v-if="nft.attributes.offer && nft.attributes.offer.attributes.confirmed && userAddress == nft.attributes.owner_of"
             class="px-8 py-2 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors hidden md:block"
           >
             Close
           </button>
+
+          <WaitingButton
+            class="shadow-sm rounded"
+            v-if="
+              (nft.attributes.offer && !nft.attributes.offer.attributes.confirmed && userAddress == nft.attributes.owner_of) ||
+              (nft.attributes.closedOffer && !nft.attributes.closedOffer.attributes.confirmed)
+            "
+            text="Waiting for confirmation"
+          />
         </div>
       </div>
-      <div class="bg-gray-50 rounded shadow-sm w-full h-full p-3 flex flex-col justify-around" v-if="nft.attributes.offer">
+      <div class="bg-gray-50 rounded shadow-sm w-full h-full p-3 flex flex-col justify-around" v-if="nft?.attributes.offer?.attributes.price">
         <span class="text-gray-500">Current Price</span>
 
         <div class="flex flex-row items-center space-x-2 mt-2">
@@ -144,7 +158,7 @@
               type="number"
               name="price"
               id="price"
-              class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-12 sm:text-sm border-gray-300 rounded-md"
+              class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-10 sm:text-sm border-gray-300 rounded-md"
               placeholder="0.00"
             />
             <div class="absolute inset-y-0 right-3 flex items-center">
@@ -172,15 +186,17 @@ import { useBet } from "@/modules/moralis/bets";
 import { useMarketplace } from "@/modules/moralis/marketplace";
 import Matic from "@/assets/svg/matic.svg";
 import { useMoralis } from "@/modules/moralis/moralis";
+import { useConfirmDialog } from "@/modules/layout/confirmDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
 import { CashIcon, XIcon, CheckIcon } from "@heroicons/vue/outline";
-import { useToggle } from "@/modules/layout/toggle";
+import WaitingButton from "@/components/buttons/WaitingButton.vue";
+import { useWithdraw } from "@/modules/moralis/withdraw";
+import { useAlert } from "@/modules/layout/alert";
 
 export default defineComponent({
   setup() {
     const { userAddress } = useMoralis();
     const route = useRoute();
-    const { listOnMarketplace, buyNFT } = useMarketplace();
     const { calculatePotentialProfit } = useBet();
     const { getDateTime } = useTimezone();
     const { decodeOdds } = useOdds();
@@ -192,60 +208,84 @@ export default defineComponent({
 
     const sellPrice = ref();
 
-    const { isToggled: isConfirmDialogOpen, toggle: toggleConfrimDialog } = useToggle();
-    const confirmDialog = reactive({
-      type: "",
-      action: "",
-      icon: undefined,
-      color: "",
-      title: "",
-      description: "",
-      buttonText: "",
-      onConfirm: async () => {},
-      isToggled: isConfirmDialogOpen,
-      toggle: toggleConfrimDialog,
-    });
+    const confirmDialog = useConfirmDialog();
 
     const onSell = () => {
       confirmDialog.action = "sell";
-      confirmDialog.title = "List NFT for sale";
+      confirmDialog.title = "List this NFT for sale";
+      confirmDialog.description = "You will not be able to withdraw any profits from this NFT as long as its for sale.";
       confirmDialog.icon = CashIcon;
-      confirmDialog.color = "gray";
+      confirmDialog.color = "indigo";
       confirmDialog.buttonText = "Confirm";
       confirmDialog.onConfirm = async () => {
         if (nft.value) {
-          const listing = await listOnMarketplace(nft.value, String(sellPrice.value));
-          toggleConfrimDialog();
+          const { listOnMarketplace } = useMarketplace();
+          const isListed = await listOnMarketplace(nft.value, String(sellPrice.value));
+          confirmDialog.toggle();
         }
       };
-      toggleConfrimDialog();
+      confirmDialog.toggle();
     };
 
     const onClose = () => {
       confirmDialog.action = "close";
       confirmDialog.title = "Are you sure you want to close your NFT listing?";
+      confirmDialog.description = "";
       confirmDialog.icon = XIcon;
       confirmDialog.color = "red";
       confirmDialog.buttonText = "Confirm";
       confirmDialog.onConfirm = async () => {
-        toggleConfrimDialog();
+        confirmDialog.toggle();
       };
-      toggleConfrimDialog();
+      confirmDialog.toggle();
     };
 
     const onBuy = () => {
       confirmDialog.action = "buy";
       confirmDialog.title = `Are you sure you want to buy this NFT for ${convertCurrency(nft.value?.attributes.offer?.attributes.price || "")} Matic?`;
+      confirmDialog.description = "";
       confirmDialog.icon = CheckIcon;
       confirmDialog.color = "green";
       confirmDialog.buttonText = "Confirm";
       confirmDialog.onConfirm = async () => {
         if (nft.value) {
-          const buying = await buyNFT(nft.value);
-          toggleConfrimDialog();
+          const { buyNFT } = useMarketplace();
+          const isBought = await buyNFT(nft.value);
+          confirmDialog.toggle();
         }
       };
-      toggleConfrimDialog();
+      confirmDialog.toggle();
+    };
+
+    const onWithdraw = () => {
+      confirmDialog.action = "withdraw";
+      // game is over
+      if (nft.value?.attributes.bet?.attributes.event?.attributes.isCompleted) {
+        confirmDialog.icon = CashIcon;
+        confirmDialog.color = "indigo";
+        confirmDialog.buttonText = "Confirm";
+        confirmDialog.description = "";
+        confirmDialog.title = `Are you sure you want to withdraw the profits of this NFT?`;
+
+        confirmDialog.onConfirm = async () => {
+          if (nft.value) {
+            const { withdraw } = useWithdraw();
+            const withdrawing = await withdraw(nft.value);
+            confirmDialog.toggle();
+          }
+        };
+      } else {
+        confirmDialog.icon = XIcon;
+        confirmDialog.color = "red";
+        confirmDialog.buttonText = "Close";
+        confirmDialog.description = "";
+        confirmDialog.title = `You need to wait until the game is over.`;
+        confirmDialog.onConfirm = async () => {
+          confirmDialog.toggle();
+        };
+      }
+
+      confirmDialog.toggle();
     };
 
     watchEffect(() => {
@@ -255,7 +295,7 @@ export default defineComponent({
         filter: {
           tokenId: Array.isArray(tokenId) ? tokenId[0] : tokenId,
         },
-        inlcude: ["bet", "bet.event.home", "bet.event.away", "bet.event.league", "offer"],
+        inlcude: ["bet", "bet.event.home", "bet.event.away", "bet.event.league", "offer", "closedOffer"],
       });
 
       query.first().then((data: any) => {
@@ -263,7 +303,11 @@ export default defineComponent({
       });
 
       subscribe(query).then((subscription: MoralisTypes.LiveQuerySubscription) => {
-        subscription.on("update", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => (nft.value = object as NftOwnerModel));
+        subscription.on("update", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
+          console.log("update nft");
+          console.log(object);
+          nft.value = object as NftOwnerModel;
+        });
       });
     });
 
@@ -271,8 +315,21 @@ export default defineComponent({
       unsubscribe();
     });
 
-    return { nft, getDateTime, decodeOdds, convertCurrency, calculatePotentialProfit, userAddress, confirmDialog, onSell, onClose, sellPrice, onBuy };
+    return {
+      nft,
+      getDateTime,
+      decodeOdds,
+      convertCurrency,
+      calculatePotentialProfit,
+      userAddress,
+      confirmDialog,
+      onSell,
+      onClose,
+      onWithdraw,
+      onBuy,
+      sellPrice,
+    };
   },
-  components: { NftImage, Matic, ConfirmationDialog },
+  components: { NftImage, Matic, ConfirmationDialog, WaitingButton },
 });
 </script>

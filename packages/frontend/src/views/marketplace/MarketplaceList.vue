@@ -100,9 +100,12 @@ import {
 import { XIcon } from "@heroicons/vue/outline";
 import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from "@heroicons/vue/solid";
 import { useCurrency } from "@/modules/settings/currency";
+import { useActionBar } from "@/modules/layout/actionBar";
 
 export default defineComponent({
   setup() {
+    const { toggleMovement } = useActionBar();
+
     const { getNFTQuery } = useNFTs();
     const { getMatchedBetQuery } = useBet();
     const { onUpdateFunction } = useSubscription();
@@ -218,7 +221,9 @@ export default defineComponent({
      */
     onUnmounted(() => {
       subsriptions.value.forEach((subsription) => subsription.unsubscribe());
+      toggleMovement();
     });
+    toggleMovement();
 
     return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen, convertCurrency };
   },

@@ -4,9 +4,7 @@ import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { SelectionEnum } from "../../interfaces/enums/SelectionEnum";
 import { useActionBar } from "../layout/actionBar";
 import { useMoralis } from "./moralis";
-import Moralis from "moralis/dist/moralis.js";
 import { useAlert } from "../layout/alert";
-import { BigNumber } from "bignumber.js";
 import { useContract } from "./contract";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
 import { EventModel } from "../../interfaces/models/EventModel";
@@ -19,8 +17,8 @@ const types = BetTypeEnum;
 
 export const useBetslip = () => {
   const { encodeOdds, decodeOdds, minOdds } = useOdds();
-  const { betslip, moralisUser } = useMoralis();
-  const { bettingAbi } = useContract();
+  const { betslip, userAddress, web3 } = useMoralis();
+  const { bettingAbi, getBettingContract } = useContract();
   const { showError, showSuccess } = useAlert();
   const { setActionBarItem, activeActionBarItem } = useActionBar();
 
@@ -81,21 +79,19 @@ export const useBetslip = () => {
    * @returns Promise
    */
   const acceptBet = async (betslipItem: Betslip): Promise<void> => {
-    if (!moralisUser.value) {
+    if (!userAddress.value) {
       showError("You need to connect your wallet");
       return;
     }
 
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const polygonContract = config.get("polygon_contract");
+    const contractAddr = await getBettingContract();
 
-    if (!polygonContract) {
+    if (!contractAddr) {
       showError("No contract deployed for this game");
       return;
     }
 
-    const web3 = await Moralis.Web3.enable();
-    const contract = new web3.eth.Contract(bettingAbi, polygonContract);
+    const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
 
     if (betslipItem.type === types.BACK) {
       contract.methods
@@ -104,12 +100,12 @@ export const useBetslip = () => {
           0,
           betslipItem.selection,
           encodeOdds(betslipItem.odds),
-          web3.utils.toWei(betslipItem.stake.toString(), "ether")
+          web3.value.utils.toWei(betslipItem.stake.toString(), "ether")
         )
         .send(
           {
-            from: moralisUser.value.get("ethAddress"),
-            value: web3.utils.toWei(betslipItem.stake.toString(), "ether"),
+            from: userAddress.value,
+            value: web3.value.utils.toWei(betslipItem.stake.toString(), "ether"),
           },
           async (err: any, result: any) => {
             if (!err) {
@@ -126,12 +122,12 @@ export const useBetslip = () => {
           0,
           betslipItem.selection,
           encodeOdds(betslipItem.odds),
-          web3.utils.toWei(betslipItem.stake.toString(), "ether")
+          web3.value.utils.toWei(betslipItem.stake.toString(), "ether")
         )
         .send(
           {
-            from: moralisUser.value.get("ethAddress"),
-            value: web3.utils.toWei(betslipItem.liability.toString(), "ether"),
+            from: userAddress.value,
+            value: web3.value.utils.toWei(betslipItem.liability.toString(), "ether"),
           },
           async (err: any, result: any) => {
             if (!err) {
@@ -151,11 +147,9 @@ export const useBetslip = () => {
    * @returns Promise
    */
   const removeUnmatchedBet = async (unmatchedBet: UnmatchedBetModel): Promise<void> => {
-    if (moralisUser.value) {
-      const config = await Moralis.Config.get({ useMasterKey: false });
-      const polygonContract = config.get("polygon_contract");
-      const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(bettingAbi, polygonContract);
+    if (userAddress.value) {
+      const contractAddr = await getBettingContract();
+      const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
       contract.methods
         .removeUnmatchedBet(
           unmatchedBet.get("apiId"),
@@ -166,7 +160,7 @@ export const useBetslip = () => {
         )
         .send(
           {
-            from: moralisUser.value.get("ethAddress"),
+            from: userAddress.value,
           },
           async (err: any, result: any) => {
             if (!err) {

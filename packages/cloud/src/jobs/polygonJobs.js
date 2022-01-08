@@ -23,7 +23,7 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
   const polygonContract = config.get("polygon_contract");
 
   const currentTimestamp = Math.floor(Date.now() / 1000);
-  const futureTimestamp = currentTimestamp + 3 * 60 * 60;
+  const futureTimestamp = currentTimestamp + 2 * 60 * 60;
 
   const eventQuery = new Moralis.Query(Event);
   eventQuery.notEqualTo("isCompleted", true);
@@ -52,6 +52,7 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
       eventItem.set("isCompleted", true);
       await eventItem.save();
       updated++;
+      await new Promise((r) => setTimeout(r, 2000));
     } catch (e) {
       message("Error occurred!");
       log.error(e.toString());

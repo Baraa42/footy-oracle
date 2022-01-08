@@ -60,7 +60,7 @@
     </div>
 
     <div class="opacity-0">
-      <nft v-if="isMinting" :data="data" @converted="mintIt" :color="data.attributes.event?.get('home').get('primaryColor') || '#111827'" />
+      <nft class="absolute" v-if="isMinting" :data="data" @converted="mintIt" :color="data.attributes.event?.get('home').get('primaryColor') || '#111827'" />
     </div>
   </div>
 </template>

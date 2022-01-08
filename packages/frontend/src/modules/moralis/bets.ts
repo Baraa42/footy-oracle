@@ -76,27 +76,6 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
   return matchedBets;
 };
 
-/**
- * Gets matched bet from nft
- *
- * @param  {NftOwnerModel} nft
- * @returns Promise
- */
-const getMatchedBetFromNft = async (nft: NftOwnerModel): Promise<MatchedBetModel | undefined> => {
-  const { moralisUser } = useMoralis();
-  if (moralisUser.value) {
-    const relation: Moralis.Relation = moralisUser.value.relation("polygonMatchedBets");
-    const matchedBetsQuery: MoralisTypes.Query<any> = relation
-      .query()
-      .equalTo("nft", nft)
-      .include("nft", "bet")
-      .select("amount", "bet", "betType", "odds", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus");
-
-    const matchedBet: MatchedBetModel | undefined = await matchedBetsQuery.first();
-    return matchedBet;
-  }
-};
-
 const calculatePotentialProfit = (bet: MatchedBetModel | UnmatchedBetModel): string | undefined => {
   const { convertCurrency } = useCurrency();
   if (bet.attributes.betSide == BetTypeEnum.LAY) {
@@ -158,5 +137,5 @@ const getMatchedBetQuery = (parms: BetQueryParms): MoralisTypes.Query => {
 };
 
 export const useBet = () => {
-  return { getUnmatchedBets, getMatchedBets, getMatchedBetFromNft, getUnmatchedBetByIndex, firstUnmatchedBet, getMatchedBetQuery, calculatePotentialProfit };
+  return { getUnmatchedBets, getMatchedBets, getUnmatchedBetByIndex, firstUnmatchedBet, getMatchedBetQuery, calculatePotentialProfit };
 };
