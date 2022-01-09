@@ -11,7 +11,6 @@ import { useNFTs } from "./nfts";
 import { useBalance } from "./balance";
 import { TokenBalance } from "../../interfaces/TokenBalance";
 import Moralis from "moralis/dist/moralis.js";
-import Web3 from "web3";
 
 /**
  * The user object where all relevant information were stored

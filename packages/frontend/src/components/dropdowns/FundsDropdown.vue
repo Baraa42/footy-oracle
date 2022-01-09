@@ -2,24 +2,7 @@
   <Menu as="div" class="relative inline-block text-left" v-if="isAuthenticated && balance.available">
     <div>
       <MenuButton
-        class="
-          inline-flex
-          justify-end
-          items-center
-          w-full
-          pr-4
-          pl-10
-          py-2
-          text-sm
-          font-medium
-          bg-black
-          rounded-md
-          bg-opacity-30
-          hover:bg-opacity-40
-          focus:outline-none
-          focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75
-          space-x-3
-        "
+        class="inline-flex justify-end items-center w-full pr-4 pl-10 h-14 text-sm font-medium bg-black rounded-md bg-opacity-30 hover:bg-opacity-40 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 space-x-3"
       >
         <div class="flex flex-col text-right">
           <span class="text-xs font-medium text-gray-300 leading-relaxed">Available Funds</span>
@@ -38,19 +21,7 @@
       leave-to-class="transform scale-95 opacity-0"
     >
       <MenuItems
-        class="
-          absolute
-          right-0
-          w-48
-          mt-2
-          origin-top-right
-          bg-white
-          divide-y divide-gray-100
-          rounded-md
-          shadow-lg
-          ring-1 ring-black ring-opacity-5
-          focus:outline-none
-        "
+        class="absolute right-0 w-48 h-full mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
       >
         <div class="divide-y-2 divide-gray-400 divide-opacity-20">
           <div v-for="token in tokens" :key="token.symbol" class="flex flex-row space-x-2 py-2 justify-end px-2 items-center text-black text-sm">
