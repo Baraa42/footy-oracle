@@ -1,5 +1,5 @@
 import Moralis from "moralis/dist/moralis.js";
-import { NftMetadata, NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
+import { NftMetadata, NftOwnerModel, NftOwnerPendingModel, ListedNftModel, MumbaiDepositLPModel } from "../../interfaces/models/NftOwnerModel";
 import axios from "axios";
 import { useContract } from "./contract";
 import { useMoralis } from "./moralis";
@@ -24,6 +24,10 @@ const NftMintStatus = NFTMintStatus;
 
 const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
 
+const lpNfts: Ref<Array<MumbaiDepositLPModel> | undefined> = ref();
+
+var delistedOfferingIds: Array<string> = [];
+var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
 const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c097363c'
 
 /**
@@ -249,6 +253,87 @@ const resolveMetadataFromNft = async (uri: string): Promise<NftMetadata | undefi
   }
 };
 
+const getNFTsDeListedOnMarketplace = async () => {
+  const queryAll = new Moralis.Query("MumbaiClosedOfferings");
+  //queryAll.equalTo("hostContract", "0xb4de4d37e5766bc3e314f3eda244b1d0c097363c");
+
+  const deListedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
+  deListedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
+  console.log("getNFTsDeListedOnMarketplace");
+  console.log(deListedNfts);
+  deListedNfts.value.forEach((nft: ListedNftModel) => {
+    delistedOfferingIds.push(nft.attributes.offeringId);
+  });
+};
+
+const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> | undefined>> => {
+  const queryAll = new Moralis.Query("MumbaiPlacedOfferings");
+  //queryAll.equalTo("tokenId", "2");
+  //queryAll.equalTo("hostContract", "0xec3cd0be96e26841ed17cf9e8585b00926488cd5");
+
+  listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
+  console.log("getNFTsListedOnMarketplace");
+  console.log(listedNfts);
+  //console.log('Total number of nfts fetched from db = ' + listedNfts.value.length);
+
+  await getNFTsDeListedOnMarketplace();
+  //console.log(delistedOfferingIds);
+
+  /**
+   * Resolve metadata from nft
+   */
+  listedNfts.value.forEach(async (nft: ListedNftModel, index) => {
+    let notFound = true;
+    delistedOfferingIds.forEach((delistedOffering: string) => {
+      if (nft.attributes.offeringId == delistedOffering) {
+        notFound = false;
+      }
+    });
+    if (notFound) {
+      console.log("pushing this nft index = " + index);
+      //console.log(nft);
+      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
+      if (nft.parsed_metadata) {
+        //console.log('printing metadata')
+        //console.log(nft.parsed_metadata);
+      } else {
+        //console.log("if metadata is undefined, don't bother with this nft. index = " + index);
+        listedNfts?.value?.splice(index, 1);
+        //console.log('number of nfts are removing for metadata problem = ' + listedNfts.value.length);
+      }
+    } else {
+      //console.log('Ignoring this nft since it is no longer listed, index = ' + index);
+      //console.log(nft);
+      listedNfts?.value?.splice(index, 1);
+      //console.log(listedNfts);
+    }
+  });
+
+  //console.log(listedNfts);
+  console.log("number of nfts are filtering = " + listedNfts.value.length);
+  return listedNfts;
+};
+
+/**
+ * Get user nfts and subscribe for new nfts
+ *
+ * @returns Promise
+ */
+const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | undefined>> => {
+  const { moralisUser } = useMoralis();
+  if (moralisUser.value) {
+    // Get nfts from user
+    const { createQuery } = useMoralisObject("MumbaiDepositLP");
+    const nftQuery = createQuery() as Moralis.Query<MumbaiDepositLPModel>;
+    //nftQuery.equalTo("name", collectionName);
+    //nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
+    lpNfts.value = (await nftQuery.find()) as Array<MumbaiDepositLPModel>;
+    console.log(lpNfts);
+    console.log(lpNfts.value);
+  }
+  return lpNfts;
+};
+
 export const useNFTs = () => {
   return {
     NftMintStatus,
@@ -260,5 +345,8 @@ export const useNFTs = () => {
     collectionName,
     getOpenseaLink,
     resolveMetadataFromNft,
+    getNFTsListedOnMarketplace,
+    getNFTsDeListedOnMarketplace,
+    getDepositLPNFTs,
   };
 };

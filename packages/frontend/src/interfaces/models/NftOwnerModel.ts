@@ -68,3 +68,12 @@ export interface ListedNftModel extends Moralis.Object<Moralis.Attributes> {
   };
   parsed_metadata?: NftMetadata;
 }
+
+export interface MumbaiDepositLPModel extends Moralis.Object<Moralis.Attributes> {
+  attributes: {
+    uri: string;
+    address: string;
+    tokenId: string;
+    depositAmount: string;
+  };
+}

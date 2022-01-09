@@ -1,7 +1,7 @@
 import { Betslip } from "./Betslip";
 import { FavoriteModel } from "./models/FavoriteModel";
 import { MatchedBetModel } from "./models/MatchedBetModel";
-import { NftOwnerModel } from "./models/NftOwnerModel";
+import { MumbaiDepositLPModel, NftOwnerModel } from "./models/NftOwnerModel";
 import { UnmatchedBetModel } from "./models/UnmatchedBetModel";
 import { UserModel } from "./models/UserModel";
 import { TokenBalance } from "./TokenBalance";
@@ -20,4 +20,5 @@ export interface User {
   nfts?: Array<NftOwnerModel>;
   betslip?: Array<Betslip>;
   listedNfts?: Array<any>;
+  depositNfts?: Array<MumbaiDepositLPModel>;
 }

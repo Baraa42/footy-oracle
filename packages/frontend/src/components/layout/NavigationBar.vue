@@ -91,6 +91,13 @@ export default defineComponent({
           name: "swap",
         },
       },
+      {
+        name: "Add Liquidity",
+        icon: markRaw(RefreshIcon),
+        to: {
+          name: "addLiquidity",
+        },
+      },
     ];
 
     const sports = [

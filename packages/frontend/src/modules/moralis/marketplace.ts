@@ -1,4 +1,4 @@
-import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
+import { MumbaiDepositLPModel, NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { useAlert } from "../layout/alert";
 import { useMoralis } from "./moralis";
 

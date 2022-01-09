@@ -43,6 +43,11 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "nftMarketplace" */ "../views/NftMarketplace.vue"),
   },
   {
+    path: "/addLiquidity",
+    name: "addLiquidity",
+    component: () => import(/* webpackChunkName: "nftMarketplace" */ "../views/AddLiquidity.vue"),
+  },
+  {
     path: "/sport/:sport",
     name: "sport",
     component: () => import(/* webpackChunkName: "sport" */ "../views/Sport.vue"),
