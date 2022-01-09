@@ -19,7 +19,7 @@
     "dayjs": "^1.10.7",
     "dom-to-image-more": "2.9.5",
     "file-saver": "^2.0.5",
-    "moralis": "^0.0.155",
+    "moralis": "^0.0.183",
     "timezones-list": "^3.0.1",
     "vue": "^3.0.5",
     "vue-axios": "^3.4.0",

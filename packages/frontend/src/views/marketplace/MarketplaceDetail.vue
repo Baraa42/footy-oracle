@@ -174,9 +174,9 @@
 <script lang="ts">
 import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { useNFTs } from "@/modules/moralis/nfts";
-import { Moralis as MoralisTypes } from "moralis/types";
 import { useSubscription } from "@/modules/moralis/subscription";
-import { defineComponent, onUnmounted, reactive, ref, watchEffect } from "vue";
+import Moralis from "moralis/dist/moralis.js";
+import { defineComponent, onUnmounted, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import NftImage from "@/components/common/NftImage.vue";
 import { useTimezone } from "@/modules/settings/timezone";
@@ -302,8 +302,8 @@ export default defineComponent({
         nft.value = data as NftOwnerModel;
       });
 
-      subscribe(query).then((subscription: MoralisTypes.LiveQuerySubscription) => {
-        subscription.on("update", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => {
+      subscribe(query).then((subscription: Moralis.LiveQuerySubscription) => {
+        subscription.on("update", (object: Moralis.Object<Moralis.Attributes>) => {
           console.log("update nft");
           console.log(object);
           nft.value = object as NftOwnerModel;

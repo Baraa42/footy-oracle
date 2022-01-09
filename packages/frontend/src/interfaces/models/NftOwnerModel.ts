@@ -1,4 +1,4 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { MatchedBetModel } from "./MatchedBetModel";
 
 export interface NftMetadataAttribute {
@@ -14,7 +14,7 @@ export interface NftMetadata {
   attributes: NftMetadataAttribute[];
 }
 
-export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface NftOwnerModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     token_id: string;
     amount: string;
@@ -34,7 +34,7 @@ export interface NftOwnerModel extends MoralisTypes.Object<MoralisTypes.Attribut
   };
 }
 
-export interface NftOwnerPendingModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface NftOwnerPendingModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     token_id: string;
     amount: string;
@@ -47,7 +47,7 @@ export interface NftOwnerPendingModel extends MoralisTypes.Object<MoralisTypes.A
   };
 }
 
-export interface ListedNftModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface ListedNftModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     createdAt: string;
     updatedAt: string;

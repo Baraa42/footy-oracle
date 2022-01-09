@@ -1,14 +1,14 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { Ref, ref } from "vue";
 
 /**
  * Helper for push new object into array
  *
- * @param  {MoralisTypes.Object<MoralisTypes.Attributes>} object
+ * @param  {Moralis.Object<Moralis.Attributes>} object
  * @param  {Array<any>} array
  * @returns void
  */
-const onCreateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, array: Array<any> | undefined): void => {
+const onCreateFunction = (object: Moralis.Object<Moralis.Attributes>, array: Array<any> | undefined): void => {
   if (array) {
     array.push(object);
   }
@@ -17,12 +17,12 @@ const onCreateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, 
 /**
  * Helper for updating object inside array
  *
- * @param  {MoralisTypes.array<MoralisTypes.Attributes>} object
+ * @param  {Moralis.array<Moralis.Attributes>} object
  * @param  {Array<any>} array
  * @param  {string} findByKey
  * @returns
  */
-const onUpdateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, array: Array<any> | undefined, findByKey: string) => {
+const onUpdateFunction = (object: Moralis.Object<Moralis.Attributes>, array: Array<any> | undefined, findByKey: string) => {
   if (array) {
     let check = (object as any)[findByKey];
     if (!check) {
@@ -40,12 +40,12 @@ const onUpdateFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, 
 /**
  * Helper for removing object inside array
  *
- * @param  {MoralisTypes.Object<MoralisTypes.Attributes>} object
+ * @param  {Moralis.Object<Moralis.Attributes>} object
  * @param  {Array<any>} array
  * @param  {string} findByKey
  * @returns void
  */
-const onRemoveFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, array: Array<any> | undefined, findByKey: string): void => {
+const onRemoveFunction = (object: Moralis.Object<Moralis.Attributes>, array: Array<any> | undefined, findByKey: string): void => {
   if (array) {
     let check = (object as any)[findByKey];
     if (!check) {
@@ -62,48 +62,48 @@ const onRemoveFunction = (object: MoralisTypes.Object<MoralisTypes.Attributes>, 
 /**
  * Subscribes to on create with helper function
  *
- * @param  {MoralisTypes.LiveQuerySubscription} subscription
+ * @param  {Moralis.LiveQuerySubscription} subscription
  * @param  {Array<any>} array
  * @returns void
  */
-const subscribeToCreate = (subscription: MoralisTypes.LiveQuerySubscription, array: Array<any> | undefined): void => {
-  subscription.on("create", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => onCreateFunction(object, array));
+const subscribeToCreate = (subscription: Moralis.LiveQuerySubscription, array: Array<any> | undefined): void => {
+  subscription.on("create", (object: Moralis.Object<Moralis.Attributes>) => onCreateFunction(object, array));
 };
 
 /**
  * Subscribes to on update with helper function
  *
- * @param  {MoralisTypes.LiveQuerySubscription} subscription
+ * @param  {Moralis.LiveQuerySubscription} subscription
  * @param  {Array<any>} array
  * @param  {string} findByKey
  * @returns void
  */
-const subscribeToUpdate = (subscription: MoralisTypes.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
-  subscription.on("update", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => onUpdateFunction(object, array, findByKey));
+const subscribeToUpdate = (subscription: Moralis.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
+  subscription.on("update", (object: Moralis.Object<Moralis.Attributes>) => onUpdateFunction(object, array, findByKey));
 };
 
 /**
  * Subscribes to on delete with helper function
  *
- * @param  {MoralisTypes.LiveQuerySubscription} subscription
+ * @param  {Moralis.LiveQuerySubscription} subscription
  * @param  {Array<any>} array
  * @param  {string} findByKey
  * @returns void
  */
-const subscribeToDelete = (subscription: MoralisTypes.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
-  subscription.on("delete", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => onRemoveFunction(object, array, findByKey));
+const subscribeToDelete = (subscription: Moralis.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
+  subscription.on("delete", (object: Moralis.Object<Moralis.Attributes>) => onRemoveFunction(object, array, findByKey));
 };
 
 /**
  * Subscribes to on leave with helper function
  *
- * @param  {MoralisTypes.LiveQuerySubscription} subscription
+ * @param  {Moralis.LiveQuerySubscription} subscription
  * @param  {Array<any>} array
  * @param  {string} findByKey
  * @returns void
  */
-const subscribeToLeave = (subscription: MoralisTypes.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
-  subscription.on("leave", (object: MoralisTypes.Object<MoralisTypes.Attributes>) => onRemoveFunction(object, array, findByKey));
+const subscribeToLeave = (subscription: Moralis.LiveQuerySubscription, array: Array<any> | undefined, findByKey: string): void => {
+  subscription.on("leave", (object: Moralis.Object<Moralis.Attributes>) => onRemoveFunction(object, array, findByKey));
 };
 
 /**
@@ -112,9 +112,9 @@ const subscribeToLeave = (subscription: MoralisTypes.LiveQuerySubscription, arra
  * @returns
  */
 export const useSubscription = () => {
-  const subscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
+  const subscription: Ref<Moralis.LiveQuerySubscription | undefined> = ref();
 
-  const subscribe = async (query: MoralisTypes.Query<any>): Promise<MoralisTypes.LiveQuerySubscription> => {
+  const subscribe = async (query: Moralis.Query<any>): Promise<Moralis.LiveQuerySubscription> => {
     subscription.value = await query.subscribe();
     return subscription.value;
   };

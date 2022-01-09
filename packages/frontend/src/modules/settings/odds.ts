@@ -2,6 +2,7 @@ import { Ref, ref } from "vue";
 import Moralis from "moralis/dist/moralis.js";
 import { BigNumber } from "bignumber.js";
 import { SelectOption } from "../../interfaces/layout/SelectOption";
+import { useMoralis } from "../moralis/moralis";
 
 /**
  * Odds formats settings array
@@ -35,13 +36,13 @@ const oddsDecimals: number = 2;
  * @returns string
  */
 const encodeOdds = (odds: string | number): string => {
-  const web3 = new Moralis.Web3();
-  return web3.utils.toWei(String(odds), "kwei");
+  const { web3 } = useMoralis();
+  return web3.value.utils.toWei(String(odds), "kwei");
 };
 
 const decodeOdds = (odds: string | number): string => {
-  const web3 = new Moralis.Web3();
-  return web3.utils.fromWei(String(odds), "kwei");
+  const { web3 } = useMoralis();
+  return web3.value.utils.fromWei(String(odds), "kwei");
 };
 
 export const useOdds = () => {

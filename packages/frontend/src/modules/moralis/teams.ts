@@ -1,5 +1,4 @@
-import { Moralis as MoralisTypes } from "moralis/types";
-import { LeagueModel } from "../../interfaces/models/LeagueModel";
+import Moralis from "moralis/dist/moralis.js";
 import { useMoralisObject } from "./moralisObject";
 import { TeamModel } from "../../interfaces/models/TeamModel";
 
@@ -12,7 +11,7 @@ const { Object: Team, createQuery } = useMoralisObject("Team");
  * @returns Promise
  */
 const getTeamByName = async (name: string): Promise<TeamModel | undefined> => {
-  const query: MoralisTypes.Query<TeamModel> = createQuery();
+  const query = createQuery() as Moralis.Query<TeamModel>;
   query.equalTo("name", name);
   return await query.first();
 };
@@ -24,7 +23,7 @@ const getTeamByName = async (name: string): Promise<TeamModel | undefined> => {
  * @returns Promise
  */
 const getTeamById = async (id: string): Promise<TeamModel | undefined> => {
-  const query: MoralisTypes.Query<TeamModel> = createQuery();
+  const query = createQuery() as Moralis.Query<TeamModel>;
   query.equalTo("objectId", id);
   return await query.first();
 };
@@ -34,7 +33,7 @@ const getTeamById = async (id: string): Promise<TeamModel | undefined> => {
  *
  */
 const getTeams = async (): Promise<Array<TeamModel> | undefined> => {
-  const query: MoralisTypes.Query<TeamModel> = createQuery();
+  const query = createQuery() as Moralis.Query<TeamModel>;
   return await query.find();
 };
 

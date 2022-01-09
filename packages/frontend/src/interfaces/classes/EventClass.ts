@@ -44,7 +44,7 @@ const getUnmatchedBets = async (event: EventClass): Promise<UnmatchedBetModel[][
    */
   const relation = event.relation("polygonUnmatchedBets");
   const unmatchedBetsQuery = relation.query().notEqualTo("isMatched", true).equalTo("confirmed", true).select("amount", "betType", "odds", "selection");
-  const unmatchedBets = await unmatchedBetsQuery.find();
+  const unmatchedBets = (await unmatchedBetsQuery.find()) as UnmatchedBetModel[];
 
   /**
    * Create new two dimensional array [betType][selection] = unmatchedBet

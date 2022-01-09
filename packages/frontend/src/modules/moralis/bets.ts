@@ -1,10 +1,10 @@
 import { Ref, ref } from "vue";
-import Moralis, { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
 import { useMoralis } from "./moralis";
 import { useMoralisObject } from "./moralisObject";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
-import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
+
 import { EventModel } from "../../interfaces/models/EventModel";
 import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { SelectionEnum } from "../../interfaces/enums/SelectionEnum";
@@ -28,7 +28,7 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
   if (moralisUser.value) {
     // Get all unmatched bets from user
     const { createQuery } = useMoralisObject("PolygonUnmatchedBets");
-    const query: MoralisTypes.Query<UnmatchedBetModel> = await createQuery();
+    const query = createQuery() as Moralis.Query<UnmatchedBetModel>;
     const unmatchedBetsQuery: Moralis.Query<any> = query
       .equalTo("from", moralisUser.value.get("ethAddress"))
       .include("event")
@@ -37,7 +37,7 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
 
     // Create live subscriptions
     const { subscribe, subscribeToCreate, subscribeToUpdate, subscribeToDelete } = useSubscription();
-    subscribe(unmatchedBetsQuery).then((subscription: MoralisTypes.LiveQuerySubscription) => {
+    subscribe(unmatchedBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
       subscribeToCreate(subscription, unmatchedBets.value);
       subscribeToUpdate(subscription, unmatchedBets.value, "id");
       subscribeToDelete(subscription, unmatchedBets.value, "id");
@@ -58,7 +58,7 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
   if (moralisUser.value) {
     // Get all matched bets from user
     const { createQuery } = useMoralisObject("PolygonMatchedBets");
-    const query: MoralisTypes.Query<any> = await createQuery();
+    const query: Moralis.Query<any> = await createQuery();
     const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
       .equalTo("from", moralisUser.value.get("ethAddress"))
       .include("event")
@@ -67,7 +67,7 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
 
     // Create live subscriptions
     const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
-    subscribe(matchedBetsQuery).then((subscription: MoralisTypes.LiveQuerySubscription) => {
+    subscribe(matchedBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
       subscribeToCreate(subscription, matchedBets.value);
       subscribeToUpdate(subscription, matchedBets.value, "id");
     });
@@ -116,9 +116,9 @@ const firstUnmatchedBet = (event: EventModel, type: BetTypeEnum, selection: Sele
   return getUnmatchedBetByIndex(event, type, selection, 0);
 };
 
-const getMatchedBetQuery = (parms: BetQueryParms): MoralisTypes.Query => {
+const getMatchedBetQuery = (parms: BetQueryParms): Moralis.Query => {
   const { createQuery, handleQuery } = useMoralisObject("PolygonMatchedBets");
-  const query: MoralisTypes.Query = createQuery();
+  const query: Moralis.Query = createQuery();
   handleQuery(query, parms);
 
   if (parms.filter?.betSide) {

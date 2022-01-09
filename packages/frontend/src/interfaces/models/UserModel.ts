@@ -1,3 +1,3 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 
-export interface UserModel extends MoralisTypes.User<MoralisTypes.Attributes> {}
+export interface UserModel extends Moralis.User<Moralis.Attributes> {}

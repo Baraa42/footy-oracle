@@ -1,7 +1,7 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { CountryModel } from "./CountryModel";
 
-export interface TeamModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface TeamModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     name: string;
     logo: string;

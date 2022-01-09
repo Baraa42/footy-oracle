@@ -1,10 +1,10 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { BetTypeEnum } from "../enums/BetTypeEnum";
 import { SelectionEnum } from "../enums/SelectionEnum";
 import { EventModel } from "./EventModel";
 import { UserModel } from "./UserModel";
 
-export interface UnmatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface UnmatchedBetModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     apiId: string;
     betType: number;

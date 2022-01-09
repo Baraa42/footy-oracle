@@ -1,5 +1,4 @@
-import { Ref, ref } from "vue";
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { CountryModel } from "../../interfaces/models/CountryModel";
 import { useMoralisObject } from "./moralisObject";
 
@@ -13,7 +12,7 @@ const { Object: Country, createQuery } = useMoralisObject("Country");
  * @returns Promise
  */
 const getCountry = async (name: string, onlyActive: boolean = true): Promise<CountryModel | undefined> => {
-  const query: MoralisTypes.Query<CountryModel> = createQuery();
+  const query = createQuery() as Moralis.Query<CountryModel>;
 
   if (onlyActive) {
     query.equalTo("isActive", true);
@@ -29,7 +28,7 @@ const getCountry = async (name: string, onlyActive: boolean = true): Promise<Cou
  * @param  {boolean} onlyActive=true
  */
 const getCountries = async (onlyActive: boolean = true): Promise<Array<CountryModel>> => {
-  const query: MoralisTypes.Query<CountryModel> = createQuery();
+  const query = createQuery() as Moralis.Query<CountryModel>;
   if (onlyActive) {
     query.equalTo("isActive", true);
   }

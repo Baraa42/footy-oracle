@@ -1,4 +1,4 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { LeagueModel } from "../../interfaces/models/LeagueModel";
 import { useMoralisObject } from "./moralisObject";
 import { CountryModel } from "../../interfaces/models/CountryModel";
@@ -14,7 +14,7 @@ const { Object: League, createQuery } = useMoralisObject("League");
  * @returns Promise
  */
 const getLeagueByName = async (name: string, onlyActive: boolean = true, country?: CountryModel): Promise<LeagueModel | undefined> => {
-  const query: MoralisTypes.Query<LeagueModel> = createQuery();
+  const query = createQuery() as Moralis.Query<LeagueModel>;
 
   if (onlyActive) {
     query.equalTo("isActive", true);
@@ -37,7 +37,7 @@ const getLeagueByName = async (name: string, onlyActive: boolean = true, country
  * @returns Promise
  */
 const getLeagueById = async (id: string, onlyActive: boolean = true, country?: CountryModel): Promise<LeagueModel | undefined> => {
-  const query: MoralisTypes.Query<LeagueModel> = createQuery();
+  const query = createQuery() as Moralis.Query<LeagueModel>;
 
   if (onlyActive) {
     query.equalTo("isActive", true);
@@ -57,7 +57,7 @@ const getLeagueById = async (id: string, onlyActive: boolean = true, country?: C
  * @param  {CountryModel} country?
  */
 const getLeagues = async (onlyActive: boolean = true, country?: CountryModel): Promise<Array<LeagueModel> | undefined> => {
-  const query: MoralisTypes.Query<LeagueModel> = createQuery();
+  const query = createQuery() as Moralis.Query<LeagueModel>;
 
   if (onlyActive) {
     query.equalTo("isActive", true);

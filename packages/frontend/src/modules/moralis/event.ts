@@ -2,15 +2,14 @@ import Moralis from "moralis/dist/moralis.js";
 import { EventModel } from "../../interfaces/models/EventModel";
 import { useTimezone } from "../settings/timezone";
 import { useMoralisObject } from "./moralisObject";
-import { Moralis as MoralisTypes } from "moralis/types";
 import { EventClass } from "../../interfaces/classes/EventClass";
 import { EventQueryParms } from "@/interfaces/queries/EventQueryParms";
 
 const { Object: Event, createQuery, handleQuery } = useMoralisObject("Event");
 Moralis.Object.registerSubclass("Event", EventClass);
 
-const getEventQuery = (parms: EventQueryParms): MoralisTypes.Query => {
-  const query: MoralisTypes.Query = createQuery();
+const getEventQuery = (parms: EventQueryParms): Moralis.Query => {
+  const query: Moralis.Query = createQuery();
 
   handleQuery(query, parms);
   if (parms.filter?.onlyFutureEvents) {
@@ -66,7 +65,7 @@ const search = async (search: string): Promise<Array<EventModel>> => {
   mainQuery.limit(10);
   mainQuery.include(["home", "away", "league.country"]);
 
-  const results: Array<EventModel> = await mainQuery.find();
+  const results = (await mainQuery.find()) as Array<EventModel>;
   return results;
 };
 

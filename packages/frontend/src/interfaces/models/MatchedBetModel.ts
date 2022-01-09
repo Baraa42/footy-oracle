@@ -1,4 +1,4 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 import { BetTypeEnum } from "../enums/BetTypeEnum";
 import { NFTMintStatus } from "../enums/NFTMintStatus";
 import { SelectionEnum } from "../enums/SelectionEnum";
@@ -6,7 +6,7 @@ import { EventModel } from "./EventModel";
 import { NftOwnerModel } from "./NftOwnerModel";
 import { UserModel } from "./UserModel";
 
-export interface MatchedBetModel extends MoralisTypes.Object<MoralisTypes.Attributes> {
+export interface MatchedBetModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     apiId: string;
     betType: number;

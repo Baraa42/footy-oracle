@@ -19,6 +19,9 @@
       "@/*": ["./src/*"]
     }
   },
-  "include": ["./src/**/*.ts", "./src/**/*.d.ts", "./src/**/*.vue", "./node_modules/footy-oracle-contract/typechain/index.ts"],
+  "typeRoots": [
+    "./node_modules/@types"
+  ],
+  "include": ["./src/**/*.ts", "./src/**/*.d.ts", "./src/**/*.vue", "./node_modules/footy-oracle-contract/typechain/index.ts", "./node_modules/moralis/types/index.d.ts"],
   "exclude": ["node_modules", "dist", "public", "tests"]
 }

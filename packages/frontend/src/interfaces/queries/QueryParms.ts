@@ -1,7 +1,7 @@
-import { Moralis as MoralisTypes } from "moralis/types";
+import Moralis from "moralis/dist/moralis.js";
 export interface InnerQuery {
   relation: string;
-  query: MoralisTypes.Query;
+  query: Moralis.Query;
 }
 
 export interface QueryParms {

@@ -1,11 +1,11 @@
 import Moralis from "moralis/dist/moralis.js";
-import { Moralis as MoralisTypes } from "moralis/types";
+import { App } from "vue";
 
-Moralis.start({
-  serverUrl: process.env.moralisServerlUrl,
-  appId: process.env.moralisAppId,
-});
-
-const MoralisPlugin: MoralisTypes = Moralis;
-
-export default MoralisPlugin;
+export default {
+  install: (app: App, options?: any) => {
+    Moralis.start({
+      serverUrl: process.env.moralisServerlUrl,
+      appId: process.env.moralisAppId,
+    });
+  },
+};

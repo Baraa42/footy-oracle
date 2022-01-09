@@ -1,5 +1,5 @@
+import Moralis from "moralis/dist/moralis.js";
 import { EventModel } from "../../interfaces/models/EventModel";
-import { Moralis as MoralisTypes } from "moralis/types";
 import { FavoriteModel } from "../../interfaces/models/FavoriteModel";
 import { useAlert } from "../layout/alert";
 import { useMoralis } from "./moralis";
@@ -18,7 +18,7 @@ export const useFavorites = () => {
    */
   const getFavorites = async (): Promise<Array<FavoriteModel> | undefined> => {
     if (isAuthenticated.value && moralisUser.value) {
-      const query: MoralisTypes.Query<FavoriteModel> = createQuery();
+      const query = createQuery() as Moralis.Query<FavoriteModel>;
 
       query.equalTo("user", moralisUser.value);
       query.include(["event"]);

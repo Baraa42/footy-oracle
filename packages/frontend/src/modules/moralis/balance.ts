@@ -1,16 +1,14 @@
 import Moralis from "moralis/dist/moralis.js";
 import { Ref, ref } from "vue";
-import { Moralis as MoralisTypes } from "moralis/types";
 import { useMoralisObject } from "./moralisObject";
-import { BalancePendingModel } from "../../interfaces/models/BalancePendingModel";
 import { useMoralis } from "./moralis";
 import { TokenBalance } from "../../interfaces/TokenBalance";
 
-const nativeBalance: Ref<number | undefined> = ref();
-const nativeBalanceSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
+const nativeBalance: Ref<string | undefined> = ref();
+const nativeBalanceSubscription: Ref<Moralis.LiveQuerySubscription | undefined> = ref();
 
 const tokenBalances: Ref<Array<TokenBalance> | undefined> = ref();
-const tokenBalancesSubscription: Ref<MoralisTypes.LiveQuerySubscription | undefined> = ref();
+const tokenBalancesSubscription: Ref<Moralis.LiveQuerySubscription | undefined> = ref();
 
 export const useBalance = () => {
   const { moralisUser, chainOptions, web3 } = useMoralis();
@@ -20,7 +18,7 @@ export const useBalance = () => {
    *
    * @returns Promise
    */
-  const getNativeBalance = async (): Promise<Ref<number | undefined>> => {
+  const getNativeBalance = async (): Promise<Ref<string | undefined>> => {
     if (!moralisUser.value) {
       return nativeBalance;
     }
@@ -34,7 +32,7 @@ export const useBalance = () => {
      * Create live subscription for pending balances
      */
     const { Object: PolygonBalance, createQuery } = useMoralisObject("PolygonBalancePending");
-    const subscriptionQuery: MoralisTypes.Query = createQuery();
+    const subscriptionQuery: Moralis.Query = createQuery();
     console.log(moralisUser.value.get("ethAddress"));
     subscriptionQuery.equalTo("address", moralisUser.value.get("ethAddress"));
 
@@ -60,7 +58,7 @@ export const useBalance = () => {
    *
    * @returns Promise
    */
-  const loadNativeBalance = async (): Promise<number> => {
+  const loadNativeBalance = async (): Promise<string> => {
     const balance = await Moralis.Web3API.account.getNativeBalance(chainOptions);
     return web3.value.utils.fromWei(balance.balance);
   };
@@ -84,7 +82,7 @@ export const useBalance = () => {
      * Create live subscription for pending balances
      */
     const { Object: PolygonTokenBalance, createQuery } = useMoralisObject("PolygonTokenBalance");
-    const subscriptionQuery: MoralisTypes.Query = createQuery();
+    const subscriptionQuery: Moralis.Query = createQuery();
     subscriptionQuery.equalTo("address", moralisUser.value.get("ethAddress"));
 
     if (!tokenBalancesSubscription.value) {

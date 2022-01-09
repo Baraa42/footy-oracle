@@ -3,6 +3,7 @@ import Moralis from "moralis/dist/moralis.js";
 import { BigNumber } from "bignumber.js";
 import { SelectOption } from "../../interfaces/layout/SelectOption";
 import { Ref } from "vue";
+import { useMoralis } from "../moralis/moralis";
 
 /**
  * Currencies settings array
@@ -29,8 +30,8 @@ const selectedCurrency: Ref<SelectOption> = ref(currencies[0]);
  * @returns string
  */
 const convertCurrency = (amount: string | number): string => {
-  const web3 = new Moralis.Web3();
-  return web3.utils.fromWei(String(amount), "ether");
+  const { web3 } = useMoralis();
+  return web3.value.utils.fromWei(String(amount), "ether");
 };
 
 /**

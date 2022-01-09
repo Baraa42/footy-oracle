@@ -6,14 +6,17 @@ declare module "*.vue" {
   export default component;
 }
 
-declare module "moralis/dist/moralis.js";
 declare module "@heroicons/vue/solid";
 declare module "@heroicons/vue/outline";
 declare module "body-scroll-lock";
 declare module "timezones-list";
-declare module "moralis";
 declare module "color";
 declare module "footy-oracle-contract";
+
+declare module "moralis/dist/moralis.js" {
+  import * as MoralisTypes from "moralis/types";
+  export = MoralisTypes;
+}
 
 declare module "dom-to-image-more" {
   import domToImage = require("dom-to-image");

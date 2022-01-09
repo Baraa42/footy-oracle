@@ -1,6 +1,5 @@
 import { InnerQuery, QueryParms } from "@/interfaces/queries/QueryParms";
 import Moralis from "moralis/dist/moralis.js";
-import { Moralis as MoralisTypes } from "moralis/types";
 
 export const useMoralisObject = (object: string) => {
   const Object = Moralis.Object.extend(object);
@@ -9,7 +8,7 @@ export const useMoralisObject = (object: string) => {
     return new Moralis.Query(Object);
   };
 
-  const handleQuery = (query: MoralisTypes.Query, parms: QueryParms): MoralisTypes.Query => {
+  const handleQuery = (query: Moralis.Query, parms: QueryParms): Moralis.Query => {
     if (parms.select) {
       query.select(parms.select);
     }
