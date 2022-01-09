@@ -1,4 +1,6 @@
 import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
+import MarketMakerContractJson from "footy-oracle-contract/artifacts/contracts/MarketMaker.sol/MarketMaker.json";
+
 import { Ref, ref } from "vue";
 import { useMoralis } from "./moralis";
 
@@ -16,4 +18,8 @@ const getBettingContract = async (): Promise<String> => {
 
 export const useContract = () => {
   return { bettingAbi: BettingContractJson.abi, getBettingContract };
+};
+
+export const useMarketMaker = () => {
+  return { marketMakerAbi: MarketMakerContractJson.abi};
 };

@@ -53,6 +53,11 @@ const nfts: Ref<Array<NftOwnerModel> | undefined> = toRef(user.value, "nfts");
  */
 const listedNfts: Ref<Array<ListedNftModel> | undefined> = toRef(user.value, "listedNfts");
 
+/**
+ * Reference for NFTs from Market Maker contract
+ */
+const depositNfts: Ref<Array<NftOwnerModel> | undefined> = toRef(user.value, "depositNfts");
+
 const isAuthenticated = computed((): boolean => user.value.isAuthenticated); // read only access to is authenticated state
 const moralisUser = computed((): MoralisTypes.User | undefined => user.value.moralis); // read only access to the moralis user
 const balance = computed(() => user.value.balances);
@@ -131,7 +136,7 @@ const loadTokenBalance = async (): Promise<void> => {
  * @returns Promise
  */
 const loadNfts = async (): Promise<void> => {
-  const { getNFTs, getNFTsListedOnMarketplace } = useNFTs();
+  const { getNFTs, getNFTsListedOnMarketplace, getDepositLPNFTs } = useNFTs();
   const localNfts: Ref<Array<NftOwnerModel> | undefined> = await getNFTs();
   if (localNfts.value) {
     user.value.nfts = localNfts.value;
@@ -143,6 +148,11 @@ const loadNfts = async (): Promise<void> => {
     user.value.listedNfts = localListedNfts.value;
   }
   //console.log(localListedNfts);
+  
+  const localDepositNfts: Ref<Array<NftOwnerModel> | undefined> = await getDepositLPNFTs();
+  if (localDepositNfts.value) {
+    user.value.depositNfts = localDepositNfts.value;
+  }
 };
 
 const loadFavorites = async () => {
@@ -184,5 +194,6 @@ export const useMoralis = () => {
     nfts,
     loadNfts,
     listedNfts,
+    depositNfts,
   };
 };

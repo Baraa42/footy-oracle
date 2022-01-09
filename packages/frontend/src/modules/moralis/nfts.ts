@@ -1,4 +1,4 @@
-import { NftMetadata, NftOwnerModel, NftOwnerPendingModel, ListedNftModel } from "../../interfaces/models/NftOwnerModel";
+import { NftMetadata, NftOwnerModel, NftOwnerPendingModel, ListedNftModel, MumbaiDepositLPModel } from "../../interfaces/models/NftOwnerModel";
 import axios from "axios";
 import { useContract } from "./contract";
 import { useMoralis } from "./moralis";
@@ -316,6 +316,27 @@ const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> |
   return listedNfts;
 };
 
+
+/**
+ * Get user nfts and subscribe for new nfts
+ *
+ * @returns Promise
+ */
+const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | undefined>> => {
+  const { moralisUser } = useMoralis();
+  if (moralisUser.value) {
+    // Get nfts from user
+    const { createQuery } = useMoralisObject("MumbaiDepositLP");
+    const nftQuery: MoralisTypes.Query<NftOwnerModel> = createQuery();
+    //nftQuery.equalTo("name", collectionName);
+    //nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
+    nfts.value = (await nftQuery.find()) as Array<MumbaiDepositLPModel>;
+    console.log(nfts);
+    console.log(nfts.value)
+  }
+  return nfts;
+};
+
 export const useNFTs = () => {
   return {
     NftMintStatus,
@@ -329,5 +350,6 @@ export const useNFTs = () => {
     resolveMetadataFromNft,
     getNFTsListedOnMarketplace,
     getNFTsDeListedOnMarketplace,
+    getDepositLPNFTs,
   };
 };
