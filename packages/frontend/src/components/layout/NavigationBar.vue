@@ -71,17 +71,10 @@ export default defineComponent({
         },
       },
       {
-        name: "NFT Marketplace NEW",
-        icon: markRaw(LibraryIcon),
-        to: {
-          name: "marketplace-list",
-        },
-      },
-      {
         name: "NFT Marketplace",
         icon: markRaw(LibraryIcon),
         to: {
-          name: "nftMarketplace",
+          name: "marketplace-list",
         },
       },
       {

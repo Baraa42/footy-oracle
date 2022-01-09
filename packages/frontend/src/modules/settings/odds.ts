@@ -36,13 +36,13 @@ const oddsDecimals: number = 2;
  * @returns string
  */
 const encodeOdds = (odds: string | number): string => {
-  const { web3 } = useMoralis();
-  return web3.value.utils.toWei(String(odds), "kwei");
+  const web3 = new Moralis.Web3();
+  return web3.utils.toWei(String(odds), "kwei");
 };
 
 const decodeOdds = (odds: string | number): string => {
-  const { web3 } = useMoralis();
-  return web3.value.utils.fromWei(String(odds), "kwei");
+  const web3 = new Moralis.Web3();
+  return web3.utils.fromWei(String(odds), "kwei");
 };
 
 export const useOdds = () => {

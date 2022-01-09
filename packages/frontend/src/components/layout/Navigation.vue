@@ -13,7 +13,7 @@
         <SearchInput />
       </div>
 
-      <div class="flex ml-auto space-x-8">
+      <div class="flex ml-auto space-x-8 items-center">
         <FundsDropdown class="hidden lg:block" />
 
         <NetworkDropdown class="hidden lg:block" />
