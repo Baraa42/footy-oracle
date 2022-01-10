@@ -1,5 +1,5 @@
 import Moralis from "moralis/dist/moralis.js";
-import { NftMetadata, NftOwnerModel, NftOwnerPendingModel, ListedNftModel, MumbaiDepositLPModel } from "../../interfaces/models/NftOwnerModel";
+import { NftMetadata, NftOwnerModel, ListedNftModel, MumbaiDepositLPModel } from "../../interfaces/models/NftOwnerModel";
 import axios from "axios";
 import { useContract } from "./contract";
 import { useMoralis } from "./moralis";
@@ -16,6 +16,7 @@ import { useDownload } from "../download";
 import { useTimezone } from "../settings/timezone";
 import { useSubscription } from "./subscription";
 import { NFTTQueryParms } from "@/interfaces/queries/NFTQueryParms";
+import { useChain } from "./chain";
 
 const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
@@ -36,13 +37,14 @@ const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c0
  * @returns Promise
  */
 const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
-  const { moralisUser } = useMoralis();
-  if (moralisUser.value) {
-    // Get nfts from user
-    const { createQuery } = useMoralisObject("PolygonNFTOwners");
+  const { userAddress } = useMoralis();
+  if (userAddress.value) {
+    const { getClassName } = useChain();
+
+    const { createQuery } = useMoralisObject(getClassName("NFTOwners"));
     const nftQuery = createQuery() as Moralis.Query<NftOwnerModel>;
     //nftQuery.equalTo("name", collectionName);
-    nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
+    nftQuery.equalTo("owner_of", userAddress.value);
     nftQuery.descending("block_number");
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
 
@@ -56,8 +58,15 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
   return nfts;
 };
 
+/**
+ * NFT query create helper
+ *
+ * @param  {NFTTQueryParms} parms
+ * @returns Moralis
+ */
 const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
-  const { createQuery, handleQuery } = useMoralisObject("PolygonNFTOwners");
+  const { getClassName } = useChain();
+  const { createQuery, handleQuery } = useMoralisObject(getClassName("NFTOwners"));
   const query: Moralis.Query = createQuery();
   handleQuery(query, parms);
 
@@ -77,24 +86,24 @@ const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
  * @returns Promise
  */
 const mint = async (matchedBet: MatchedBetModel, blob: Blob, customMessage: any): Promise<void> => {
-  const { moralisUser } = useMoralis();
-  const { blobToB64 } = useDownload();
-  const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
-  if (moralisUser.value) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const polygonContract = config.get("polygon_contract");
+  const { userAddress, web3 } = useMoralis();
 
-    const tokenId = getTokenId(matchedBet, moralisUser.value.get("ethAddress"));
+  if (userAddress.value) {
+    const tokenId = getTokenId(matchedBet, userAddress.value);
+
+    const { blobToB64 } = useDownload();
     const base64 = (await blobToB64(blob)) as string;
+
+    const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
     const image = await saveBase64ImageToIPFS(matchedBet.id, base64); // save image to ipfs
     const metadata = generateMetadata(matchedBet, tokenId, image.ipfs()); // generate metadata with image
 
     if (metadata) {
       const tokenUri = await saveJsonToIPFS(matchedBet.id, metadata); // save metadata to ipfs
-      const web3 = await Moralis.Web3.enable();
-      const contract = new web3.eth.Contract(bettingAbi, polygonContract);
 
-      console.log(tokenUri.ipfs());
+      const { getBettingContract } = useContract();
+      const contractAddr = await getBettingContract();
+      const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
 
       setTimeout(() => {
         customMessage.message = "Waiting for user confirmation";
@@ -104,7 +113,7 @@ const mint = async (matchedBet: MatchedBetModel, blob: Blob, customMessage: any)
         .transferBetToNFT(matchedBet.get("apiId"), matchedBet.get("betSide"), 0, matchedBet.get("selection"), matchedBet.get("odds"), tokenUri.ipfs())
         .send(
           {
-            from: moralisUser.value.get("ethAddress"),
+            from: userAddress.value,
           },
           async (err: any, result: any) => {
             if (!err) {

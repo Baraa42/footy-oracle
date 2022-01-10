@@ -5,6 +5,7 @@
 <script lang="ts">
 import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
 import { computed } from "vue";
+import { useNFTs } from "@/modules/moralis/nfts";
 export default {
   props: {
     nft: {
@@ -18,11 +19,13 @@ export default {
     };
 
     const image = computed((): string | undefined => {
-      if (props.nft.attributes.metadata[0]) {
+      if (Array.isArray(props.nft.attributes.metadata)) {
         console.log(props.nft.attributes.metadata[0].image);
         return props.nft.attributes.metadata[0].image;
-      } else {
+      } else if (props.nft.attributes?.metadata?.image) {
         return props.nft.attributes.metadata.image;
+      } else {
+        return "";
       }
     });
 

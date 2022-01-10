@@ -84,7 +84,7 @@ const login = async (): Promise<void> => {
   if (moralisUser) {
     user.value.moralis = moralisUser as Moralis.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
+    await loadUserRelatedData();
   }
 };
 
@@ -101,7 +101,20 @@ const initUserFromCache = async (): Promise<void> => {
   if (currentUser) {
     user.value.moralis = currentUser as Moralis.User;
     user.value.isAuthenticated = true;
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]); // load all user specific data
+    await loadUserRelatedData();
+  }
+};
+
+/**
+ * Loads all user related data at once
+ *
+ * @returns Promise
+ */
+const loadUserRelatedData = async (): Promise<void> => {
+  try {
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]);
+  } catch (err: any) {
+    console.log(err);
   }
 };
 
@@ -113,6 +126,7 @@ const initUserFromCache = async (): Promise<void> => {
 const loadNativeBalance = async (): Promise<void> => {
   const { getNativeBalance } = useBalance();
   const balance: Ref<string | undefined> = await getNativeBalance();
+  console.log(balance.value);
   if (balance.value) {
     user.value.balances.available = Number(balance.value);
   }
@@ -177,6 +191,26 @@ const loadUnmatchedBets = async () => {
   user.value.unmatchedBets = unmatchedBets;
 };
 
+const logout = async () => {
+  Moralis.User.logOut();
+  user.value = {
+    isAuthenticated: false,
+    balances: {
+      available: 0,
+      liability: 0,
+      tokens: [],
+    },
+    moralis: undefined,
+    favorites: [],
+    betslip: [],
+    unmatchedBets: [],
+    matchedBets: [],
+    listedNfts: [],
+    nfts: [],
+    depositNfts: [],
+  };
+};
+
 export const useMoralis = () => {
   return {
     Moralis,
@@ -198,5 +232,7 @@ export const useMoralis = () => {
     loadNfts,
     listedNfts,
     depositNfts,
+    loadUserRelatedData,
+    logout,
   };
 };

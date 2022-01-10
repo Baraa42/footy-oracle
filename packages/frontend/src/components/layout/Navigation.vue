@@ -16,7 +16,7 @@
       <div class="flex ml-auto space-x-8 items-center">
         <FundsDropdown class="hidden lg:block" />
 
-        <NetworkDropdown class="hidden lg:block" />
+        <ChainDropdown class="hidden lg:block" />
 
         <button
           @click="toggleLoginDialog()"
@@ -59,7 +59,7 @@ import LoginDialog from "../dialogs/LoginDialog.vue";
 import SearchInput from "../inputs/SearchInput.vue";
 import { useActionBar } from "../../modules/layout/actionBar";
 import UserOverlay from "../overlays/UserOverlay.vue";
-import NetworkDropdown from "../dropdowns/NetworkDropdown.vue";
+import ChainDropdown from "../dropdowns/ChainDropdown.vue";
 
 export default defineComponent({
   setup() {
@@ -104,7 +104,7 @@ export default defineComponent({
     FundsDropdown,
     SearchInput,
     LoginDialog,
-    NetworkDropdown,
+    ChainDropdown,
   },
 });
 </script>

@@ -28,46 +28,18 @@
         :to="{
           name: 'history',
         }"
-        class="
-          font-semibold
-          bg-gray-100
-          hover:bg-gray-200
-          text-gray-700
-          hover:text-black
-          transition-colors
-          py-3
-          px-[12px]
-          border-l-4 border-gray-700
-          flex flex-row
-          items-center
-          space-x-2
-        "
+        class="font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black transition-colors py-3 px-[12px] border-l-4 border-gray-700 flex flex-row items-center space-x-2"
       >
         <CashIcon class="w-6 h-6" />
         <span>Bet Overview</span>
       </router-link>
-      <router-link
-        :to="{
-          name: 'history',
-        }"
-        class="
-          font-semibold
-          bg-gray-100
-          hover:bg-gray-200
-          text-gray-700
-          hover:text-black
-          transition-colors
-          py-3
-          px-[12px]
-          border-l-4 border-gray-700
-          flex flex-row
-          items-center
-          space-x-2
-        "
+      <button
+        @click="onLogout()"
+        class="font-semibold bg-gray-100 hover:bg-gray-200 text-gray-700 hover:text-black transition-colors py-3 px-[12px] border-l-4 border-gray-700 flex flex-row items-center space-x-2"
       >
         <LogoutIcon class="w-6 h-6" />
         <span>Logout</span>
-      </router-link>
+      </button>
     </div>
   </div>
 </template>
@@ -85,12 +57,18 @@ export default defineComponent({
       emit("closeOverlay");
     };
 
-    const { isAuthenticated, balance } = useMoralis();
+    const { isAuthenticated, balance, logout } = useMoralis();
+
+    const onLogout = () => {
+      logout();
+      closeOverlay();
+    };
 
     return {
       isAuthenticated,
       balance,
       closeOverlay,
+      onLogout,
     };
   },
   components: { CloseButton, CashIcon, LogoutIcon },

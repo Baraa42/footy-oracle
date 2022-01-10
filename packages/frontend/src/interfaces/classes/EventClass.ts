@@ -1,3 +1,4 @@
+import { useChain } from "@/modules/moralis/chain";
 import BigNumber from "bignumber.js";
 import Moralis from "moralis/dist/moralis.js";
 import { UnmatchedBetModel } from "../models/UnmatchedBetModel";
@@ -39,10 +40,11 @@ export class EventClass extends Moralis.Object {
  */
 
 const getUnmatchedBets = async (event: EventClass): Promise<UnmatchedBetModel[][][] | undefined> => {
+  const { getAttributeName } = useChain();
   /**
    * Get unmatched bets from event
    */
-  const relation = event.relation("polygonUnmatchedBets");
+  const relation = event.relation(getAttributeName("UnmatchedBets"));
   const unmatchedBetsQuery = relation.query().notEqualTo("isMatched", true).equalTo("confirmed", true).select("amount", "betType", "odds", "selection");
   const unmatchedBets = (await unmatchedBetsQuery.find()) as UnmatchedBetModel[];
 

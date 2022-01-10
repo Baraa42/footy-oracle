@@ -32,22 +32,7 @@
                 <button
                   @click="login()"
                   type="button"
-                  class="
-                    w-full
-                    justify-between
-                    inline-flex
-                    items-center
-                    px-4
-                    py-2
-                    font-medium
-                    text-gray-900
-                    bg-gray-100
-                    border border-transparent
-                    rounded-md
-                    hover:bg-gray-200
-                    focus:outline-none
-                    focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500
-                  "
+                  class="w-full justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
                 >
                   <span>Metamask (Polygon Mumbai)</span>
                   <Metamask class="w-8 h-8" />
@@ -76,7 +61,7 @@ export default defineComponent({
     watch(
       () => isAuthenticated.value,
       (value) => {
-        if (!isAuthenticated.value && value) {
+        if (value) {
           emit("onClose");
         }
       }

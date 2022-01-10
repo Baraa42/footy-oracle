@@ -4,7 +4,6 @@ import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
 import { useMoralis } from "./moralis";
 import { useMoralisObject } from "./moralisObject";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
-
 import { EventModel } from "../../interfaces/models/EventModel";
 import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { SelectionEnum } from "../../interfaces/enums/SelectionEnum";
@@ -12,6 +11,7 @@ import { useSubscription } from "./subscription";
 import { BetQueryParms } from "@/interfaces/queries/BetQueryParms";
 import { useCurrency } from "../settings/currency";
 import { BigNumber } from "bignumber.js";
+import { useChain } from "./chain";
 
 const unmatchedBets: Ref<Array<UnmatchedBetModel> | undefined> = ref();
 const matchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
@@ -23,14 +23,14 @@ const matchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
  * @returns Promise
  */
 const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefined>> => {
-  const { moralisUser } = useMoralis();
-
-  if (moralisUser.value) {
+  const { userAddress } = useMoralis();
+  if (userAddress.value) {
     // Get all unmatched bets from user
-    const { createQuery } = useMoralisObject("PolygonUnmatchedBets");
+    const { getClassName } = useChain();
+    const { createQuery } = useMoralisObject(getClassName("UnmatchedBets"));
     const query = createQuery() as Moralis.Query<UnmatchedBetModel>;
     const unmatchedBetsQuery: Moralis.Query<any> = query
-      .equalTo("from", moralisUser.value.get("ethAddress"))
+      .equalTo("from", userAddress.value)
       .include("event")
       .select("amount", "betType", "betSide", "odds", "selection", "apiId", "confirmed", "isPartMatched", "event");
     unmatchedBets.value = (await unmatchedBetsQuery.find()) as Array<UnmatchedBetModel>;
@@ -53,14 +53,14 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
  * @returns Promise
  */
 const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
-  const { moralisUser } = useMoralis();
-
-  if (moralisUser.value) {
+  const { userAddress } = useMoralis();
+  if (userAddress.value) {
     // Get all matched bets from user
-    const { createQuery } = useMoralisObject("PolygonMatchedBets");
-    const query: Moralis.Query<any> = await createQuery();
+    const { getClassName } = useChain();
+    const { createQuery } = useMoralisObject(getClassName("MatchedBets"));
+    const query: Moralis.Query<any> = createQuery();
     const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
-      .equalTo("from", moralisUser.value.get("ethAddress"))
+      .equalTo("from", userAddress.value)
       .include("event")
       .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
     matchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
@@ -117,7 +117,8 @@ const firstUnmatchedBet = (event: EventModel, type: BetTypeEnum, selection: Sele
 };
 
 const getMatchedBetQuery = (parms: BetQueryParms): Moralis.Query => {
-  const { createQuery, handleQuery } = useMoralisObject("PolygonMatchedBets");
+  const { getClassName } = useChain();
+  const { createQuery, handleQuery } = useMoralisObject(getClassName("MatchedBets"));
   const query: Moralis.Query = createQuery();
   handleQuery(query, parms);
 

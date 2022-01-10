@@ -11,7 +11,7 @@
       <template v-if="Component">
         <FadeTransition mode="out-in">
           <suspense>
-            <component :is="Component" />
+            <component :is="Component" :key="forceUpdateKey" />
           </suspense>
         </FadeTransition>
       </template>
@@ -22,7 +22,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent } from "vue";
+import { defineComponent, ref, watch } from "vue";
 import ActionBar from "@/components/layout/ActionBar.vue";
 import Alert from "./components/layout/Alert.vue";
 import Navigation from "./components/layout/Navigation.vue";
@@ -30,14 +30,27 @@ import NavigationBar from "./components/layout/NavigationBar.vue";
 import FadeTransition from "./components/transitions/FadeTransition.vue";
 import { useActionBar } from "./modules/layout/actionBar";
 import { useMoralis } from "./modules/moralis/moralis";
+import { useChain } from "./modules/moralis/chain";
 
 export default defineComponent({
   setup() {
     const { isActionBarActive, isActionBarMovement } = useActionBar();
-    const { initUserFromCache } = useMoralis();
+
+    const { initUserFromCache, loadUserRelatedData, isAuthenticated } = useMoralis();
     initUserFromCache();
 
+    const { activeChain } = useChain();
+    const forceUpdateKey = ref(0);
+
+    watch(activeChain, () => {
+      if (isAuthenticated.value) {
+        loadUserRelatedData(); // reload user related data
+      }
+      forceUpdateKey.value++; // force route to update
+    });
+
     return {
+      forceUpdateKey,
       isActionBarActive,
       isActionBarMovement,
     };
