@@ -1,6 +1,7 @@
 import { Chain } from "@/interfaces/Chain";
-import Matic from "@/assets/svg/matic.svg";
-import Avax from "@/assets/svg/avax.svg";
+import Polygon from "@/assets/svg/polygon.svg";
+import PolygonRounded from "@/assets/svg/polygon-rounded.svg";
+import AvaxRounded from "@/assets/svg/avax-rounded.svg";
 import { computed, markRaw, Ref, ref } from "vue";
 import Moralis from "moralis/dist/moralis.js";
 
@@ -8,7 +9,8 @@ const avalanche: Chain = {
   name: "Avalanche Fuji Testnet",
   chainId: 43113,
   chain: "0xa869",
-  icon: markRaw(Avax as {}),
+  iconRounded: markRaw(AvaxRounded as {}),
+  icon: markRaw(AvaxRounded as {}),
   iconClass: "",
   currencyName: "AVAX",
   currencySymbol: "AVAX",
@@ -22,8 +24,9 @@ const polygon: Chain = {
   name: "Polygon Testnet Mumbai",
   chainId: 80001,
   chain: "0x13881",
-  icon: markRaw(Matic as {}),
-  iconClass: "bg-polygon rounded-full text-white p-2",
+  iconRounded: markRaw(PolygonRounded as {}),
+  icon: markRaw(Polygon as {}),
+  iconClass: "",
   currencyName: "MATIC",
   currencySymbol: "MATIC",
   rpcUrl: "https://rpc-mumbai.maticvigil.com/",
@@ -33,7 +36,7 @@ const polygon: Chain = {
 };
 
 const chains: Array<Chain> = [polygon, avalanche];
-const activeChain = <Ref<Chain>>ref(chains[1]);
+const activeChain = <Ref<Chain>>ref(chains[0]);
 const chainsWithoutActive = computed((): Chain[] => chains.filter((chain) => chain.chainId != activeChain.value.chainId));
 
 /**

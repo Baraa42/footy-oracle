@@ -32,6 +32,7 @@ export interface Chain {
   currencySymbol: string;
   rpcUrl: string;
   blockExplorerUrl: string;
+  iconRounded: Component;
   icon: Component;
   iconClass?: string;
   classPrefix: string;

@@ -32,7 +32,7 @@
         }"
         class="opacity-100 h-full py-0 pl-1 pr-1 text-xs font-semibold text-white rounded-tr-sm rounded-br focus:outline-none"
       >
-        <Matic class="w-4 h-4 text-white" />
+        <component :is="activeChain.icon" class="w-4 h-4 text-white" />
       </button>
     </div>
   </div>
@@ -43,8 +43,8 @@ import { defineComponent, PropType, ref } from "vue";
 import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { PlusIcon } from "@heroicons/vue/solid";
 import { MinusIcon } from "@heroicons/vue/solid";
-import { useMath } from "../../modules/math";
-import Matic from "../../assets/svg/matic.svg";
+
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   props: {
@@ -60,9 +60,9 @@ export default defineComponent({
     },
   },
   setup(props, { emit }) {
+    const { activeChain } = useChain();
     const betTypes = BetTypeEnum;
 
-    const { round } = useMath();
     const modelValue = ref<any>(props.modelValue || 0);
 
     const emitValue = (event: Event) => {
@@ -71,8 +71,8 @@ export default defineComponent({
       emit("update:modelValue", modelValue.value);
     };
 
-    return { betTypes, emitValue };
+    return { betTypes, emitValue, activeChain };
   },
-  components: { PlusIcon, MinusIcon, Matic },
+  components: { PlusIcon, MinusIcon },
 });
 </script>

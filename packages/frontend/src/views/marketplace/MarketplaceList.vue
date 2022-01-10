@@ -63,7 +63,9 @@
               <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
               <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
                 <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
-                <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center"><Matic class="w-3 h-3 text-white" /></div>
+                <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center">
+                  <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+                </div>
               </div>
             </div>
           </router-link>
@@ -79,7 +81,6 @@ import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { InnerQuery, QueryParms } from "@/interfaces/queries/QueryParms";
 import { useInfiniteScroll } from "@/modules/layout/infiniteScroll";
 import { useNFTs } from "@/modules/moralis/nfts";
-import Matic from "@/assets/svg/matic.svg";
 import { useSubscription } from "@/modules/moralis/subscription";
 import { defineComponent, onUnmounted, reactive, Ref, ref, watch, watchEffect } from "vue";
 import MarketplaceFilter from "@/components/marketplace/MarketplaceFilter.vue";
@@ -101,11 +102,13 @@ import { XIcon } from "@heroicons/vue/outline";
 import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } from "@heroicons/vue/solid";
 import { useCurrency } from "@/modules/settings/currency";
 import { useActionBar } from "@/modules/layout/actionBar";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   setup() {
     const { toggleMovement } = useActionBar();
 
+    const { activeChain } = useChain();
     const { getNFTQuery } = useNFTs();
     const { getMatchedBetQuery } = useBet();
     const { onUpdateFunction } = useSubscription();
@@ -225,11 +228,10 @@ export default defineComponent({
     });
     toggleMovement();
 
-    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen, convertCurrency };
+    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen, convertCurrency, activeChain };
   },
   components: {
     NftImage,
-    Matic,
     MarketplaceFilter,
     Dialog,
     DialogOverlay,

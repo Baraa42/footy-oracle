@@ -6,17 +6,16 @@
           <MenuIcon class="w-6 h-6" v-if="!isMobileMenuOpen" />
           <XIcon class="w-6 h-6" v-if="isMobileMenuOpen" />
         </button>
-        <router-link to="/" class="font-bold text-2xl tracking-wide">Footy Oracle</router-link>
+        <router-link to="/" class="font-bold text-xl md:text-2xl tracking-wide">Footy Oracle</router-link>
       </div>
 
       <div class="hidden lg:flex">
         <SearchInput />
       </div>
 
-      <div class="flex ml-auto space-x-8 items-center">
+      <div class="flex ml-auto md:space-x-8 space-x-4 items-center">
         <FundsDropdown class="hidden lg:block" />
-
-        <ChainDropdown class="hidden lg:block" />
+        <ChainDropdown />
 
         <button
           @click="toggleLoginDialog()"
@@ -27,8 +26,8 @@
           <span class="block lg:hidden">Connect</span>
         </button>
 
-        <div v-if="isAuthenticated" class="flex flex-row items-center lg:space-x-8 space-x-4">
-          <span class="font-semibold">{{ moralisUser?.get("ethAddress").substring(0, 6) }}...</span>
+        <div v-if="isAuthenticated" class="flex flex-row items-center lg:space-x-8">
+          <span class="font-semibold hidden md:block">{{ moralisUser?.get("ethAddress").substring(0, 6) }}...</span>
           <button @click="setProfileToActionBar()" class="focus:outline-none">
             <UserIcon class="w-6 h-6 lg:w-8 lg:h-8" />
           </button>
@@ -37,7 +36,7 @@
     </div>
   </nav>
 
-  <teleport to="#app">
+  <teleport to="#app" v-if="isLoginDialogOpen">
     <LoginDialog :isOpen="isLoginDialogOpen" @onClose="toggleLoginDialog()" />
   </teleport>
 </template>
@@ -47,7 +46,7 @@ import { defineComponent } from "vue";
 import { MenuIcon } from "@heroicons/vue/outline";
 import { XIcon } from "@heroicons/vue/outline";
 import { UserIcon } from "@heroicons/vue/solid";
-import { ChevronDownIcon } from "@heroicons/vue/solid";
+import { ChevronDownIcon, LoginIcon } from "@heroicons/vue/solid";
 import { useToggle } from "../../modules/layout/toggle";
 import SlideTransition from "../transitions/SlideTransition.vue";
 import OverlayWrapper from "../overlays/OverlayWrapper.vue";
@@ -95,6 +94,7 @@ export default defineComponent({
   components: {
     XIcon,
     MenuIcon,
+    LoginIcon,
     UserIcon,
     SlideTransition,
     OverlayWrapper,

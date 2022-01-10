@@ -3,10 +3,10 @@
     <div>
       <MenuButton
         @click="open()"
-        class="inline-flex justify-center items-center h-14 w-14 rounded-md bg-opacity-30 hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 transition-colors"
+        class="inline-flex justify-center items-center h-10 w-10 md:h-14 md:w-14 rounded-md bg-opacity-30 hover:bg-opacity-100 focus:outline-none focus-visible:ring-2 focus-visible:ring-white focus-visible:ring-opacity-75 transition-colors"
       >
         <div class="flex flex-col">
-          <component :is="activeChain.icon" :class="activeChain.iconClass" class="w-10 h-10" />
+          <component :is="activeChain.iconRounded" class="w-8 h-8 md:w-10 md:h-10" />
         </div>
       </MenuButton>
     </div>
@@ -22,10 +22,15 @@
       >
         <MenuItems
           static
-          class="absolute h-full right-0 w-14 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
+          class="absolute h-full right-0 w-10 md:w-14 mt-2 origin-top-right bg-white divide-y divide-gray-100 rounded-md shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none"
         >
-          <button v-for="chain in chainsWithoutActive" :key="chain.chainId" @click="onClick(chain)" class="w-14 h-14 flex items-center justify-center">
-            <component :is="chain.icon" :class="chain.iconClass" class="w-10 h-10 hover:opacity-100" />
+          <button
+            v-for="chain in chainsWithoutActive"
+            :key="chain.chainId"
+            @click="onClick(chain)"
+            class="h-10 w-10 md:h-14 md:w-14 flex items-center justify-center"
+          >
+            <component :is="chain.iconRounded" class="w-8 h-8 md:w-10 md:h-10 hover:opacity-100" />
           </button>
         </MenuItems>
       </transition>

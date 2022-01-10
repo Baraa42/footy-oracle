@@ -37,7 +37,7 @@
             >Matched Volume:
             <span v-if="event.attributes.polygonVolume">{{ convertCurrency(event.attributes.polygonVolume) }}</span>
             <span v-else>0</span>
-            MATIC</span
+            {{ activeChain.currencySymbol }}</span
           >
         </div>
       </div>
@@ -75,6 +75,7 @@ import { useAlert } from "../modules/layout/alert";
 import { useCurrency } from "../modules/settings/currency";
 import { useMoralis } from "../modules/moralis/moralis";
 import { EventModel } from "../interfaces/models/EventModel";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   setup() {
@@ -85,6 +86,7 @@ export default defineComponent({
     const { selections } = useBetslip();
     const { convertCurrency } = useCurrency();
     const { showError } = useAlert();
+    const { activeChain } = useChain();
 
     /**
      * Get favorites from user and check if this event is selected
@@ -157,6 +159,7 @@ export default defineComponent({
       isFavoriteEvent,
       selections,
       convertCurrency,
+      activeChain,
     };
   },
   components: {

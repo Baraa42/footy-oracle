@@ -48,7 +48,8 @@
         <span class="text-gray-500">Current Price</span>
 
         <div class="flex flex-row items-center space-x-2 mt-2">
-          <Matic class="w-6 h-6 text-polygon" />
+          <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+
           <span class="text-2xl font-bold tracking-wider text-number">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
         </div>
 
@@ -184,7 +185,6 @@ import { useOdds } from "@/modules/settings/odds";
 import { useCurrency } from "@/modules/settings/currency";
 import { useBet } from "@/modules/moralis/bets";
 import { useMarketplace } from "@/modules/moralis/marketplace";
-import Matic from "@/assets/svg/matic.svg";
 import { useMoralis } from "@/modules/moralis/moralis";
 import { useConfirmDialog } from "@/modules/layout/confirmDialog";
 import ConfirmationDialog from "@/components/dialogs/ConfirmationDialog.vue";
@@ -192,6 +192,7 @@ import { CashIcon, XIcon, CheckIcon } from "@heroicons/vue/outline";
 import WaitingButton from "@/components/buttons/WaitingButton.vue";
 import { useWithdraw } from "@/modules/moralis/withdraw";
 import { useAlert } from "@/modules/layout/alert";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   setup() {
@@ -201,6 +202,7 @@ export default defineComponent({
     const { getDateTime } = useTimezone();
     const { decodeOdds } = useOdds();
     const { convertCurrency } = useCurrency();
+    const { activeChain } = useChain();
 
     const { getNFTQuery } = useNFTs();
     const { subscribe, unsubscribe } = useSubscription();
@@ -324,12 +326,13 @@ export default defineComponent({
       userAddress,
       confirmDialog,
       onSell,
+      activeChain,
       onClose,
       onWithdraw,
       onBuy,
       sellPrice,
     };
   },
-  components: { NftImage, Matic, ConfirmationDialog, WaitingButton },
+  components: { NftImage, ConfirmationDialog, WaitingButton },
 });
 </script>

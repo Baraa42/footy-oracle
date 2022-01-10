@@ -62,7 +62,7 @@
                 <span>{{ new BigNumber(convertCurrency(nft.get("amount"))) }}</span>
 
                 <div class="bg-white rounded-full w-[12px] h-[12px] flex justify-center items-center">
-                  <Matic class="w-[7px] h-[8px]" :style="{ color: palette[700] }" />
+                  <component :is="activeChain.icon" class="w-[7px] h-[8px]" :style="{ color: palette[700] }" />
                 </div>
               </span>
             </div>
@@ -86,12 +86,12 @@ import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import { useColors } from "../../modules/colors";
 import { ColorPalette } from "../../interfaces/ColorPalette";
 import Logo from "../../assets/svg/logo.svg";
-import Matic from "../../assets/svg/matic.svg";
 import Liv from "../../assets/svg/liv.svg";
 import Chl from "../../assets/svg/chl.svg";
 import { NFTBackgroundLayer } from "../../interfaces/nft/NFTBackgroundLayer";
 import NFTBackgroundLayerVue from "./NFTBackgroundLayer.vue";
 import { useTimezone } from "@/modules/settings/timezone";
+import { useChain } from "@/modules/moralis/chain";
 
 export default {
   props: {
@@ -140,6 +140,7 @@ export default {
     const { generatePalette, getGradient } = useColors();
     const palette: Ref<ColorPalette> = ref(generatePalette(props.color));
     const nft: Ref<MatchedBetModel> = ref(props.data);
+    const { activeChain } = useChain();
 
     watch(
       () => props.data,
@@ -180,13 +181,14 @@ export default {
       getGradient,
       convertCurrency,
       BigNumber,
+      activeChain,
       selections,
       types,
       palette,
       format,
     };
   },
-  components: { Logo, Matic, Liv, Chl, NFTBackgroundLayerVue },
+  components: { Logo, Liv, Chl, NFTBackgroundLayerVue },
 };
 </script>
 

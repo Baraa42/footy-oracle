@@ -26,12 +26,7 @@ import { ref, defineComponent, markRaw } from "vue";
 import ActionBarButton from "../buttons/ActionBarButton.vue";
 import OverlayWrapper from "../overlays/OverlayWrapper.vue";
 import SlideTransition from "../transitions/SlideTransition.vue";
-import { SearchIcon } from "@heroicons/vue/outline";
-import { StarIcon } from "@heroicons/vue/outline";
-import { CogIcon } from "@heroicons/vue/outline";
-import { CashIcon } from "@heroicons/vue/outline";
-import { RefreshIcon } from "@heroicons/vue/outline";
-import { BookmarkIcon } from "@heroicons/vue/outline";
+import { StarIcon, CogIcon, SearchIcon, RefreshIcon, CashIcon, BookmarkIcon, TicketIcon } from "@heroicons/vue/outline";
 import WithdrawOverlay from "../overlays/NFTOverlay.vue";
 import SettingsOverlay from "../overlays/SettingsOverlay.vue";
 import FavoritesOverlay from "../overlays/FavoritesOverlay.vue";
@@ -50,13 +45,13 @@ export default defineComponent({
         class: "lg:hidden",
       },
       {
-        name: "My Bets",
-        icon: BookmarkIcon,
+        name: "Bets",
+        icon: CashIcon,
         component: markRaw(MyBetsOverlay),
       },
       {
         name: "NFTs",
-        icon: CashIcon,
+        icon: TicketIcon,
         component: markRaw(WithdrawOverlay),
       },
       {

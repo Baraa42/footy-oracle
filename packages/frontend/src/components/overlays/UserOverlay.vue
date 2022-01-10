@@ -8,15 +8,15 @@
     <div class="flex flex-col space-y-2">
       <div class="flex justify-between">
         <span class="text-sm font-medium text-gray-700">Balance</span>
-        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.available }} MATIC</span>
+        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.available }} {{ activeChain.currencySymbol }}</span>
       </div>
       <div class="flex justify-between">
         <span class="text-sm font-medium text-gray-700">Liability</span>
-        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.liability }} MATIC</span>
+        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.liability }} {{ activeChain.currencySymbol }}</span>
       </div>
       <div class="flex justify-between">
         <span class="text-sm font-medium text-gray-700">Available</span>
-        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.available - balance.liability }} MATIC</span>
+        <span class="text-sm font-medium leading-relaxed tracking-wide">{{ balance.available - balance.liability }} {{ activeChain.currencySymbol }}</span>
       </div>
     </div>
   </div>
@@ -49,6 +49,7 @@ import { defineComponent } from "vue";
 import { useMoralis } from "../../modules/moralis/moralis";
 import { CashIcon, LogoutIcon } from "@heroicons/vue/solid";
 import CloseButton from "../buttons/CloseButton.vue";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   emits: ["closeOverlay"],
@@ -58,6 +59,7 @@ export default defineComponent({
     };
 
     const { isAuthenticated, balance, logout } = useMoralis();
+    const { activeChain } = useChain();
 
     const onLogout = () => {
       logout();
@@ -65,6 +67,7 @@ export default defineComponent({
     };
 
     return {
+      activeChain,
       isAuthenticated,
       balance,
       closeOverlay,

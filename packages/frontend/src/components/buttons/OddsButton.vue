@@ -12,7 +12,7 @@
       <span class="text-gray-700 group-hover:text-gray-800 text-sm font-bold tracking-wide">{{ decodeOdds(bet.attributes.odds) }}</span>
       <div class="text-xs text-gray-600 font-medium flex flex-row items-center group-hover:text-gray-800">
         <span>{{ new BigNumber(convertCurrency(bet.attributes.amount)).toFixed(2) }}</span>
-        <Matic class="w-[10px] h-[11px] ml-[3px]" />
+        <component :is="activeChain.icon" class="w-[10px] h-[11px] ml-[3px]" />
       </div>
     </span>
     <span v-else class="uppercase text-xs font-semibold tracking-thight text-gray-400 group-hover:text-gray-600 transition-color">Make<br />Offer</span>
@@ -26,8 +26,7 @@ import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { useCurrency } from "../../modules/settings/currency";
 import { useOdds } from "../../modules/settings/odds";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
-import Ethereum from "../../assets/svg/ethereum.svg";
-import Matic from "../../assets/svg/matic.svg";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   props: {
@@ -35,11 +34,11 @@ export default defineComponent({
     bet: { type: Object as () => UnmatchedBetModel, required: false },
   },
   setup() {
+    const { activeChain } = useChain();
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
     const betTypes = BetTypeEnum;
-    return { betTypes, decodeOdds, convertCurrency, BigNumber };
+    return { betTypes, decodeOdds, convertCurrency, BigNumber, activeChain };
   },
-  components: { Ethereum, Matic },
 });
 </script>

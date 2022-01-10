@@ -48,6 +48,8 @@ import Gamepad from "@/assets/svg/gamepad.svg";
 import { RefreshIcon, LibraryIcon } from "@heroicons/vue/outline";
 import TennisBall from "@/assets/svg/tennis_ball.svg";
 import Boxing from "@/assets/svg/boxing.svg";
+import Exchange from "@/assets/svg/exchange.svg";
+import HandHolding from "@/assets/svg/hand-holding.svg";
 import RacingHelmet from "@/assets/svg/racing_helmet.svg";
 import { useBreakpoint } from "../../modules/layout/tailwindBreakpoints";
 import { useActionBar } from "../../modules/layout/actionBar";
@@ -79,14 +81,14 @@ export default defineComponent({
       },
       {
         name: "Swap Tokens",
-        icon: markRaw(RefreshIcon),
+        icon: markRaw(Exchange),
         to: {
           name: "swap",
         },
       },
       {
         name: "Add Liquidity",
-        icon: markRaw(RefreshIcon),
+        icon: markRaw(HandHolding),
         to: {
           name: "addLiquidity",
         },
