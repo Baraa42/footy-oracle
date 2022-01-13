@@ -39,13 +39,13 @@ Moralis.Cloud.afterSave("AvaxNFTOwners", async (request) => {
 });
 
 Moralis.Cloud.afterSave("FujiPlacedOfferings", async (request) => {
-  await afterSavePlacedOffering(request.object, PolygonNFTOwners);
+  await afterSavePlacedOffering(request.object, AvaxNFTOwners);
 });
 
 Moralis.Cloud.afterSave("FujiClosedOfferings", async (request) => {
   await afterSaveClosedOfferings(
     request.object,
-    MumbaiPlacedOfferings,
-    PolygonNFTOwners
+    FujiPlacedOfferings,
+    AvaxNFTOwners
   );
 });

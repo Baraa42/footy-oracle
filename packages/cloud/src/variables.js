@@ -16,6 +16,8 @@ const Team = Moralis.Object.extend("Team");
 const Sport = Moralis.Object.extend("Sport");
 const PolygonNFTOwners = Moralis.Object.extend("PolygonNFTOwners");
 
+const AvaxNFTOwners = Moralis.Object.extend("AvaxNFTOwners");
+
 const MumbaiMatchedBets = Moralis.Object.extend("MumbaiMatchedBets");
 const MumbaiUnmatchedBets = Moralis.Object.extend("MumbaiUnmatchedBets");
 const MumbaiUnmatchedBetsUpdated = Moralis.Object.extend(
