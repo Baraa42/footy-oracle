@@ -156,7 +156,7 @@
           <div class="mt-1 relative rounded-md shadow-sm">
             <input
               v-model="sellPrice"
-              type="number"
+              type="text"
               name="price"
               id="price"
               class="focus:ring-indigo-500 focus:border-indigo-500 block w-full pl-3 pr-10 sm:text-sm border-gray-300 rounded-md"
@@ -177,7 +177,7 @@ import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { useNFTs } from "@/modules/moralis/nfts";
 import { useSubscription } from "@/modules/moralis/subscription";
 import Moralis from "moralis/dist/moralis.js";
-import { defineComponent, onUnmounted, ref, watchEffect } from "vue";
+import { computed, defineComponent, onUnmounted, Ref, ref, watchEffect } from "vue";
 import { useRoute } from "vue-router";
 import NftImage from "@/components/common/NftImage.vue";
 import { useTimezone } from "@/modules/settings/timezone";
@@ -193,6 +193,7 @@ import WaitingButton from "@/components/buttons/WaitingButton.vue";
 import { useWithdraw } from "@/modules/moralis/withdraw";
 import { useAlert } from "@/modules/layout/alert";
 import { useChain } from "@/modules/moralis/chain";
+import BigNumber from "bignumber.js";
 
 export default defineComponent({
   setup() {
@@ -208,7 +209,8 @@ export default defineComponent({
     const { subscribe, unsubscribe } = useSubscription();
     const nft = ref<NftOwnerModel>();
 
-    const sellPrice = ref();
+    const sellPrice = <Ref<string>>ref();
+    const sellPriceNumber = computed((): number => Number(sellPrice?.value.replaceAll(",", ".")));
 
     const confirmDialog = useConfirmDialog();
 
@@ -222,8 +224,9 @@ export default defineComponent({
       confirmDialog.onConfirm = async () => {
         if (nft.value) {
           const { listOnMarketplace } = useMarketplace();
-          const isListed = await listOnMarketplace(nft.value, String(sellPrice.value));
+          const isListed = await listOnMarketplace(nft.value, sellPriceNumber.value);
           confirmDialog.toggle();
+          sellPrice.value = "";
         }
       };
       confirmDialog.toggle();

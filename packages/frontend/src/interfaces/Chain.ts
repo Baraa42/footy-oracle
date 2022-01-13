@@ -36,5 +36,7 @@ export interface Chain {
   icon: Component;
   iconClass?: string;
   classPrefix: string;
+  classPrefixMoralis: string;
   attributePrefix: string;
+  settings?: any;
 }

@@ -25,7 +25,7 @@ describe("BettingContract", function () {
   let bets: BetFactory;
   let oracle: MockOracle;
   let account: Signer;
-  const maxBets = 5;
+  const maxBets = 4;
 
   before(async function () {
     objectId = getRandomObjectId();

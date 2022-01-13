@@ -97,7 +97,7 @@ Moralis.Cloud.job("polygonCreateBetRelationInNFTs", async (request) => {
   let updated = 0;
   for await (nft of nfts) {
     const eventApiId = parseEventApiIdFromMetadata(nft.get("metadata"));
-    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
+    const matcheBetQuery = new Moralis.Query(MumbaiMatchedBets);
     matcheBetQuery.equalTo("apiId", eventApiId);
     matcheBetQuery.equalTo("tokenId", nft.get("token_id"));
     const matchedBet = await matcheBetQuery.first();

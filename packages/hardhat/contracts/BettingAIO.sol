@@ -117,13 +117,31 @@ contract BettingAIO is Ownable, ChainlinkClient
         placeBet(_objectId, BetSide.Back, _betType, _selection, _odds, _amount, msg.sender);
     }
 
-    // Public function for placing lay bet -> msg.value = bet liqidity
+        // Public function for placing lay bet -> msg.value = bet liqidity
     function createLayBet(string calldata _objectId, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount) public payable checkGameRunning(
         _objectId) amountGreaterZero(msg.value) checkOdds(_odds)
     {
         uint256 liqidity = ((_amount * (_odds - 1000)) / 1000);
         require(liqidity == msg.value, "Liqidity and send value are not equal!");
         placeBet(_objectId, BetSide.Lay, _betType, _selection, _odds, _amount, msg.sender);
+    }
+
+    function removeUnmatchedBet(string calldata _objectId, BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount) public
+    {
+       UnmatchedBetAmount[] memory bets = unmatchedBets[_objectId][_betSide][_betType][_selection][_odds];
+       bool hasBet = false;
+
+        // Mark bets as shifted, possible > 1, because of partial matches
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (bets[i].from == msg.sender && bets[i].amount == _amount) {
+                hasBet = true;
+                emit UnmatchedBetRemoved(_objectId, _betSide, _betType, _selection, _odds, _amount, msg.sender);
+                transferAmount(msg.sender, _amount);
+                delete unmatchedBets[_objectId][_betSide][_betType][_selection][_odds][i];
+                break;
+            }
+        }
+        require(hasBet, "No Bet");      
     }
 
     // Internal function for placing and matching all bets
@@ -273,8 +291,8 @@ contract BettingAIO is Ownable, ChainlinkClient
         return tokenId;
     }
 
-    // TODO remove payable
-    function withdrawWithNFT(string calldata _objectId, uint256 tokenId) external payable
+
+    function withdrawWithNFT(string calldata _objectId, uint256 tokenId) external
     {
         betNFT.redeemCollectible(msg.sender, tokenId);
         require(nftWon[_objectId][tokenId], "Bet lost");

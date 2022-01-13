@@ -152,11 +152,12 @@ export const useBetslip = () => {
       const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
       contract.methods
         .removeUnmatchedBet(
-          unmatchedBet.get("apiId"),
-          encodeOdds(unmatchedBet.get("odds")),
-          unmatchedBet.get("amount"),
+          String(unmatchedBet.get("apiId")),
+          unmatchedBet.get("betSide"),
+          unmatchedBet.get("betType"),
           unmatchedBet.get("selection"),
-          unmatchedBet.get("betType")
+          unmatchedBet.get("odds"),
+          unmatchedBet.get("amount")
         )
         .send(
           {

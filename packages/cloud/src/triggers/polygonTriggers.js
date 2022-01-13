@@ -1,177 +1,55 @@
-/**
- * Adds pointer from event and user to unmatched bet
- */
-Moralis.Cloud.beforeSave("PolygonUnmatchedBets", async (request) => {
+Moralis.Cloud.beforeSave("MumbaiUnmatchedBets", async (request) => {
   await beforeSaveBet(request.object);
 });
 
-/**
- * Adds pointer from event and user to unmatched bet
- */
-Moralis.Cloud.beforeSave("PolygonMatchedBets", async (request) => {
-  await beforeSaveBet(request.object);
+Moralis.Cloud.beforeSave("MumbaiMatchedBets", async (request) => {
+  await beforeSaveBet(request.object, "Mumbai");
 });
 
-/**
- * Create realation from user and event to unmatched bet
- */
-Moralis.Cloud.afterSave("PolygonUnmatchedBets", async (request) => {
+Moralis.Cloud.afterSave("MumbaiUnmatchedBets", async (request) => {
   if (request.object.get("isPartMatched") == undefined) {
-    await afterSaveBet(request.object, "polygonUnmatchedBets");
+    await afterSaveUnmatchedBet(request.object, "mumbaiUnmatchedBets");
   }
 });
 
-/**
- * Create realation from user and event to matched bet
- * Also calulates volume
- */
-Moralis.Cloud.afterSave("PolygonMatchedBets", async (request) => {
+Moralis.Cloud.afterSave("MumbaiMatchedBets", async (request) => {
   if (request.object.get("confirmed") == undefined) {
-    const event = await afterSaveBet(request.object, "polygonMatchedBets");
-
-    // sum volume for event
-    let volume = 0;
-    if (event.get("polygonVolume")) {
-      volume = event.get("polygonVolume");
-    }
-    volume = Number(volume) + Number(request.object.get("amount"));
-    event.set("polygonVolume", volume);
-    await event.save();
+    await afterSaveMatchedBet(
+      request.object,
+      "mumbaiMatchedBets",
+      "mumbaiVolume"
+    );
   }
 });
 
-/**
- * After save trigger for unmatched bet removed
- */
-Moralis.Cloud.afterSave("PolygonUnmatchedBetsRemoved", async (request) => {
-  const unmatchedBet = request.object;
-
-  const unmatcheBetQuery = new Moralis.Query(PolygonUnmatchedBets);
-  unmatcheBetQuery.equalTo("from", unmatchedBet.get("from"));
-  unmatcheBetQuery.equalTo("odds", unmatchedBet.get("odds"));
-  unmatcheBetQuery.equalTo("betSide", unmatchedBet.get("betSide"));
-  unmatcheBetQuery.equalTo("betType", unmatchedBet.get("betType"));
-  unmatcheBetQuery.equalTo("selection", unmatchedBet.get("selection"));
-  unmatcheBetQuery.equalTo("apiId", unmatchedBet.get("apiId"));
-  unmatcheBetQuery.equalTo("amount", unmatchedBet.get("amount"));
-  const bet = await unmatcheBetQuery.first();
-  if (bet) {
-    await bet.destroy();
-  }
+Moralis.Cloud.afterSave("MumbaiUnmatchedBetsRemoved", async (request) => {
+  await afterSaveUnmatchedBetsRemoved(request.object, MumbaiUnmatchedBets);
 });
 
-/**
- * After save trigger for unmatched bet removed
- */
-Moralis.Cloud.afterSave("PolygonUnmatchedBetsUpdated", async (request) => {
-  const unmatchedBet = request.object;
-
-  const unmatcheBetQuery = new Moralis.Query(PolygonUnmatchedBets);
-  unmatcheBetQuery.equalTo("from", unmatchedBet.get("from"));
-  unmatcheBetQuery.equalTo("odds", unmatchedBet.get("odds"));
-  unmatcheBetQuery.equalTo("betSide", unmatchedBet.get("betSide"));
-  unmatcheBetQuery.equalTo("betType", unmatchedBet.get("betType"));
-  unmatcheBetQuery.equalTo("selection", unmatchedBet.get("selection"));
-  unmatcheBetQuery.equalTo("apiId", unmatchedBet.get("apiId"));
-  const bet = await unmatcheBetQuery.first();
-  if (bet) {
-    bet.set("amount", unmatchedBet.get("amount"));
-    bet.set("isPartMatched", true);
-    await bet.save();
-  }
+Moralis.Cloud.afterSave("MumbaiUnmatchedBetsUpdated", async (request) => {
+  afterSaveUnmatchedBetsUpdated(request.object, MumbaiUnmatchedBets);
 });
 
-/**
- * Check pendings nfts for the minting indicator
- * From undefined to pending
- */
 Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
-  const pendingNFT = request.object;
-  const metadata = await resolveMetadataFromNft(pendingNFT);
-  if (metadata) {
-    const eventApiId = parseEventApiIdFromMetadata(metadata);
-
-    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
-    matcheBetQuery.equalTo("apiId", eventApiId);
-    matcheBetQuery.equalTo("tokenId", pendingNFT.get("token_id"));
-    matcheBetQuery.equalTo("mintStatus", undefined);
-    const matchedBet = await matcheBetQuery.first();
-
-    if (matchedBet) {
-      matchedBet.set("mintStatus", "pending");
-      await matchedBet.save();
-    }
-  }
+  await afterSaveNFTOwnersPending(request.object, MumbaiMatchedBets);
 });
 
-/**
- * Resolves metadata and bet to object before save
- */
 Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
-  const metadata = await resolveMetadataFromNft(request.object);
-  request.object.set("metadata", metadata);
-
-  const eventApiId = parseEventApiIdFromMetadata(metadata);
-  const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
-  matcheBetQuery.equalTo("apiId", eventApiId);
-  matcheBetQuery.equalTo("tokenId", request.object.get("token_id"));
-  const matchedBet = await matcheBetQuery.first();
-  if (matchedBet) {
-    request.object.set("bet", matchedBet);
-  }
+  await beforeSaveNFTOwners(request.object, MumbaiMatchedBets);
 });
 
-/**
- * Check nfts owner for the minting indicator
- * From pending to completed
- */
 Moralis.Cloud.afterSave("PolygonNFTOwners", async (request) => {
-  const nft = request.object;
-  if (nft.get("metadata") && nft.get("metadata") != {}) {
-    const eventApiId = parseEventApiIdFromMetadata(nft.get("metadata"));
-
-    const matcheBetQuery = new Moralis.Query(PolygonMatchedBets);
-    matcheBetQuery.equalTo("apiId", eventApiId);
-    matcheBetQuery.equalTo("tokenId", nft.get("token_id"));
-    matcheBetQuery.equalTo("mintStatus", "pending");
-    const matchedBet = await matcheBetQuery.first();
-
-    if (matchedBet) {
-      matchedBet.set("nft", nft);
-      matchedBet.set("mintStatus", "completed");
-      await matchedBet.save();
-    }
-  }
+  await afterSaveNFTOwners(request.object, MumbaiMatchedBets);
 });
 
 Moralis.Cloud.afterSave("MumbaiPlacedOfferings", async (request) => {
-  const offer = request.object;
-
-  const nftsQuery = new Moralis.Query(PolygonNFTOwners);
-  nftsQuery.equalTo("token_id", offer.get("tokenId"));
-  nftsQuery.equalTo("token_address", offer.get("hostContract"));
-  const nft = await nftsQuery.first();
-
-  if (nft) {
-    nft.set("offer", offer);
-    nft.set("closedOffer", undefined);
-    await nft.save(null, { useMasterKey: true });
-  }
+  await afterSavePlacedOffering(request.object, PolygonNFTOwners);
 });
 
 Moralis.Cloud.afterSave("MumbaiClosedOfferings", async (request) => {
-  const closedOffer = request.object;
-
-  const innerQuery = new Moralis.Query(MumbaiPlacedOfferings);
-  innerQuery.equalTo("offeringId", closedOffer.get("offeringId"));
-
-  const nftsQuery = new Moralis.Query(PolygonNFTOwners);
-  nftsQuery.matchesQuery("offer", innerQuery);
-  const nft = await nftsQuery.first();
-
-  if (nft) {
-    nft.set("closedOffer", closedOffer);
-    nft.set("offer", undefined);
-    await nft.save(null, { useMasterKey: true });
-  }
+  await afterSaveClosedOfferings(
+    request.object,
+    MumbaiPlacedOfferings,
+    PolygonNFTOwners
+  );
 });

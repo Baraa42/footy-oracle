@@ -16,16 +16,25 @@ const Team = Moralis.Object.extend("Team");
 const Sport = Moralis.Object.extend("Sport");
 const PolygonNFTOwners = Moralis.Object.extend("PolygonNFTOwners");
 
-const PolygonMatchedBets = Moralis.Object.extend("PolygonMatchedBets");
-const PolygonUnmatchedBets = Moralis.Object.extend("PolygonUnmatchedBets");
-const PolygonUnmatchedBetsUpdated = Moralis.Object.extend(
-  "PolygonUnmatchedBetsUpdated"
+const MumbaiMatchedBets = Moralis.Object.extend("MumbaiMatchedBets");
+const MumbaiUnmatchedBets = Moralis.Object.extend("MumbaiUnmatchedBets");
+const MumbaiUnmatchedBetsUpdated = Moralis.Object.extend(
+  "MumbaiUnmatchedBetsUpdated"
 );
-const PolygonUnmatchedBetsRemoved = Moralis.Object.extend(
-  "PolygonUnmatchedBetsRemoved"
+const MumbaiUnmatchedBetsRemoved = Moralis.Object.extend(
+  "MumbaiUnmatchedBetsRemoved"
 );
-
 const MumbaiPlacedOfferings = Moralis.Object.extend("MumbaiPlacedOfferings");
+
+const FujiMatchedBets = Moralis.Object.extend("FujiMatchedBets");
+const FujiUnmatchedBets = Moralis.Object.extend("FujiUnmatchedBets");
+const FujiUnmatchedBetsUpdated = Moralis.Object.extend(
+  "FujiUnmatchedBetsUpdated"
+);
+const FujiUnmatchedBetsRemoved = Moralis.Object.extend(
+  "FujiUnmatchedBetsRemoved"
+);
+const FujiPlacedOfferings = Moralis.Object.extend("FujiPlacedOfferings");
 
 const nft_market_place_address = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
 const nft_market_place_abi = [

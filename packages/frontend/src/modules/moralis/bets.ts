@@ -28,10 +28,10 @@ const getUnmatchedBets = async (): Promise<Ref<Array<UnmatchedBetModel> | undefi
     // Get all unmatched bets from user
     const { getClassName } = useChain();
     const { createQuery } = useMoralisObject(getClassName("UnmatchedBets"));
-    const query = createQuery() as Moralis.Query<UnmatchedBetModel>;
+    const query: Moralis.Query<any> = createQuery();
     const unmatchedBetsQuery: Moralis.Query<any> = query
       .equalTo("from", userAddress.value)
-      .include("event")
+      .include("event", "event.home", "event.away", "event.league")
       .select("amount", "betType", "betSide", "odds", "selection", "apiId", "confirmed", "isPartMatched", "event");
     unmatchedBets.value = (await unmatchedBetsQuery.find()) as Array<UnmatchedBetModel>;
 
@@ -61,7 +61,7 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
     const query: Moralis.Query<any> = createQuery();
     const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
       .equalTo("from", userAddress.value)
-      .include("event")
+      .include("event", "event.home", "event.away", "event.league")
       .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
     matchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
 

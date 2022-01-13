@@ -40,8 +40,8 @@ Moralis.Cloud.define("placeOffering", async (request) => {
   transactionBody = {
     to: nft_market_place_address,
     data: functionCall,
-    gasPrice: gasPrice * 1.2,
-    gas: 1000000 * 2,
+    gasPrice: Math.round(gasPrice * 1.2),
+    gas: Math.round(1000000 * 2),
   };
   signedTransaction = await web3.eth.accounts.signTransaction(
     transactionBody,

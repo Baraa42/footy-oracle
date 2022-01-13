@@ -486,6 +486,44 @@
 				"type": "function"
 			},
 			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_objectId",
+						"type": "string"
+					},
+					{
+						"internalType": "enum BettingAIO.BetSide",
+						"name": "_betSide",
+						"type": "uint8"
+					},
+					{
+						"internalType": "enum BettingAIO.BetType",
+						"name": "_betType",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint8",
+						"name": "_selection",
+						"type": "uint8"
+					},
+					{
+						"internalType": "uint16",
+						"name": "_odds",
+						"type": "uint16"
+					},
+					{
+						"internalType": "uint256",
+						"name": "_amount",
+						"type": "uint256"
+					}
+				],
+				"name": "removeUnmatchedBet",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
 				"inputs": [],
 				"name": "renounceOwnership",
 				"outputs": [],
@@ -583,7 +621,7 @@
 				],
 				"name": "withdrawWithNFT",
 				"outputs": [],
-				"stateMutability": "payable",
+				"stateMutability": "nonpayable",
 				"type": "function"
 			}
 		],
@@ -622,7 +660,7 @@
 			"bytecodeHash": "ipfs"
 		},
 		"optimizer": {
-			"enabled": true,
+			"enabled": false,
 			"runs": 200
 		},
 		"remappings": []
@@ -812,11 +850,11 @@
 			]
 		},
 		"contracts/BettingAIO.sol": {
-			"keccak256": "0x20d8a66efb91cfe6748c916495e2ccef4aa3e122aea43885bcf80d2bb926185f",
+			"keccak256": "0x960438b32c2076f61c0e92016265f55e114ace09f6fc63cef942749179f41244",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://e74f51286d903445d37697f2a831104bbf89f66f36d34a52729a97ba07633b6c",
-				"dweb:/ipfs/QmQdsGZuyH8QmuXPRYuFDy4Skfyy8hWPTwWxudjYcb1qLN"
+				"bzz-raw://d6b6a944a98acd194b2eb0a7524c4ff50be06d38587c3284098c84902b4d4b59",
+				"dweb:/ipfs/QmYJwzuqH7UCv5Pi55dfbfiPa9YbtKU6dbS6WmXPuPU6Dx"
 			]
 		}
 	},

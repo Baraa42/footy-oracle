@@ -16,8 +16,9 @@ const avalanche: Chain = {
   currencySymbol: "AVAX",
   rpcUrl: "https://api.avax-test.network/ext/bc/C/rpc",
   blockExplorerUrl: "https://testnet.snowtrace.io/",
-  classPrefix: "Avax",
-  attributePrefix: "avax",
+  classPrefix: "Fuji",
+  classPrefixMoralis: "Avax",
+  attributePrefix: "fuji",
 };
 
 const polygon: Chain = {
@@ -31,13 +32,28 @@ const polygon: Chain = {
   currencySymbol: "MATIC",
   rpcUrl: "https://rpc-mumbai.maticvigil.com/",
   blockExplorerUrl: "https://mumbai.polygonscan.com/",
-  classPrefix: "Polygon",
-  attributePrefix: "polygon",
+  classPrefix: "Mumbai",
+  classPrefixMoralis: "Polygon",
+  attributePrefix: "mumbai",
+  settings: {
+    oneInchChain: "polygon",
+  },
 };
 
 const chains: Array<Chain> = [polygon, avalanche];
 const activeChain = <Ref<Chain>>ref(chains[0]);
 const chainsWithoutActive = computed((): Chain[] => chains.filter((chain) => chain.chainId != activeChain.value.chainId));
+const moralisClassList = [
+  "Balance",
+  "BalancePending",
+  "NFTOwners",
+  "NFTOwnersPending",
+  "NFTTransfers",
+  "TokenBalance",
+  "TokenBalancePending",
+  "TokenTransfers",
+  "Transactions",
+];
 
 /**
  * Changes chain and adding chain to metasmask and tries again, if its fail
@@ -63,7 +79,11 @@ const setActiveChain = async (chain: Chain): Promise<void> => {
  * @returns string
  */
 const getClassName = (className: string): string => {
-  return `${activeChain.value.classPrefix}${className}`;
+  if (moralisClassList.includes(className)) {
+    return `${activeChain.value.classPrefixMoralis}${className}`;
+  } else {
+    return `${activeChain.value.classPrefix}${className}`;
+  }
 };
 
 /**
@@ -72,8 +92,8 @@ const getClassName = (className: string): string => {
  * @param  {string} attributeName
  * @returns string
  */
-const getAttributeName = (attributeName: string): string => {
-  return `${activeChain.value.attributePrefix}${attributeName}`;
+const getAttributeName = <T>(attributeName: string): keyof T => {
+  return `${activeChain.value.attributePrefix}${attributeName.charAt(0).toUpperCase() + attributeName.slice(1)}` as keyof T;
 };
 
 export const useChain = () => {

@@ -18,16 +18,16 @@ export interface EventModel extends Moralis.Object<Moralis.Attributes> {
      * Polygon
      */
     //polygonContract: string;
-    polygonVolume: number;
-    polygonUnmatchedBets?: Array<UnmatchedBetModel>;
-    polygonMatchedBets?: Array<MatchedBetModel>;
+    fujiVolume: number;
+    fujiUnmatchedBets?: Array<UnmatchedBetModel>;
+    fujiMatchedBets?: Array<MatchedBetModel>;
     /**
      * Avax
      */
     //axaxContract: string;
-    axaxVolume: number;
-    axaxUnmatchedBets?: Array<UnmatchedBetModel>;
-    axaxMatchedBets?: Array<MatchedBetModel>;
+    mumbaiVolume: number;
+    mumbaiUnmatchedBets?: Array<UnmatchedBetModel>;
+    mumbaiMatchedBets?: Array<MatchedBetModel>;
   };
   unmatchedBets?: UnmatchedBetModel[][][]; //[betType][selection]
   getName(): string;

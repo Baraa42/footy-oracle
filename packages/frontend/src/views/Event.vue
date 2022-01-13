@@ -35,7 +35,7 @@
           <h2 class="font-semibold text-xl capitalize">{{ event.getName() }}</h2>
           <span class="text-sm"
             >Matched Volume:
-            <span v-if="event.attributes.polygonVolume">{{ convertCurrency(event.attributes.polygonVolume) }}</span>
+            <span v-if="event.attributes[getAttributeName('volume')]">{{ convertCurrency(event.attributes[getAttributeName("volume")]) }}</span>
             <span v-else>0</span>
             {{ activeChain.currencySymbol }}</span
           >
@@ -61,7 +61,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, onUnmounted, Ref, ref, watch } from "vue";
+import { computed, defineComponent, onUnmounted, Ref, ref, watch } from "vue";
 import { useRoute } from "vue-router";
 import EventMarket from "../components/common/EventMarket.vue";
 import CardContainer from "../components/common/CardContainer.vue";
@@ -86,7 +86,7 @@ export default defineComponent({
     const { selections } = useBetslip();
     const { convertCurrency } = useCurrency();
     const { showError } = useAlert();
-    const { activeChain } = useChain();
+    const { activeChain, getAttributeName } = useChain();
 
     /**
      * Get favorites from user and check if this event is selected
@@ -158,6 +158,7 @@ export default defineComponent({
       isFavorite,
       isFavoriteEvent,
       selections,
+      getAttributeName,
       convertCurrency,
       activeChain,
     };

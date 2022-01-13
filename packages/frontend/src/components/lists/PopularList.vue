@@ -40,6 +40,7 @@ import PulseEventListItem from "../transitions/pulse/PulseEventListItem.vue";
 import FadeTransition from "../transitions/FadeTransition.vue";
 import { EventQueryParms } from "../../interfaces/queries/EventQueryParms";
 import { useSubscription } from "@/modules/moralis/subscription";
+import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   setup() {
@@ -52,6 +53,7 @@ export default defineComponent({
     const bottomHit = ref(false);
     const infiniteScroll = ref(null);
     const triggerPulse = ref(false);
+    const { getAttributeName } = useChain();
 
     /**
      * Load unmatched bets for current events without
@@ -76,7 +78,7 @@ export default defineComponent({
     const queryParms: EventQueryParms = {
       limit: pageSize.value,
       sort: {
-        key: "polygonVolume",
+        key: getAttributeName("volume") as string,
         direction: "DESC",
       },
       filter: {

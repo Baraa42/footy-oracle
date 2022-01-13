@@ -1,4 +1,5 @@
 import { MumbaiDepositLPModel, NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
+import BigNumber from "bignumber.js";
 import { useAlert } from "../layout/alert";
 import { useMoralis } from "./moralis";
 
@@ -9,10 +10,11 @@ export const useMarketplace = () => {
   const { showError, showSuccess } = useAlert();
   const ethereum = window.ethereum;
 
-  const listOnMarketplace = async (nft: NftOwnerModel, price: any): Promise<boolean> => {
+  const listOnMarketplace = async (nft: NftOwnerModel, price: number): Promise<boolean> => {
     try {
+      const formatPrice = new BigNumber(price).toString();
       const approval = await approveMarketPlace(nft.attributes.token_address, nft.attributes.token_id);
-      const offering = await placeOffering(nft.attributes.token_address, nft.attributes.token_id, price);
+      const offering = await placeOffering(nft.attributes.token_address, nft.attributes.token_id, formatPrice);
       showSuccess("NFT successfully put for sale, please wait for confirmation");
       return true;
     } catch (err: any) {
@@ -21,8 +23,6 @@ export const useMarketplace = () => {
       } else {
         showError("Oops! Something went wrong, please try again later");
       }
-
-      console.log(err);
       return false;
     }
   };

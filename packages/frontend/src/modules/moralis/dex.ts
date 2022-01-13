@@ -1,22 +1,28 @@
-import { Ref, ref } from "vue";
+import { Ref, ref, watch } from "vue";
 import { SwapItem } from "../../interfaces/SwapItem";
 import { Token } from "../../interfaces/Token";
 import { TokenPrice } from "../../interfaces/web3/TokenPrice";
+import { useChain } from "./chain";
 import { useMoralis } from "./moralis";
 
 const tokens: Ref<Array<Token> | undefined> = ref();
 
 const useDex = () => {
-  const { Moralis, moralisUser }: { Moralis: any; moralisUser: any } = useMoralis();
+  const { Moralis, moralisUser } = useMoralis();
 
-  const getSupportedTokens = async (chain: string = "polygon") => {
+  const getSupportedTokens = async () => {
     if (tokens.value) {
       return tokens.value;
     }
-    await new Promise((r) => setTimeout(r, 1000)); // dont know what the problem is, plugins needs to init?
-    const tokenList = await Moralis.Plugins.oneInch.getSupportedTokens({ chain });
-    tokens.value = Object.keys(tokenList.tokens).map((key) => tokenList.tokens[key]);
-    return tokens.value;
+
+    const { activeChain } = useChain();
+
+    return Moralis.Web3.initPlugins().then(async () => {
+      const tokenList = await Moralis.Plugins.oneInch.getSupportedTokens({ chain: activeChain.value.settings?.oneInchChain });
+      console.log(tokenList);
+      tokens.value = Object.keys(tokenList.tokens).map((key) => tokenList.tokens[key]);
+      return tokens.value;
+    });
   };
 
   /**
@@ -37,11 +43,12 @@ const useDex = () => {
    * @param chain
    * @param exchange
    */
-  const getTokenPrice = async (address: string, chain: string = "polygon", exchange?: string): Promise<TokenPrice | undefined> => {
+  const getTokenPrice = async (address: string, exchange?: string): Promise<TokenPrice | undefined> => {
     try {
-      const tokenPrice: TokenPrice = await Moralis.Web3API.token.getTokenPrice({ address, chain, exchange });
+      const { activeChain } = useChain();
+      const tokenPrice = (await Moralis.Web3API.token.getTokenPrice({ address, chain: activeChain.value.settings?.oneInchChain, exchange })) as TokenPrice;
       return tokenPrice;
-    } catch (e) {
+    } catch (e: any) {
       console.error(e);
     }
   };
@@ -54,17 +61,20 @@ const useDex = () => {
    * @param chain
    * @returns
    */
-  const getQuote = async (from: SwapItem, to: SwapItem, chain: string = "polygon") => {
+  const getQuote = async (from: SwapItem, to: SwapItem) => {
     try {
-      const quote = await Moralis.Plugins.oneInch.quote({
-        chain: chain, // The blockchain you want to use (eth/bsc/polygon)
-        fromTokenAddress: from.token?.address, // The token you want to swap
-        toTokenAddress: to.token?.address, // The token you want to receive
-        amount: Moralis.Units.Token(from.value, from.token?.decimals).toString(),
-      });
-      console.log(quote);
-      return quote;
-    } catch (e) {
+      if (from.value && from.token) {
+        const { activeChain } = useChain();
+        const quote = await Moralis.Plugins.oneInch.quote({
+          chain: activeChain.value.settings?.oneInchChain, // The blockchain you want to use (eth/bsc/polygon)
+          fromTokenAddress: from.token?.address, // The token you want to swap
+          toTokenAddress: to.token?.address, // The token you want to receive
+          amount: Moralis.Units.Token(from.value, from.token.decimals).toString(),
+        });
+
+        return quote;
+      }
+    } catch (e: any) {
       console.error(e);
     }
   };
@@ -76,17 +86,11 @@ const useDex = () => {
    * @param chain
    */
   async function trySwap(from: SwapItem, to: SwapItem, chain: string = "polygon") {
-    console.log({
-      chain, // The blockchain you want to use (eth/bsc/polygon)
-      fromTokenAddress: from.token?.address, // The token you want to swap
-      fromAddress: moralisUser.value?.get("ethAddress"), // Your wallet address
-      amount: Number(from.value),
-    });
-
+    const { activeChain } = useChain();
     if (from.token?.address !== "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
       await Moralis.Plugins.oneInch
         .hasAllowance({
-          chain, // The blockchain you want to use (eth/bsc/polygon)
+          chain: activeChain.value.settings?.oneInchChain, // The blockchain you want to use (eth/bsc/polygon)
           fromTokenAddress: from.token?.address, // The token you want to swap
           fromAddress: moralisUser.value?.get("ethAddress"), // Your wallet address
           amount: Number(from.value),
@@ -95,7 +99,7 @@ const useDex = () => {
           console.log(allowance);
           if (!allowance) {
             await Moralis.Plugins.oneInch.approve({
-              chain, // The blockchain you want to use (eth/bsc/polygon)
+              chain: activeChain.value.settings?.oneInchChain, // The blockchain you want to use (eth/bsc/polygon)
               tokenAddress: from.token?.address, // The token you want to swap
               fromAddress: moralisUser.value?.get("ethAddress"), // Your wallet address
             });
@@ -120,15 +124,21 @@ const useDex = () => {
    * @param chain
    * @returns
    */
-  async function doSwap(from: SwapItem, to: SwapItem, chain: string = "polygon") {
-    return await Moralis.Plugins.oneInch.swap({
-      chain: chain, // The blockchain you want to use (eth/bsc/polygon)
-      fromTokenAddress: from.token?.address, // The token you want to swap
-      toTokenAddress: to.token?.address, // The token you want to receive
-      amount: Moralis.Units.Token(from.value, from.token?.decimals).toString(),
-      fromAddress: moralisUser.value?.get("ethAddress"), // Your wallet address
-      slippage: 1,
-    });
+  async function doSwap(from: SwapItem, to: SwapItem, chain: any) {
+    try {
+      if (from.value && from.token) {
+        return await Moralis.Plugins.oneInch.swap({
+          chain: chain, // The blockchain you want to use (eth/bsc/polygon)
+          fromTokenAddress: from.token?.address, // The token you want to swap
+          toTokenAddress: to.token?.address, // The token you want to receive
+          amount: Moralis.Units.Token(from.value, from.token.decimals).toString(),
+          fromAddress: moralisUser.value?.get("ethAddress"), // Your wallet address
+          slippage: 1,
+        });
+      }
+    } catch (err: any) {
+      console.error(err);
+    }
   }
 
   return { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice, findToken };

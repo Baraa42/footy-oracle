@@ -108,6 +108,42 @@ describe("BettingContract", function () {
     );
   });
 
+  it("Should remove a unmatched bet", async function () {
+    const bets = await betFactory(1);
+
+    const betExpectation = getBetExpectation(bettingContract, bets.layBets[0]);
+    await checkBetEventFromExpectation(
+      betExpectation,
+      bettingContract,
+      "UnmatchedBetPlaced",
+      bets.layBets[0]
+    );
+
+    const removeExpectation = expect(
+      await bettingContract
+        .connect(bets.layBets[0].account)
+        .removeUnmatchedBet(
+          bets.layBets[0].betSide,
+          bets.layBets[0].betType,
+          bets.layBets[0].selection,
+          bets.layBets[0].oddsParsed,
+          bets.layBets[0].amountParsed
+        )
+    );
+
+    await checkBetEventFromExpectation(
+      removeExpectation,
+      bettingContract,
+      "UnmatchedBetRemoved",
+      bets.layBets[0]
+    );
+
+    await removeExpectation.to.changeEtherBalance(
+      bets.layBets[0].account,
+      bets.layBets[0].amountParsed
+    );
+  });
+
   it("Should full match a bet with three others", async function () {
     let index = 0;
     const bets: Bet[] = [];

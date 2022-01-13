@@ -116,6 +116,24 @@ contract Betting is Ownable {
         placeBet(BetSide.Lay, _betType, _selection, _odds, _amount, msg.sender);
     }
 
+    function removeUnmatchedBet(BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, uint256 _amount) public
+    {
+       UnmatchedBetAmount[] memory bets = unmatchedBets[_betSide][_betType][_selection][_odds];
+       bool hasBet = false;
+
+        // Mark bets as shifted, possible > 1, because of partial matches
+        for (uint256 i = 0; i < bets.length; i++) {
+            if (bets[i].fromAddr == msg.sender && bets[i].amount == _amount) {
+                hasBet = true;
+                emit UnmatchedBetRemoved(_betSide, _betType, _selection, _odds, _amount, msg.sender);
+                transferAmount(msg.sender, _amount);
+                delete unmatchedBets[_betSide][_betType][_selection][_odds][i];
+                break;
+            }
+        }
+        require(hasBet, "No Bet");      
+    }
+
     // for testing
     function withdraw() public {
         if(game.status == GameStatus.Open){
@@ -279,7 +297,7 @@ contract Betting is Ownable {
         return tokenId;
     }
 
-    function withdrawWithNFT(uint256 tokenId) external payable {
+    function withdrawWithNFT(uint256 tokenId) external  {
         betNFT.redeemCollectible(msg.sender, tokenId);
         require(nftWon[tokenId], "Bet lost");
         transferAmount(msg.sender, nftPossibleProfit[tokenId]);

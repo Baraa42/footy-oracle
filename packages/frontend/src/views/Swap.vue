@@ -13,24 +13,7 @@
       <div>
         <button
           @click="onSwap()"
-          class="
-            w-full
-            shadow-md
-            bg-gradient-to-b
-            from-indigo-500
-            to-indigo-600
-            rounded-xl
-            text-xl
-            font-bold
-            py-4
-            text-gray-100
-            focus:outline-none
-            transition-all
-            hover:bg-gradient-to-t
-            border-2 border-indigo-500
-            focus:ring-2 focus:ring-indigo-500
-            ring-offset-4 ring-offset-gray-800
-          "
+          class="w-full shadow-md bg-gradient-to-b from-indigo-500 to-indigo-600 rounded-xl text-xl font-bold py-4 text-gray-100 focus:outline-none transition-all hover:bg-gradient-to-t border-2 border-indigo-500 focus:ring-2 focus:ring-indigo-500 ring-offset-4 ring-offset-gray-800"
         >
           Swap
         </button>
