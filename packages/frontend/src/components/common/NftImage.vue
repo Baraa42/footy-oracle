@@ -24,6 +24,8 @@ export default {
         return props.nft.attributes.metadata[0].image;
       } else if (props.nft.attributes?.metadata?.image) {
         return props.nft.attributes.metadata.image;
+      } else if (props.nft.parsed_metadata?.image) {
+        return props.nft.parsed_metadata?.image;
       } else {
         return "";
       }

@@ -4,9 +4,7 @@
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6" v-if="depositNfts">
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">My LP Token NFTs</h1>
         <div v-for="(nft, id) in depositNfts" :key="nft.attributes.tokenId" class="flex flex-col items-center justify-center w-full cursor-pointer group">
-          <!-- <NftImage :nft="nft"></NftImage> NftOwnerModel not compatible with MumbaiDepositLPModel -->
-
-          <!--  @click="listOnMarketplace(nft, prices[id])" MumbaiDepositLPModel not compatible with NftOwnerModel-->
+          <NftImage :nft="nft"></NftImage>
           <button
             type="button"
             class="w-full text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
@@ -41,6 +39,7 @@ import ListedNftImage from "../components/common/ListedNftImage.vue";
 import NftImage from "../components/common/NftImage.vue";
 import { useContract, useMarketMaker } from "../modules/moralis/contract";
 import { useMarketplace } from "@/modules/moralis/marketplace";
+import { useNFTs } from "../modules/moralis/nfts";
 
 export default defineComponent({
   async setup() {
@@ -76,10 +75,14 @@ export default defineComponent({
       console.log(marketMakerAbi.marketMakerAbi);
       */
 
-      var amount = web3.value.utils.toWei(price, "ether");
+     const { generateLPTokenURI } = useNFTs();
 
-      marketMakerContract.methods
-        .deposit("uri3")
+     var amount = web3.value.utils.toWei(price, "ether");
+     var uri = await generateLPTokenURI(marketMakerContractAddress, amount);
+     console.log('deposit with uri ', uri);
+
+     marketMakerContract.methods
+        .deposit(uri)
         .send({ from: moralisUser?.value?.get("ethAddress"), value: amount })
         .on("transactionHash", (hash: any) => {
           console.log("Deposit Completed. Hash = ", hash);

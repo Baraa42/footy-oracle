@@ -31,6 +31,8 @@ var delistedOfferingIds: Array<string> = [];
 var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
 const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c097363c'
 
+var depositLPNfts: Ref<Array<MumbaiDepositLPModel> | undefined> = ref();
+
 /**
  * Get user nfts and subscribe for new nfts
  *
@@ -299,7 +301,7 @@ const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> |
       }
     });
     if (notFound) {
-      console.log("pushing this nft index = " + index);
+      //console.log("pushing this nft index = " + index);
       //console.log(nft);
       nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
       if (nft.parsed_metadata) {
@@ -332,16 +334,63 @@ const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | und
   const { moralisUser } = useMoralis();
   if (moralisUser.value) {
     // Get nfts from user
-    const { createQuery } = useMoralisObject("MumbaiDepositLP");
-    const nftQuery = createQuery() as Moralis.Query<MumbaiDepositLPModel>;
-    //nftQuery.equalTo("name", collectionName);
-    //nftQuery.equalTo("owner_of", moralisUser.value.get("ethAddress"));
-    lpNfts.value = (await nftQuery.find()) as Array<MumbaiDepositLPModel>;
-    console.log(lpNfts);
-    console.log(lpNfts.value);
+
+    const queryAll = new Moralis.Query("MumbaiDepositLP");
+    depositLPNfts.value = (await queryAll.find()) as Array<MumbaiDepositLPModel>;
+  
+    console.log(depositLPNfts.value)
+
+    depositLPNfts.value.forEach(async (nft: MumbaiDepositLPModel, index) => {
+      nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
+      if (nft.parsed_metadata) {
+        console.log('printing metadata of LP Token')
+        console.log(nft.parsed_metadata);
+      } else {
+        /*
+        console.log("if metadata is undefined, don't bother with this nft. index = " + index);
+        depositLPNfts?.value?.splice(index, 1);
+        console.log('number of nfts are removing for metadata problem = ' + depositLPNfts.value.length);
+        */
+      }
+    });
   }
-  return lpNfts;
+  return depositLPNfts;
 };
+
+const generateLPTokenURI = async (marketMakeraddress: string, amount : string ): Promise<string> => {
+  const { userAddress, web3 } = useMoralis();
+
+  if (userAddress.value) {
+    const { convertCurrency } = useCurrency();
+    const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
+
+    const imageUrl = "https://ipfs.io/ipfs/QmPK2yjKxYGYm84gZTCjK7b81EK6HgBUkBy7xGunaGHjth?filename=counter_remix.png";
+    const metadata = 
+      {
+          name: "LP NFT",
+          description: "Liquidity Provider NFT ",
+          external_url: "",
+          image: imageUrl,
+          attributes: [
+            {
+              trait_type: "Market Maker contract",
+              value: marketMakeraddress,
+            },
+            {
+              trait_type: "Amount",
+              value: new BigNumber(convertCurrency(amount)),
+            },
+          ],
+      };
+
+    if (metadata) {
+      const tokenUri = await saveJsonToIPFS(userAddress.value, metadata); // save metadata to ipfs
+      console.log("new token uri: ", tokenUri.ipfs());
+      return tokenUri.ipfs();
+    }
+  }
+  return "dummy string";
+}
 
 export const useNFTs = () => {
   return {
@@ -357,5 +406,6 @@ export const useNFTs = () => {
     getNFTsListedOnMarketplace,
     getNFTsDeListedOnMarketplace,
     getDepositLPNFTs,
+    generateLPTokenURI,
   };
 };
