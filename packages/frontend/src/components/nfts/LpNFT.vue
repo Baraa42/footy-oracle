@@ -29,7 +29,7 @@
         <div class="shadow-md w-full p-4 h-52 mt-12 bg-gray-800/10 rounded backdrop-blur-sm">
           <div class="w-full flex flex-col space-y-6 items-center justify-center h-full -mt-2">
             <span class="text-3xl text-white/[.05] text-center font-semibold">Amount:</span>
-            <div class="w-full flex flex-row space-x-2 justify-center font-semibold">
+            <div class="w-full flex flex-row space-x-4 justify-center font-semibold">
               <span class="text-number text-6xl">{{ amount }}</span>
               <span class="text-number text-6xl">{{ activeChain.currencyName }}</span>
             </div>
