@@ -3,7 +3,7 @@
     <div
       id="nonPrintable"
       ref="printMe"
-      class="z-0 relative h-[1024px] w-[768px] rounded-md p-2 overflow-hidden transition-transform mix-blend-soft-ligh"
+      class="z-0 relative h-[1024px] w-[768px] rounded-md p-4 overflow-hidden transition-transform mix-blend-soft-ligh"
       :style="{
         'background-color': palette[500],
       }"
