@@ -23,7 +23,7 @@ Moralis.Cloud.afterSave("FujiUnmatchedBetsRemoved", async (request) => {
 });
 
 Moralis.Cloud.afterSave("FujiUnmatchedBetsUpdated", async (request) => {
-  afterSaveUnmatchedBetsUpdated(request.object, FujiUnmatchedBets);
+  await afterSaveUnmatchedBetsUpdated(request.object, FujiUnmatchedBets);
 });
 
 Moralis.Cloud.afterSave("AvaxNFTOwnersPending", async (request) => {

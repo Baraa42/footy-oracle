@@ -298,7 +298,7 @@ export default defineComponent({
     model.value.set("transaction_index", 1);
     model.value.set("confirmed", true);
     model.value.set("log_index", 1);
-    model.value.attributes.event = eventModel.value;
+    model.value.set("event", eventModel.value);
 
     /**
      * Reloading model if some value changes
@@ -316,8 +316,8 @@ export default defineComponent({
       () => odds.value,
       () => {
         model.value.set("odds", web3.utils.toWei(odds.value));
-        model.value.attributes.event = undefined;
-        model.value.attributes.event = eventModel.value;
+        model.value.set("event", undefined);
+        model.value.set("event", eventModel.value);
       }
     );
 
@@ -325,8 +325,8 @@ export default defineComponent({
       () => amount.value,
       () => {
         model.value.set("amount", web3.utils.toWei(amount.value));
-        model.value.attributes.event = undefined;
-        model.value.attributes.event = eventModel.value;
+        model.value.set("event", undefined);
+        model.value.set("event", eventModel.value);
       }
     );
 
@@ -334,8 +334,8 @@ export default defineComponent({
       () => selection.value,
       () => {
         model.value.set("selection", selection.value);
-        model.value.attributes.event = undefined;
-        model.value.attributes.event = eventModel.value;
+        model.value.set("event", undefined);
+        model.value.set("event", eventModel.value);
       }
     );
 
@@ -343,15 +343,15 @@ export default defineComponent({
       () => type.value,
       () => {
         model.value.set("betType", type.value);
-        model.value.attributes.event = undefined;
-        model.value.attributes.event = eventModel.value;
+        model.value.set("event", undefined);
+        model.value.set("event", eventModel.value);
       }
     );
 
     watch(
       () => eventModel.value,
       () => {
-        model.value.attributes.event = eventModel.value;
+        model.value.set("event", eventModel.value);
       }
     );
 

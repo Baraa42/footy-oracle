@@ -12,7 +12,9 @@
       }"
     >
       <!-- Background Layers -->
-      <NFTBackgroundLayerVue v-for="backgroundLayer in backgroundLayers" :data="backgroundLayer" :key="backgroundLayer.id" />
+      <div v-if="backgroundLayers">
+        <NFTBackgroundLayerVue v-for="backgroundLayer in backgroundLayers" :data="backgroundLayer" :key="backgroundLayer.id" />
+      </div>
 
       <!-- Forward Layers -->
       <div class="relative flex flex-col z-50 w-full">

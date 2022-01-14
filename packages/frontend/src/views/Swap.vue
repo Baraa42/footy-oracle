@@ -22,6 +22,8 @@
 
     <TokenDialog :mode="activeMode" :isOpen="isToggled" @onClick="onDialog" @onClose="toggle()" />
   </div>
+
+  <LpNFT amount="100" color="#111827" />
 </template>
 
 <script lang="ts">
@@ -36,6 +38,7 @@ import TokenDialog from "../components/dialogs/TokenDialog.vue";
 import { useCurrency } from "../modules/settings/currency";
 import { useMoralis } from "../modules/moralis/moralis";
 import { useRoute } from "vue-router";
+import LpNFT from "../components/nfts/LpNFT.vue";
 export default defineComponent({
   async setup() {
     const route = useRoute();
@@ -164,6 +167,6 @@ export default defineComponent({
       onSwap,
     };
   },
-  components: { TokenDialog, RefreshIcon, SwapItemVue },
+  components: { TokenDialog, RefreshIcon, SwapItemVue, LpNFT },
 });
 </script>

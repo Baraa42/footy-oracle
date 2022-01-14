@@ -27,7 +27,7 @@ Moralis.Cloud.afterSave("MumbaiUnmatchedBetsRemoved", async (request) => {
 });
 
 Moralis.Cloud.afterSave("MumbaiUnmatchedBetsUpdated", async (request) => {
-  afterSaveUnmatchedBetsUpdated(request.object, MumbaiUnmatchedBets);
+  await afterSaveUnmatchedBetsUpdated(request.object, MumbaiUnmatchedBets);
 });
 
 Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
