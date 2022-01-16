@@ -5,7 +5,7 @@ import { BigNumberish, Event, Signer, utils } from "ethers";
 import { expect } from "chai";
 import { Betting } from "../typechain/Betting";
 import { SoccerResolver } from "../typechain/SoccerResolver";
-import { BetNFT, ERC721, LinkToken, MockOracle } from "../typechain";
+import { BetNFT, ERC721, LinkToken, MockOracle, MarketMaker, LPNFT } from "../typechain";
 import crypto from "crypto";
 import { formatEther } from "ethers/lib/utils";
 
@@ -41,7 +41,20 @@ export const deployBetNFTContract = async (): Promise<BetNFT> => {
 };
 
 /**
- * Deploy BetNFT Contract helper
+ * Deploy LPNFT Contract helper
+ *
+ * @param eventId
+ * @returns
+ */
+export const deployLPNFTContract = async (): Promise<LPNFT> => {
+  const LPNFTContract = await ethers.getContractFactory("LPNFT");
+  const lpNFTContract: LPNFT = await LPNFTContract.deploy("LP NFT!", "LPNFT1");
+  await lpNFTContract.deployed();
+  return lpNFTContract;
+};
+
+/**
+ * Deploy Link Token Contract helper
  *
  * @param eventId
  * @returns
@@ -109,6 +122,13 @@ export const deployBettingContract = async (
   return bettingContract;
 };
 
+export const deployMarketMakerContract = async (lpNFT: LPNFT): Promise<MarketMaker> => {
+  const MarketMakerContract = await ethers.getContractFactory("MarketMaker");
+  const marketMakerContract: MarketMaker = await MarketMakerContract.deploy(lpNFT.address);
+  await marketMakerContract.deployed();
+  return marketMakerContract;
+};
+
 export const deployContracts = async () => {
   const linkToken = await deployLinkToken();
   const oracle = await deployOracleContract(linkToken);
@@ -117,12 +137,14 @@ export const deployContracts = async () => {
   await linkToken.functions.transfer(resolver.address, "1000000000000000000");
 
   const betNFT = await deployBetNFTContract();
+  const lpNFT = await deployLPNFTContract();
 
   return {
     linkToken,
     oracle,
     resolver,
     betNFT,
+    lpNFT,
   };
 };
 
@@ -354,6 +376,190 @@ export const checkBetEventFromExpectation = async (
       bet.amountParsed,
       await bet.account.getAddress()
     );
+};
+
+
+/**
+ * Deposit Amount in LP
+ *
+ * @param  {MarketMaker} contract
+ * @param  {string} IPFS URI
+ * @param  {uint} depsoit amount
+ * @returns Chai
+ */
+export const getDepositExpectation = (
+  contract: MarketMaker,
+  account: Signer,
+  uri: string,
+  depositAmount: BigNumberish 
+): Chai.Assertion => {
+  return expect(
+      contract
+        .connect(account)
+        .deposit(uri, {value: depositAmount})
+  );
+};
+
+/**
+ * Checks inside expectation, if event is emited with with args from MarketMaker
+ *
+ * @param  {Chai.Assertion} expectation
+ * @param  {MarketMaker} contract
+ * @param  {string} event
+ * @param  {BigNumberish} tokenId
+ * @param  {string} IPFS URI
+ * @param  {uint} depsoit amount
+ * @returns Promise
+ */
+export const checkDepositEventFromExpectation = async (
+  expectation: Chai.Assertion,
+  contract: MarketMaker,
+  event: string,
+  tokenId: BigNumberish,
+  uri: string,
+  depositAmount: BigNumberish 
+): Promise<Chai.AsyncAssertion> => {
+  return await expectation?.to
+    .emit(contract, event)
+    .withArgs(tokenId, uri, depositAmount);
+};
+
+/**
+ * Withdraw Amount from LP
+ *
+ * @param  {MarketMaker} contract
+ * @param  {number} tokenId
+ * @returns Chai
+ */
+export const getWithdrawExpectation = (
+  contract: MarketMaker,
+  account: Signer,
+  tokenId: BigNumberish
+): Chai.Assertion => {
+  return expect(
+      contract
+        .connect(account)
+        .withdraw(tokenId)
+  );
+};
+
+/**
+ * Checks inside expectation, if event is emited with with args from MarketMaker
+ *
+ * @param  {Chai.Assertion} expectation
+ * @param  {MarketMaker} contract
+ * @param  {string} event
+ * @param  {BigNumberish} tokenId
+ * @param  {uint} depsoit amount
+ * @returns Promise
+ */
+export const checkWithdrawEventFromExpectation = async (
+  expectation: Chai.Assertion,
+  contract: MarketMaker,
+  event: string,
+  tokenId: BigNumberish,
+  depositAmount: BigNumberish 
+): Promise<Chai.AsyncAssertion> => {
+  return await expectation?.to
+    .emit(contract, event)
+    .withArgs(tokenId, depositAmount);
+};
+
+
+/**
+ * Withdraw Amount from LP
+ *
+ * @param  {MarketMaker} marketMakercontract
+ * @param  {Betting} bettingContract
+ * @param  {Bet} bet
+ * @returns Chai
+ */
+export const getCreateOpposingBetExpectation = (
+  marketMakercontract: MarketMaker,
+  bettingContract: Betting,
+  bet: Bet
+): Chai.Assertion => {
+  //if user bet is lay, market maker should create back bet
+  if (bet.betSide === 1) {
+    return expect(
+      marketMakercontract
+        .connect(bet.account)
+        .createOpposingBackBet(
+          bettingContract.address,
+          bet.betType,
+          bet.selection,
+          bet.oddsParsed
+        )
+    );
+  }
+  else {
+    return expect(
+      marketMakercontract
+        .connect(bet.account)
+        .createOpposingLayBet(
+          bettingContract.address,
+          bet.betType,
+          bet.selection,
+          bet.oddsParsed,
+          bet.amountParsed,
+          bet.liabilityParsed
+        )
+    );   
+  }
+};
+
+/**
+ * Checks inside expectation, if event is emited with with args from MarketMaker
+ *
+ * @param  {Chai.Assertion} expectation
+ * @param  {MarketMaker} contract
+ * @param  {string} event
+ * @param  {Bet} bet
+ * @param  {BigNumberish} amount
+ * @returns Promise
+ */
+export const checkCreateOpposingBetEventFromExpectation = async (
+  expectation: Chai.Assertion,
+  marketMakercontract: MarketMaker,
+  bettingContract: Betting,
+  event: string,
+  bet: Bet,
+  amount: BigNumberish
+): Promise<Chai.AsyncAssertion> => {
+
+/*
+// Unable verify event generated by createBackBet call made by MarketMaker. 
+// Verified by adding console.log 
+// Creating back bet  1000000000000153
+// createOpposingBackBet completed. Amount= 1000000000000153
+  var backBet = ethers.utils.parseEther("0");
+  var bettingEvent = await expectation?.to
+    .emit(bettingContract, "MatchedBetPlaced")
+    .withArgs(
+      backBet,
+      bet.selection,
+      bet.oddsParsed,
+      amount);
+*/
+  //if user bet is lay, market maker should create back bet
+  if (bet.betSide === 1) {
+    return await expectation?.to
+      .emit(marketMakercontract, event)
+      .withArgs(
+        bet.betType,
+        bet.selection,
+        bet.oddsParsed,
+        amount);
+  }
+  else {
+     return await expectation?.to
+      .emit(marketMakercontract, event)
+      .withArgs(
+        bet.betType,
+        bet.selection,
+        bet.oddsParsed,
+        amount);
+  }
 };
 
 /**

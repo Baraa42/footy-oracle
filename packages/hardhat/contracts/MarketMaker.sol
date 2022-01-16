@@ -2,6 +2,7 @@
 pragma solidity ^0.8.0;
 
 import './LPNFT.sol';
+import './Betting.sol';
 import "hardhat/console.sol";
 
 contract MarketMaker  {
@@ -17,10 +18,19 @@ contract MarketMaker  {
 
     event DepositCompleted(uint tokenId, string uri, uint depositAmount);
     event WithdrawalCompleted(uint tokenId, uint depositAmount);
+    event MarketMakerCreateBackBet(BetType _betType,
+                                   uint8 _selection,
+                                   uint16 _odds,
+                                   uint256 amount);
+    event MarketMakerCreateLayBet(BetType _betType,
+                                   uint8 _selection,
+                                   uint16 _odds,
+                                   uint256 amount);
 
     constructor(LPNFT _lpNFT) {
         lpNFT = _lpNFT;
         totalDeposit = 0;
+        console.log("Constructor MarketMaker");
     } 
 
     function deposit(string memory uri) public payable {
@@ -54,5 +64,53 @@ contract MarketMaker  {
         totalDeposit -= depositAmount;
         delete lpDeposits[tokenId];
         emit WithdrawalCompleted(tokenId, depositAmount);
+    }
+
+    // Never invest more than .1% of total fund value.
+    function maxAmountForAnyBet() public view returns (uint) {
+        if (totalDeposit > 1000) {
+           return totalDeposit / 1000;
+        }
+        else {
+           return 0;
+        }
+    }
+
+    // User placed a Lay Bet and now MarketMaker will create Back bet
+    function createOpposingBackBet(address bettingAddress,
+                                   BetType _betType,
+                                   uint8 _selection,
+                                   uint16 _odds) external {        
+        uint amount = maxAmountForAnyBet();
+        require(amount != 0, "Insufficient Funds in Liquidity Pool");
+        totalDeposit = totalDeposit - amount;
+
+        Betting betting = Betting(bettingAddress);
+        betting.createBackBet{value: amount}(_betType, _selection, _odds, amount);
+        
+        emit MarketMakerCreateBackBet(_betType, _selection, _odds, amount);
+        console.log('createOpposingBackBet completed. Amount=', amount);
+    }
+    
+    // User placed a Back Bet and now MarketMaker will create Lay bet
+    function createOpposingLayBet(address bettingAddress,
+                                   BetType _betType,
+                                   uint8 _selection,
+                                   uint16 _odds,
+                                   uint256 backBetAmount,
+                                   uint256 liabilityAmount) external {
+        /*
+        uint amount = (backBetAmount * (_odds - 1000) / 1000); // maxAmountForAnyBet();
+        console.log('trying createOpposingLayBet, amount = ', amount, ' backBetAmount =', backBetAmount);
+        require(amount != 0, "Insufficient Funds in Liquidity Pool");
+        totalDeposit = totalDeposit - amount;
+        */
+        totalDeposit = totalDeposit - liabilityAmount;
+
+        Betting betting = Betting(bettingAddress);
+        betting.createLayBet{value: liabilityAmount}(_betType, _selection, _odds, backBetAmount);
+        
+        emit MarketMakerCreateLayBet(_betType, _selection, _odds, liabilityAmount);
+        console.log('createOpposingLayBet completed. Amount=', liabilityAmount); 
     }
 }
