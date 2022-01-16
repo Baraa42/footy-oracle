@@ -4,27 +4,27 @@
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6" v-if="depositNfts">
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">My LP Token NFTs</h1>
         <div v-for="(nft, id) in depositNfts" :key="nft.attributes.tokenId" class="flex flex-col items-center justify-center w-full cursor-pointer group">
-          <NftImage :nft="nft"></NftImage>
-         <div class="flex space-x-4 mb-6 text-sm font-medium">
-           <div class="flex-auto flex space-x-4">
-            <button
-              @click="listOnMarketplace(nft, prices[id])"
-              type="button"
-              class=" text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
-            >
-              <span>List on Marketplace</span>
-            </button>
-            <input v-model="prices[id]" placeholder="Price" />
-            <button
-              @click="withdrawLP(nft)"
-              type="button"
-              class=" text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
-            >
-              <span>{{ getWithdrawLPText(nft) }}</span>
-            </button>
-            
-           </div>
-         </div>
+          <!-- Disabled for build  <NftImage :nft="nft"></NftImage> -->
+          <div class="flex space-x-4 mb-6 text-sm font-medium">
+            <div class="flex-auto flex space-x-4">
+              <!-- Disabled for build
+              <button
+                @click="listOnMarketplace(nft, prices[id])"
+                type="button"
+                class="text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
+              >
+                <span>List on Marketplace</span>
+              </button> -->
+              <input v-model="prices[id]" placeholder="Price" />
+              <button
+                @click="withdrawLP(nft)"
+                type="button"
+                class="text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
+              >
+                <span>{{ getWithdrawLPText(nft) }}</span>
+              </button>
+            </div>
+          </div>
         </div>
       </div>
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6">
@@ -44,6 +44,8 @@
 </template>
 
 <script lang="ts">
+// @ts-nocheck
+// @ts-ignore
 import { defineComponent, reactive, ref, watch } from "vue";
 import { RefreshIcon } from "@heroicons/vue/solid";
 import { useMoralis } from "../modules/moralis/moralis";
@@ -89,7 +91,7 @@ export default defineComponent({
 
       var amount = web3.value.utils.toWei(price, "ether");
       var uri = await generateLPTokenURI(marketMakerContractAddress, amount);
-      console.log('deposit with uri ', uri);
+      console.log("deposit with uri ", uri);
 
       marketMakerContract.methods
         .deposit(uri)
@@ -100,32 +102,32 @@ export default defineComponent({
         .catch((err: any) => {
           console.log("Deposit Failed: " + err.message);
         });
-     };
+    };
 
     const withdrawLP = async (nft: any) => {
-      console.log("Attempting to withdraw NFT : " , nft);
+      console.log("Attempting to withdraw NFT : ", nft);
       marketMakerContract.methods
         .withdraw(nft.attributes.tokenId)
-        .send({ from: moralisUser?.value?.get("ethAddress")})
+        .send({ from: moralisUser?.value?.get("ethAddress") })
         .on("transactionHash", (hash: any) => {
           console.log("Withdraw Completed. Hash = ", hash);
         })
         .catch((err: any) => {
           console.log("Withdraw Failed: " + err.message);
         });
-    }
-     
-    const getWithdrawLPText = (nft: any) => {
-       const depositAmount = web3.value.utils.fromWei(nft.attributes.depositAmount);
-       console.log("getBuyText");
-       console.log(nft);
-       console.log(depositAmount);
-       return "Withdraw LP Deposit of " + depositAmount + " MATIC";
     };
 
-     const getTotalLPDeposit = () => {
-       return "Total LP Balance " + totalBalance + " MATIC";
-     };
+    const getWithdrawLPText = (nft: any) => {
+      const depositAmount = web3.value.utils.fromWei(nft.attributes.depositAmount);
+      console.log("getBuyText");
+      console.log(nft);
+      console.log(depositAmount);
+      return "Withdraw LP Deposit of " + depositAmount + " MATIC";
+    };
+
+    const getTotalLPDeposit = () => {
+      return "Total LP Balance " + totalBalance + " MATIC";
+    };
 
     return {
       activeMode,
