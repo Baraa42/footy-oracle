@@ -57,9 +57,9 @@
                 </div>
 
                 <div class="w-full flex flex-col max-h-[416px] overflow-y-scroll border-t">
-                  <template v-if="tokenList">
+                  <template v-if="filterdTokens">
                     <div
-                      v-for="token in tokenList"
+                      v-for="token in filterdTokens"
                       @click="click(token)"
                       :key="token.symbol"
                       :id="token.symbol"
@@ -71,7 +71,7 @@
                         <span class="text-xs text-gray-500">{{ token.name }}</span>
                       </div>
                     </div>
-                    <div v-if="tokenList.length == 0" class="py-4 pl-4">
+                    <div v-if="filterdTokens.length == 0" class="py-4 pl-4">
                       <span>No search results found.</span>
                     </div>
                   </template>
@@ -86,7 +86,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, Ref, ref, watch } from "vue";
+import { defineComponent, Ref, ref, computed } from "vue";
 import Metamask from "../../assets/svg/metamask.svg";
 import { TransitionRoot, TransitionChild, Dialog, DialogOverlay, DialogTitle } from "@headlessui/vue";
 import useDex from "../../modules/moralis/dex";
@@ -94,15 +94,30 @@ import { Token } from "../../interfaces/Token";
 import { useMoralis } from "../../modules/moralis/moralis";
 
 export default defineComponent({
-  props: ["isOpen", "mode", "block"],
+  props: ["isOpen", "mode", "hideToken"],
   emits: ["onClose", "onClick"],
-  setup(_, { emit }) {
+  setup(props, { emit }) {
     const { isAuthenticated } = useMoralis();
     const { tokens, findToken } = useDex();
     const { tokens: userTokens } = useMoralis();
 
-    const tokenList: Ref<Array<Token> | undefined> = ref(tokens.value);
     const search: Ref<string> = ref("");
+
+    const filterdTokens = computed((): Token[] => {
+      if (!tokens.value) {
+        return [];
+      }
+
+      return tokens.value
+        .filter((item: Token) => item != props.hideToken)
+        .filter((item: Token) => {
+          if (search.value.startsWith("0x")) {
+            return item.address == search.value;
+          } else {
+            return item.name.toLowerCase().includes(search.value.toLowerCase());
+          }
+        });
+    });
 
     const closeModal = () => {
       search.value = "";
@@ -114,27 +129,8 @@ export default defineComponent({
       closeModal();
     };
 
-    const onSearch = () => {
-      try {
-        tokenList.value = tokens.value?.filter((item: Token) => {
-          if (search.value.startsWith("0x")) {
-            return item.address == search.value;
-          } else {
-            return item.name.toLowerCase().includes(search.value.toLowerCase());
-          }
-        });
-      } catch (e) {
-        console.error(e);
-      }
-    };
-
-    watch(
-      () => search.value,
-      () => onSearch()
-    );
-
     return {
-      tokenList,
+      filterdTokens,
       search,
       tokens,
       userTokens,

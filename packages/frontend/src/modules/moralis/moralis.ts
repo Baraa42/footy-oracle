@@ -126,7 +126,6 @@ const loadUserRelatedData = async (): Promise<void> => {
 const loadNativeBalance = async (): Promise<void> => {
   const { getNativeBalance } = useBalance();
   const balance: Ref<string | undefined> = await getNativeBalance();
-  console.log(balance.value);
   if (balance.value) {
     user.value.balances.available = Number(balance.value);
   }
@@ -160,6 +159,7 @@ const loadNfts = async (): Promise<void> => {
 
   //console.log(localNfts);
 
+  /** TODO uncommit
   const localListedNfts: Ref<Array<ListedNftModel> | undefined> = await getNFTsListedOnMarketplace();
   if (localListedNfts.value) {
     user.value.listedNfts = localListedNfts.value;
@@ -170,6 +170,7 @@ const loadNfts = async (): Promise<void> => {
   if (localDepositNfts.value) {
     user.value.depositNfts = localDepositNfts.value;
   }
+   */
 };
 
 const loadFavorites = async () => {
