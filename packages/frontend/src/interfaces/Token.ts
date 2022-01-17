@@ -4,4 +4,5 @@ export interface Token {
   decimals: number;
   address: string;
   logoURI: string;
+  permitSupported?: boolean;
 }

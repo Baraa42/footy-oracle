@@ -22,7 +22,7 @@
         >
           <div class="flex flex-row justify-between">
             <span>Rate</span>
-            <span>1 {{ from.token?.symbol }} = {{ String(Number(to.value) / Number(from.value)) }} {{ to.token?.symbol }}</span>
+            <span>1 {{ from.token?.symbol }} = {{ swapRate }} {{ to.token?.symbol }}</span>
           </div>
           <div class="flex flex-row justify-between">
             <span>Swap fee</span>
@@ -52,25 +52,35 @@
 import { computed, defineComponent, reactive, ref, watch } from "vue";
 import { RefreshIcon, CogIcon } from "@heroicons/vue/solid";
 import { useToggle } from "../modules/layout/toggle";
-import useDex from "../modules/moralis/dex";
 import { SwapItem } from "../interfaces/SwapItem";
 import { Token } from "../interfaces/Token";
 import SwapItemVue from "../components/dex/SwapItem.vue";
 import TokenDialog from "../components/dialogs/TokenDialog.vue";
 import { useCurrency } from "../modules/settings/currency";
 import { LocationQueryValue, useRoute } from "vue-router";
+import { useMath } from "@/modules/math";
+import { TokenPrice } from "@/interfaces/web3/TokenPrice";
+import { useChain } from "@/modules/moralis/chain";
 export default defineComponent({
   setup() {
     const { toggle, isToggled } = useToggle();
-    const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice } = useDex();
+    const { activeChain, getDex } = useChain();
+
+    const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice } = getDex();
+
     const { convertCurrency } = useCurrency();
+    const { round } = useMath();
 
     // load supported tokens
     getSupportedTokens().then(() => {
       // set matic as default destionstion
       if (!to.token) {
-        to.token = tokens.value?.find((item) => item.symbol === "MATIC");
+        to.token = tokens.value?.find((item) => item.symbol === activeChain.value.currencySymbol);
       }
+    });
+
+    const swapRate = computed((): string => {
+      return String(round(Number(to.value) / Number(from.value), 4));
     });
 
     const quote = ref();
@@ -106,12 +116,28 @@ export default defineComponent({
     const onDialog = async (token: Token) => {
       if (activeMode.value == "from") {
         from.token = token;
-        from.price = await getTokenPrice(token.address);
       } else if (activeMode.value == "to") {
         to.token = token;
-        to.price = await getTokenPrice(token.address);
       }
     };
+
+    watch(
+      () => to.token,
+      () => {
+        if (to.token) {
+          getTokenPrice(to.token.address).then((price: TokenPrice | undefined) => (to.price = price));
+        }
+      }
+    );
+
+    watch(
+      () => from.token,
+      () => {
+        if (from.token) {
+          getTokenPrice(from.token.address).then((price: TokenPrice | undefined) => (from.price = price));
+        }
+      }
+    );
 
     watch(
       () => [to.token, from.token, from.value],
@@ -176,7 +202,7 @@ export default defineComponent({
       toggleFromToken,
       toggleToToken,
       onSwap,
-      convertCurrency,
+      swapRate,
     };
   },
   components: { TokenDialog, RefreshIcon, CogIcon, SwapItemVue },

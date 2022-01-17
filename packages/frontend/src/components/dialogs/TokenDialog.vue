@@ -89,7 +89,7 @@
 import { defineComponent, Ref, ref, computed } from "vue";
 import Metamask from "../../assets/svg/metamask.svg";
 import { TransitionRoot, TransitionChild, Dialog, DialogOverlay, DialogTitle } from "@headlessui/vue";
-import useDex from "../../modules/moralis/dex";
+import useDex from "../../modules/moralis/dex/dex";
 import { Token } from "../../interfaces/Token";
 import { useMoralis } from "../../modules/moralis/moralis";
 

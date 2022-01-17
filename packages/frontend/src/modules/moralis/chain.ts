@@ -4,6 +4,8 @@ import PolygonRounded from "@/assets/svg/polygon-rounded.svg";
 import AvaxRounded from "@/assets/svg/avax-rounded.svg";
 import { computed, markRaw, Ref, ref } from "vue";
 import Moralis from "moralis/dist/moralis.js";
+import { useOneInchDex } from "./dex/oneInchDex";
+import { useYieldYakDex } from "./dex/yieldYakDex";
 
 const avalanche: Chain = {
   name: "Avalanche Fuji Testnet",
@@ -19,6 +21,8 @@ const avalanche: Chain = {
   classPrefix: "Fuji",
   classPrefixMoralis: "Avax",
   attributePrefix: "fuji",
+  nativePriceFrom: "eth",
+  nativePriceAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
 };
 
 const polygon: Chain = {
@@ -35,6 +39,8 @@ const polygon: Chain = {
   classPrefix: "Mumbai",
   classPrefixMoralis: "Polygon",
   attributePrefix: "mumbai",
+  nativePriceFrom: "eth",
+  nativePriceAddress: "0x7d1afa7b718fb893db30a3abc0cfc608aacfebb0",
   settings: {
     oneInchChain: "polygon",
   },
@@ -96,6 +102,30 @@ const getAttributeName = <T>(attributeName: string): keyof T => {
   return `${activeChain.value.attributePrefix}${attributeName.charAt(0).toUpperCase() + attributeName.slice(1)}` as keyof T;
 };
 
+const getDex = () => {
+  if (activeChain.value.chainId === polygon.chainId) {
+    const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice, findToken } = useOneInchDex();
+    return {
+      getSupportedTokens,
+      getQuote,
+      trySwap,
+      tokens,
+      getTokenPrice,
+      findToken,
+    };
+  } else {
+    const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice, findToken } = useYieldYakDex();
+    return {
+      getSupportedTokens,
+      getQuote,
+      trySwap,
+      tokens,
+      getTokenPrice,
+      findToken,
+    };
+  }
+};
+
 export const useChain = () => {
-  return { chains, activeChain, chainsWithoutActive, setActiveChain, getClassName, getAttributeName };
+  return { chains, avalanche, polygon, activeChain, chainsWithoutActive, setActiveChain, getClassName, getAttributeName, getDex };
 };

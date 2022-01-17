@@ -6,8 +6,18 @@
 
       <div v-if="mode == 'from' && modelValue.token?.symbol && isAuthenticated" class="flex flex-row space-x-2 text-xs items-center">
         <span class="text-indigo-300 text-sm font-semibold">{{ balance }} {{ modelValue.token.symbol }}</span>
-        <button class="bg-gray-800 text-gray-200 rounded-md px-2 py-1" @click="selectMaxBalance()">MAX</button>
-        <button class="bg-gray-800 text-gray-200 rounded-md px-2 py-1" @click="selectHalfBalance()">HALF</button>
+        <button
+          class="bg-gray-800 text-gray-300 hover:text-gray-100 transition-colors shadow-sm shadow-gray-500/20 rounded-md px-2 py-1"
+          @click="selectMaxBalance()"
+        >
+          MAX
+        </button>
+        <button
+          class="bg-gray-800 text-gray-300 hover:text-gray-100 transition-colors shadow-sm shadow-gray-500/20 rounded-md px-2 py-1"
+          @click="selectHalfBalance()"
+        >
+          HALF
+        </button>
       </div>
     </div>
     <div class="flex flex-row items-center justify-between space-x-4">
@@ -21,7 +31,8 @@
           <span class="block md:hidden">Select</span>
         </span>
         <span class="flex items-center space-x-2" v-else
-          ><img :src="modelValue.token.logoURI" class="w-6 h-6 md:w-8 md:h-8" /> <span class="md:text-lg">{{ modelValue.token.symbol }}</span></span
+          ><img :src="modelValue.token.logoURI" class="w-6 h-6 md:w-8 md:h-8 rounded-full" />
+          <span class="md:text-lg">{{ modelValue.token.symbol }}</span></span
         >
         <ChevronDownIcon class="-mr-1 ml-2 h-5 w-5 text-gray-400" />
       </button>
@@ -30,7 +41,7 @@
         <input
           :disabled="mode == 'to'"
           :value="computedModelValue"
-          @input="updateValue"
+          @input="debouncedEmit($event)"
           class="text-2xl font-bold placeholder-gray-400 text-gray-50 text-number bg-transparent w-full appearance-none focus:outline-none text-right"
           placeholder="0.0"
         />
@@ -44,20 +55,6 @@
         </div>
       </div>
     </div>
-
-    <!--
-    <div class="flex w-full mt-1 hidden">
-      <div v-if="mode == 'from' && modelValue.token?.symbol && isAuthenticated" class="w-full flex flex-row flex-grow space-x-1">
-        <span class="text-gray-800">Balance:</span>
-        <span>{{ balance }} {{ modelValue.token.symbol }}</span>
-        <button v-if="balance != '0'" @click="selectMaxBalance()" class="text-indigo-500">(MAX)</button>
-      </div>
-
-      <div v-if="modelValue.value && modelValue.price" class="text-gray-500 w-full justify-end flex pr-4">
-        ~ <span class="font-semibold text-gray-600">{{ fiatPrice }}$</span>
-      </div>
-    </div>
-    -->
   </div>
 </template>
 
@@ -67,31 +64,49 @@ import { ChevronDownIcon } from "@heroicons/vue/solid";
 import { useMath } from "../../modules/math";
 import { useMoralis } from "../../modules/moralis/moralis";
 import { useCurrency } from "../../modules/settings/currency";
+import { useDebounce } from "@/modules/layout/debounce";
 export default defineComponent({
   props: ["mode", "modelValue"],
   emits: ["update:modelValue", "onSelectToken"],
   setup(props, { emit }) {
-    const { tokens, isAuthenticated } = useMoralis();
+    const { tokens, isAuthenticated, balance: nativeBalance } = useMoralis();
     const { convertCurrency } = useCurrency();
     const { round } = useMath();
 
-    const computedModelValue = computed((): any => {
+    /**
+     * Show proper from value and rounds to value to approximate
+     */
+    const computedModelValue = computed((): string | undefined => {
       if (props.mode === "from") {
         return props.modelValue.value;
       } else {
         if (props.modelValue.value) {
-          return "≈ " + props.modelValue.value;
+          return "≈ " + String(round(Number(props.modelValue.value), 4));
         }
       }
       return undefined;
     });
 
+    /**
+     * Calculates fiat price based on the input
+     * Round to 4 digits
+     */
     const fiatPrice = computed((): number => round(Number(props.modelValue.value) * Number(props.modelValue.price?.usdPrice), 4));
+
+    /**
+     * Get native or token balance for current token
+     * Round to 4 digits
+     */
     const balance = computed((): string | undefined => {
       if (isAuthenticated && tokens.value) {
-        const token = tokens.value.find((item) => item?.symbol === props.modelValue.token.symbol);
-        if (token) {
-          return convertCurrency(token.balance);
+        if (props.modelValue.token.address === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+          return String(round(nativeBalance.value.available, 4));
+        } else {
+          const token = tokens.value.find((item) => item?.symbol === props.modelValue.token.symbol);
+          if (token) {
+            const amount = Number(convertCurrency(Number(token.balance)));
+            return String(round(amount, 4));
+          }
         }
       }
       return "0";
@@ -114,9 +129,15 @@ export default defineComponent({
     };
 
     const selectHalfBalance = () => {
-      const half = Math.round(Number(balance.value) / 2);
+      const half = Number(balance.value) / 2;
       emitUpdateValue(half.toString());
     };
+
+    /**
+     * Debounce input event to reduce api requests
+     */
+    const { debounceFunction } = useDebounce();
+    const debouncedEmit = debounceFunction(updateValue, 500);
 
     return {
       fiatPrice,
@@ -126,6 +147,7 @@ export default defineComponent({
       convertCurrency,
       computedModelValue,
       selectMaxBalance,
+      debouncedEmit,
       selectHalfBalance,
       balance,
       isAuthenticated,
