@@ -270,8 +270,8 @@ const getNFTsDeListedOnMarketplace = async () => {
 
   const deListedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
   deListedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
-  console.log("getNFTsDeListedOnMarketplace");
-  console.log(deListedNfts);
+  //console.log("getNFTsDeListedOnMarketplace");
+  //console.log(deListedNfts);
   deListedNfts.value.forEach((nft: ListedNftModel) => {
     delistedOfferingIds.push(nft.attributes.offeringId);
   });
@@ -283,8 +283,8 @@ const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> |
   //queryAll.equalTo("hostContract", "0xec3cd0be96e26841ed17cf9e8585b00926488cd5");
 
   listedNfts.value = (await queryAll.find()) as Array<ListedNftModel>;
-  console.log("getNFTsListedOnMarketplace");
-  console.log(listedNfts);
+  //console.log("getNFTsListedOnMarketplace");
+  //console.log(listedNfts);
   //console.log('Total number of nfts fetched from db = ' + listedNfts.value.length);
 
   await getNFTsDeListedOnMarketplace();
@@ -321,7 +321,7 @@ const getNFTsListedOnMarketplace = async (): Promise<Ref<Array<ListedNftModel> |
   });
 
   //console.log(listedNfts);
-  console.log("number of nfts are filtering = " + listedNfts.value.length);
+  // console.log("number of nfts are filtering = " + listedNfts.value.length);
   return listedNfts;
 };
 
@@ -337,14 +337,14 @@ const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | und
 
     const queryAll = new Moralis.Query("MumbaiDepositLP");
     depositLPNfts.value = (await queryAll.find()) as Array<MumbaiDepositLPModel>;
-  
-    console.log(depositLPNfts.value)
+
+    //    console.log(depositLPNfts.value)
 
     depositLPNfts.value.forEach(async (nft: MumbaiDepositLPModel, index) => {
       nft.parsed_metadata = await resolveMetadataFromNft(nft.attributes.uri);
       if (nft.parsed_metadata) {
-        console.log('printing metadata of LP Token')
-        console.log(nft.parsed_metadata);
+        //console.log('printing metadata of LP Token')
+        // console.log(nft.parsed_metadata);
       } else {
         /*
         console.log("if metadata is undefined, don't bother with this nft. index = " + index);
@@ -357,7 +357,7 @@ const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | und
   return depositLPNfts;
 };
 
-const generateLPTokenURI = async (marketMakeraddress: string, amount : string ): Promise<string> => {
+const generateLPTokenURI = async (marketMakeraddress: string, amount: string): Promise<string> => {
   const { userAddress, web3 } = useMoralis();
 
   if (userAddress.value) {
@@ -365,23 +365,22 @@ const generateLPTokenURI = async (marketMakeraddress: string, amount : string ):
     const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
 
     const imageUrl = "https://ipfs.io/ipfs/QmPK2yjKxYGYm84gZTCjK7b81EK6HgBUkBy7xGunaGHjth?filename=counter_remix.png";
-    const metadata = 
-      {
-          name: "LP NFT",
-          description: "Liquidity Provider NFT ",
-          external_url: "",
-          image: imageUrl,
-          attributes: [
-            {
-              trait_type: "Market Maker contract",
-              value: marketMakeraddress,
-            },
-            {
-              trait_type: "Amount",
-              value: new BigNumber(convertCurrency(amount)),
-            },
-          ],
-      };
+    const metadata = {
+      name: "LP NFT",
+      description: "Liquidity Provider NFT ",
+      external_url: "",
+      image: imageUrl,
+      attributes: [
+        {
+          trait_type: "Market Maker contract",
+          value: marketMakeraddress,
+        },
+        {
+          trait_type: "Amount",
+          value: new BigNumber(convertCurrency(amount)),
+        },
+      ],
+    };
 
     if (metadata) {
       const tokenUri = await saveJsonToIPFS(userAddress.value, metadata); // save metadata to ipfs
@@ -390,7 +389,7 @@ const generateLPTokenURI = async (marketMakeraddress: string, amount : string ):
     }
   }
   return "dummy string";
-}
+};
 
 export const useNFTs = () => {
   return {
