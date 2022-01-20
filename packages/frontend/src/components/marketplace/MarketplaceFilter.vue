@@ -107,8 +107,6 @@ import { ref, defineComponent } from "vue";
 import CheckboxFilter from "./CheckboxFilter.vue";
 
 const subCategories = [
-  { name: "Buy Now", href: "#" },
-  { name: "On Auction", href: "#" },
   { name: "New", href: "#" },
   { name: "Has Offer", href: "#" },
 ];

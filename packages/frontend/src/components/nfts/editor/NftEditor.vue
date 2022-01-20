@@ -119,6 +119,7 @@
     <Nft
       v-if="render && model"
       @converted="onConverted"
+      :key="renderKey"
       :data="model"
       :backgroundLayers="backgroundLayers"
       :textureOpacity="textureOpacity"
@@ -167,7 +168,7 @@ export default defineComponent({
   async setup() {
     const web3 = new Moralis.Web3();
     const { selections, types } = useBetslip();
-    const { decodeOdds } = useOdds();
+    const { decodeOdds, encodeOdds } = useOdds();
     const { getEventQuery } = useEvents();
     const { getTeams } = useTeams();
     const { downloadText, downloadSVG, downloadPNG } = useDownload();
@@ -176,6 +177,7 @@ export default defineComponent({
      * Get events for selection
      */
     const events: Ref<EventModel[]> = ref([]);
+    const renderKey = ref(0);
 
     const queryParms: EventQueryParms = {
       sort: {
@@ -191,12 +193,12 @@ export default defineComponent({
 
     query.find().then((data) => {
       events.value = data as EventModel[];
+      if (!eventModel.value && events.value && events.value.length != 0) {
+        eventModel.value = events.value[1];
+      }
     });
 
     const eventModel: Ref<EventModel | undefined> = ref();
-    if (!eventModel.value && events.value && events.value.length != 0) {
-      eventModel.value = events.value[0];
-    }
 
     /**
      * Get teams for selection
@@ -210,7 +212,7 @@ export default defineComponent({
     /**
      * Reactive variables for customization
      */
-    const odds = ref("2.0");
+    const odds = ref("2000");
     const amount = ref("0.1");
     const selection = ref(selections.HOME);
     const type = ref(types.BACK);
@@ -286,7 +288,7 @@ export default defineComponent({
     const model: Ref<MatchedBetModel> = ref(new MatchedBet());
     model.value.set("id", "1");
     model.value.set("eventId", "1");
-    model.value.set("odds", web3.utils.toWei(odds.value));
+    model.value.set("odds", odds.value);
     model.value.set("amount", web3.utils.toWei(amount.value));
     model.value.set("selection", selection.value);
     model.value.set("betSide", type.value);
@@ -315,18 +317,20 @@ export default defineComponent({
     watch(
       () => odds.value,
       () => {
-        model.value.set("odds", web3.utils.toWei(odds.value));
-        model.value.set("event", undefined);
+        model.value.set("odds", odds.value);
         model.value.set("event", eventModel.value);
+        renderKey.value++;
       }
     );
 
     watch(
       () => amount.value,
       () => {
-        model.value.set("amount", web3.utils.toWei(amount.value));
-        model.value.set("event", undefined);
-        model.value.set("event", eventModel.value);
+        if (amount.value) {
+          model.value.set("amount", web3.utils.toWei(amount.value));
+          model.value.set("event", eventModel.value);
+          renderKey.value++;
+        }
       }
     );
 
@@ -334,8 +338,8 @@ export default defineComponent({
       () => selection.value,
       () => {
         model.value.set("selection", selection.value);
-        model.value.set("event", undefined);
         model.value.set("event", eventModel.value);
+        renderKey.value++;
       }
     );
 
@@ -343,8 +347,8 @@ export default defineComponent({
       () => type.value,
       () => {
         model.value.set("betType", type.value);
-        model.value.set("event", undefined);
         model.value.set("event", eventModel.value);
+        renderKey.value++;
       }
     );
 
@@ -352,6 +356,7 @@ export default defineComponent({
       () => eventModel.value,
       () => {
         model.value.set("event", eventModel.value);
+        renderKey.value++;
       }
     );
 
@@ -384,6 +389,7 @@ export default defineComponent({
       teams,
       teamModel,
       angle2,
+      renderKey,
       backgroundLayers,
       addBackgroundLayer,
       removeBackgroundLayer,

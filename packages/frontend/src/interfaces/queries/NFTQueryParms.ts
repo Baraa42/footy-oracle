@@ -5,6 +5,8 @@ export interface NFTTQueryParms extends QueryParms {
   filter?: {
     id?: string;
     tokenId?: string;
+    hasOffer?: boolean;
+    hasBet?: boolean;
   };
   sort?: {
     key: string;

@@ -58,8 +58,11 @@
             :key="nft.id"
             class="p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
           >
-            <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
-            <div class="flex justify-between items-center flex-row h-8 mt-3">
+            <div class="min-h-[320px]">
+              <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
+            </div>
+
+            <div class="flex justify-between items-center flex-row h-8 mt-0">
               <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
               <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
                 <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
@@ -103,6 +106,7 @@ import { ChevronDownIcon, FilterIcon, MinusSmIcon, PlusSmIcon, ViewGridIcon } fr
 import { useCurrency } from "@/modules/settings/currency";
 import { useActionBar } from "@/modules/layout/actionBar";
 import { useChain } from "@/modules/moralis/chain";
+import { NFTTQueryParms } from "@/interfaces/queries/NFTQueryParms";
 
 export default defineComponent({
   setup() {
@@ -137,16 +141,19 @@ export default defineComponent({
       { name: "Highest Last Sale", href: "#", current: false },
     ];
 
-    const queryParms: QueryParms = {
+    const queryParms: NFTTQueryParms = {
       limit: pageSize.value,
       sort: {
         key: "block_number",
         direction: "DESC",
       },
+      filter: {
+        hasOffer: true,
+      },
       inlcude: ["bet", "offer"],
     };
 
-    const loadNfts = (mergingParms?: QueryParms, resetSubsriptions = false) => {
+    const loadNfts = (mergingParms?: NFTTQueryParms, resetSubsriptions = false) => {
       const mergedParms = Object.assign(queryParms, mergingParms);
       const query = getNFTQuery(mergedParms);
       query.find().then((data: any) => {
@@ -228,7 +235,7 @@ export default defineComponent({
     });
     toggleMovement();
 
-    return { nfts, infiniteScroll, triggerPulse, pageSize, sortOptions, filters, mobileFiltersOpen, convertCurrency, activeChain };
+    return { nfts, infiniteScroll, sortOptions, filters, mobileFiltersOpen, convertCurrency, activeChain };
   },
   components: {
     NftImage,

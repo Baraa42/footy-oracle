@@ -9,7 +9,7 @@ import { onMounted, onUnmounted, Ref } from "vue";
  */
 export const useInfiniteScroll = (element: Ref, callback: Function) => {
   const handleScroll = () => {
-    if (element.value && element.value.getBoundingClientRect().bottom < window.innerHeight) {
+    if (element.value && element.value.getBoundingClientRect().bottom - 50 < window.innerHeight) {
       callback();
     }
   };

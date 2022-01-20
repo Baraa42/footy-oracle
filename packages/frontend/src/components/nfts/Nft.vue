@@ -63,9 +63,7 @@
               <span class="text-white font-medium text-[12px] text-number flex flex-row space-x-1 items-center">
                 <span>{{ new BigNumber(convertCurrency(nft.get("amount"))) }}</span>
 
-                <div class="bg-white rounded-full w-[12px] h-[12px] flex justify-center items-center">
-                  <component :is="activeChain.icon" class="w-[7px] h-[8px]" :style="{ color: palette[700] }" />
-                </div>
+                <component :is="activeChain.iconRounded" class="w-[12px] h-[12px]" :style="{ color: palette[700] }" />
               </span>
             </div>
           </div>
@@ -79,7 +77,7 @@
 
 <script lang="ts">
 import { BigNumber } from "bignumber.js";
-import { ref, onMounted, Ref, watch } from "vue";
+import { ref, onMounted, Ref, watch, defineComponent } from "vue";
 import { useBetslip } from "../../modules/moralis/betslip";
 import { useCurrency } from "../../modules/settings/currency";
 import domtoimage from "dom-to-image-more";
@@ -95,7 +93,7 @@ import NFTBackgroundLayerVue from "./NFTBackgroundLayer.vue";
 import { useTimezone } from "@/modules/settings/timezone";
 import { useChain } from "@/modules/moralis/chain";
 
-export default {
+export default defineComponent({
   props: {
     data: {
       type: Object as () => MatchedBetModel,
@@ -145,13 +143,6 @@ export default {
     const { activeChain } = useChain();
 
     watch(
-      () => props.data,
-      () => {
-        console.log(props.data);
-      }
-    );
-
-    watch(
       () => props.color,
       () => {
         palette.value = generatePalette(props.color);
@@ -161,13 +152,11 @@ export default {
     const printMe: Ref<HTMLElement | null> = ref(null);
 
     onMounted(() => {
-      console.log("onUpdated");
       if (printMe.value) {
         domtoimage
           .toBlob(printMe.value)
           .then(function (dataUrl) {
-            console.log(dataUrl);
-            console.log("image captured");
+            console.log("nft captured");
             emit("converted", dataUrl);
           })
           .catch(function (error) {
@@ -191,7 +180,5 @@ export default {
     };
   },
   components: { Logo, Liv, Chl, NFTBackgroundLayerVue },
-};
+});
 </script>
-
-<style></style>

@@ -76,6 +76,14 @@ const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
     query.equalTo("token_id", parms.filter?.tokenId);
   }
 
+  if (parms.filter?.hasOffer) {
+    query.exists("offer");
+  }
+
+  if (parms.filter?.hasBet) {
+    query.exists("bet");
+  }
+
   return query;
 };
 
