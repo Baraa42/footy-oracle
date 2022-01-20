@@ -99,7 +99,10 @@ export default defineComponent({
      */
     const balance = computed((): string | undefined => {
       if (isAuthenticated && tokens.value) {
-        if (props.modelValue.token.address === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+        if (
+          props.modelValue.token.address === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" ||
+          props.modelValue.token.address === "0x0000000000000000000000000000000000000000"
+        ) {
           return String(round(nativeBalance.value.available, 4));
         } else {
           const token = tokens.value.find((item) => item?.symbol === props.modelValue.token.symbol);

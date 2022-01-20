@@ -116,6 +116,7 @@ const switchNetwork = async (chain: Chain): Promise<void> => {
     if (err.code == 4902) {
       showError(`You don't have ${chain.name} as network configurated.`);
       await addNetwork(chain);
+      await switchNetwork(chain);
     }
   }
 };
