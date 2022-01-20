@@ -28,7 +28,7 @@ const getTokenPrice = async (address: string, exchange?: string): Promise<TokenP
   try {
     const { activeChain } = useChain();
 
-    if (address === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee") {
+    if (address === "0xeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeeee" || address === "0x0000000000000000000000000000000000000000") {
       const tokenPrice = (await Moralis.Web3API.token.getTokenPrice({
         address: activeChain.value.nativePriceAddress,
         chain: activeChain.value.nativePriceFrom,
@@ -36,7 +36,7 @@ const getTokenPrice = async (address: string, exchange?: string): Promise<TokenP
       })) as TokenPrice;
       return tokenPrice;
     } else {
-      const tokenPrice = (await Moralis.Web3API.token.getTokenPrice({ address, chain: activeChain.value.settings?.oneInchChain, exchange })) as TokenPrice;
+      const tokenPrice = (await Moralis.Web3API.token.getTokenPrice({ address, chain: activeChain.value.priceChain, exchange })) as TokenPrice;
       return tokenPrice;
     }
   } catch (e: any) {

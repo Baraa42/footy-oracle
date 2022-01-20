@@ -35,9 +35,13 @@ import { useChain } from "./modules/moralis/chain";
 export default defineComponent({
   setup() {
     const { isActionBarActive, isActionBarMovement } = useActionBar();
+    const { initUserFromCache, loadUserRelatedData, isAuthenticated, enableWeb3 } = useMoralis();
 
-    const { initUserFromCache, loadUserRelatedData, isAuthenticated } = useMoralis();
-    initUserFromCache();
+    enableWeb3().then((isEnabled: boolean) => {
+      if (isEnabled) {
+        initUserFromCache();
+      }
+    });
 
     const { activeChain } = useChain();
     const forceUpdateKey = ref(0);

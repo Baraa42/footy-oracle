@@ -43,4 +43,5 @@ export interface Chain {
   attributePrefix: string;
   settings?: any;
   nativePriceAddress: string;
+  priceChain: Chains;
 }

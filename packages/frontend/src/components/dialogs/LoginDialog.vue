@@ -30,13 +30,23 @@
               <DialogTitle as="h3" class="text-lg font-medium leading-6 text-gray-900"> Connect to a wallet </DialogTitle>
               <div class="mt-4">
                 <button
+                  v-if="isSupportingWeb3"
                   @click="login()"
                   type="button"
-                  class="w-full justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500"
+                  class="w-full justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 hover:bg-gray-200 cursor-pointer"
                 >
                   <span>Metamask</span>
                   <Metamask class="w-8 h-8" />
                 </button>
+                <a
+                  v-else
+                  href="https://metamask.io/"
+                  target="_blank"
+                  class="w-full justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md focus:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 hover:bg-gray-200 cursor-pointer"
+                >
+                  <span>Install Metamask</span>
+                  <Metamask class="w-8 h-8" />
+                </a>
               </div>
             </div>
           </TransitionChild>
@@ -47,7 +57,7 @@
 </template>
 
 <script lang="ts">
-import { defineComponent, watch } from "vue";
+import { defineComponent, Ref, watch, ref } from "vue";
 import Metamask from "../../assets/svg/metamask.svg";
 import { TransitionRoot, TransitionChild, Dialog, DialogOverlay, DialogTitle } from "@headlessui/vue";
 import { useMoralis } from "../../modules/moralis/moralis";
@@ -56,7 +66,13 @@ export default defineComponent({
   props: ["isOpen"],
   emits: ["onClose"],
   setup(_, { emit }) {
-    const { login, isAuthenticated } = useMoralis();
+    const { login, isAuthenticated, enableWeb3 } = useMoralis();
+
+    const isSupportingWeb3 = ref(true);
+
+    enableWeb3().then((isEnabled: boolean) => {
+      isSupportingWeb3.value = isEnabled;
+    });
 
     watch(isAuthenticated, (value, oldValue) => {
       if (value && !oldValue) {
@@ -65,6 +81,7 @@ export default defineComponent({
     });
 
     return {
+      isSupportingWeb3,
       login,
       closeModal() {
         emit("onClose");

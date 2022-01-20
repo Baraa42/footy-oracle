@@ -11,6 +11,7 @@ import { useNFTs } from "./nfts";
 import { useBalance } from "./balance";
 import { TokenBalance } from "../../interfaces/TokenBalance";
 import Moralis from "moralis/dist/moralis.js";
+import { useChain } from "./chain";
 
 /**
  * The user object where all relevant information were stored
@@ -72,20 +73,30 @@ const chainOptions: any = {
   chain: "mumbai",
 };
 
+const enableWeb3 = async (): Promise<boolean> => {
+  if (web3.value) {
+    return true;
+  }
+
+  try {
+    web3.value = await Moralis.Web3.enableWeb3();
+    return true;
+  } catch (err: any) {
+    return false;
+  }
+};
+
 /**
  * Logges the user in and load all relevant data for the user
  * TODO add live queries to user
  */
 const login = async (): Promise<void> => {
-  if (!web3.value) {
-    web3.value = await Moralis.Web3.enableWeb3();
-  }
-  const moralisUser = await Moralis.Web3.authenticate();
-  if (moralisUser) {
-    user.value.moralis = moralisUser as Moralis.User;
-    user.value.isAuthenticated = true;
-    await loadUserRelatedData();
-  }
+  try {
+    const moralisUser = await Moralis.Web3.authenticate();
+    if (moralisUser) {
+      await afterLogin(moralisUser);
+    }
+  } catch (err: any) {}
 };
 
 /**
@@ -93,16 +104,22 @@ const login = async (): Promise<void> => {
  * TODO add live queries to user
  */
 const initUserFromCache = async (): Promise<void> => {
-  if (!web3.value) {
-    web3.value = await Moralis.Web3.enableWeb3();
-  }
+  try {
+    const currentUser = Moralis.User.current();
+    if (currentUser) {
+      await afterLogin(currentUser);
+    }
+  } catch (err: any) {}
+};
 
-  const currentUser = Moralis.User.current();
-  if (currentUser) {
-    user.value.moralis = currentUser as Moralis.User;
-    user.value.isAuthenticated = true;
-    await loadUserRelatedData();
-  }
+const afterLogin = async (moralisUser: any) => {
+  const { checkCurrentChain } = useChain();
+  await checkCurrentChain(web3.value);
+
+  user.value.moralis = moralisUser as Moralis.User;
+  user.value.isAuthenticated = true;
+
+  await loadUserRelatedData();
 };
 
 /**
@@ -232,6 +249,7 @@ export const useMoralis = () => {
     listedNfts,
     depositNfts,
     loadUserRelatedData,
+    enableWeb3,
     logout,
   };
 };
