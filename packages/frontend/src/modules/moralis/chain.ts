@@ -9,7 +9,7 @@ import { useOneInchDex } from "./dex/oneInchDex";
 import { useYieldYakDex } from "./dex/yieldYakDex";
 import useDex from "./dex/dex";
 
-const avalanche: Chain = {
+const avalancheTestnet: Chain = {
   name: "Avalanche Fuji Testnet",
   chainId: 43113,
   chain: "0xa869",
@@ -28,7 +28,26 @@ const avalanche: Chain = {
   priceChain: "avalanche",
 };
 
-const polygon: Chain = {
+const avalancheMainet: Chain = {
+  name: "Avalanche Mainet",
+  chainId: 43114,
+  chain: "0xa86a",
+  iconRounded: markRaw(AvaxRounded as {}),
+  icon: markRaw(AvaxRounded as {}),
+  iconClass: "",
+  currencyName: "AVAX",
+  currencySymbol: "AVAX",
+  rpcUrl: "https://api.avax.network/ext/bc/C/rpc",
+  blockExplorerUrl: "https://snowtrace.io",
+  classPrefix: "Fuji",
+  classPrefixMoralis: "Avax",
+  attributePrefix: "fuji",
+  nativePriceFrom: "avalanche",
+  nativePriceAddress: "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
+  priceChain: "avalanche",
+};
+
+const polygonTestnet: Chain = {
   name: "Polygon Testnet Mumbai",
   chainId: 80001,
   chain: "0x13881",
@@ -50,7 +69,7 @@ const polygon: Chain = {
   },
 };
 
-const chains: Array<Chain> = [polygon, avalanche];
+const chains: Array<Chain> = [polygonTestnet, avalancheTestnet];
 const activeChain = <Ref<Chain>>ref(chains[0]);
 const chainsWithoutActive = computed((): Chain[] => chains.filter((chain) => chain.chainId != activeChain.value.chainId));
 const moralisClassList = [
@@ -164,7 +183,7 @@ const getAttributeName = <T>(attributeName: string): keyof T => {
  * @returns
  */
 const getDex = () => {
-  if (activeChain.value.chainId === polygon.chainId) {
+  if (activeChain.value.chainId === polygonTestnet.chainId) {
     const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice, findToken } = useOneInchDex();
     return {
       getSupportedTokens,
@@ -188,5 +207,18 @@ const getDex = () => {
 };
 
 export const useChain = () => {
-  return { chains, avalanche, polygon, activeChain, chainsWithoutActive, setActiveChain, getClassName, getAttributeName, getDex, checkCurrentChain };
+  return {
+    chains,
+    avalancheTestnet,
+    avalancheMainet,
+    polygonTestnet,
+    activeChain,
+    chainsWithoutActive,
+    switchNetwork,
+    setActiveChain,
+    getClassName,
+    getAttributeName,
+    getDex,
+    checkCurrentChain,
+  };
 };

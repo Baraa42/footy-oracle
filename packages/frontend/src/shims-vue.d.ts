@@ -12,6 +12,7 @@ declare module "body-scroll-lock";
 declare module "timezones-list";
 declare module "color";
 declare module "footy-oracle-contract";
+declare module "avax-aggregator";
 
 declare module "moralis/dist/moralis.js" {
   import * as MoralisTypes from "moralis/types";

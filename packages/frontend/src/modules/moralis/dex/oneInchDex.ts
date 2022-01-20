@@ -3,6 +3,7 @@ import { SwapItem } from "../../../interfaces/SwapItem";
 import { useChain } from "../chain";
 import Moralis from "moralis/dist/moralis.js";
 import { useMoralis } from "../moralis";
+import { Quote } from "@/interfaces/Quote";
 
 export const useOneInchDex = () => {
   const { tokens, findToken, getTokenPrice } = useDex();
@@ -29,7 +30,7 @@ export const useOneInchDex = () => {
    * @param chain
    * @returns
    */
-  const getQuote = async (from: SwapItem, to: SwapItem) => {
+  const getQuote = async (from: SwapItem, to: SwapItem): Promise<Quote | undefined> => {
     try {
       if (from.value && from.token) {
         const quote = await Moralis.Plugins.oneInch.quote({
@@ -38,8 +39,7 @@ export const useOneInchDex = () => {
           toTokenAddress: to.token?.address, // The token you want to receive
           amount: Moralis.Units.Token(from.value, from.token.decimals).toString(),
         });
-
-        return quote;
+        return quote as Quote;
       }
     } catch (e: any) {
       console.error(e);

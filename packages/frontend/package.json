@@ -25,7 +25,8 @@
     "vue-axios": "^3.4.0",
     "vue-router": "^4.0.6",
     "vue3-click-away": "^1.2.1",
-    "footy-oracle-contract": "0.0.1"
+    "footy-oracle-contract": "0.0.1",
+    "avax-aggregator": "github:yieldyak/yak-aggregator"
   },
   "devDependencies": {
     "@types/dom-to-image": "^2.6.4",
