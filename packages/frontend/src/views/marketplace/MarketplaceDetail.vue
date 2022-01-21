@@ -1,6 +1,6 @@
 <template>
-  <div class="lg:max-w-screen-xl w-full m-auto grid grid-cols-1 md:grid-cols-6 gap-x-8 gap-y-4" v-if="nft">
-    <NftImage :nft="nft" class="md:col-span-2 aspect-auto" />
+  <div class="lg:max-w-screen-xl w-full m-auto grid grid-cols-1 md:grid-cols-6 gap-y-4 md:gap-x-4 xl:gap-x-8" v-if="nft">
+    <NftImage :nft="nft" class="md:w-full md:col-span-2 aspect-auto" />
     <div class="md:col-span-4 flex flex-col space-y-4">
       <div class="flex justify-between items-center">
         <span class="text-2xl font-semibold">Bet #{{ nft.attributes.token_id }}</span>
@@ -48,7 +48,7 @@
         <span class="text-gray-500">Current Price</span>
 
         <div class="flex flex-row items-center space-x-2 mt-2">
-          <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+          <component :is="activeChain.iconRounded" class="w-7 h-7 text-white" />
 
           <span class="text-2xl font-bold tracking-wider text-number">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
         </div>
@@ -197,13 +197,14 @@ import BigNumber from "bignumber.js";
 
 export default defineComponent({
   setup() {
-    const { userAddress } = useMoralis();
+    const { userAddress, isAuthenticated } = useMoralis();
     const route = useRoute();
     const { calculatePotentialProfit } = useBet();
     const { getDateTime } = useTimezone();
     const { decodeOdds } = useOdds();
     const { convertCurrency } = useCurrency();
     const { activeChain } = useChain();
+    const { showError } = useAlert();
 
     const { getNFTQuery } = useNFTs();
     const { subscribe, unsubscribe } = useSubscription();
@@ -229,7 +230,12 @@ export default defineComponent({
           sellPrice.value = "";
         }
       };
-      confirmDialog.toggle();
+
+      if (isAuthenticated.value) {
+        confirmDialog.toggle();
+      } else {
+        showError("You need to connect your wallet");
+      }
     };
 
     const onClose = () => {
@@ -242,7 +248,11 @@ export default defineComponent({
       confirmDialog.onConfirm = async () => {
         confirmDialog.toggle();
       };
-      confirmDialog.toggle();
+      if (isAuthenticated.value) {
+        confirmDialog.toggle();
+      } else {
+        showError("You need to connect your wallet");
+      }
     };
 
     const onBuy = () => {
@@ -259,7 +269,11 @@ export default defineComponent({
           confirmDialog.toggle();
         }
       };
-      confirmDialog.toggle();
+      if (isAuthenticated.value) {
+        confirmDialog.toggle();
+      } else {
+        showError("You need to connect your wallet");
+      }
     };
 
     const onWithdraw = () => {
@@ -290,7 +304,11 @@ export default defineComponent({
         };
       }
 
-      confirmDialog.toggle();
+      if (isAuthenticated.value) {
+        confirmDialog.toggle();
+      } else {
+        showError("You need to connect your wallet");
+      }
     };
 
     watchEffect(() => {
@@ -309,8 +327,6 @@ export default defineComponent({
 
       subscribe(query).then((subscription: Moralis.LiveQuerySubscription) => {
         subscription.on("update", (object: Moralis.Object<Moralis.Attributes>) => {
-          console.log("update nft");
-          console.log(object);
           nft.value = object as NftOwnerModel;
         });
       });

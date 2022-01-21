@@ -54,8 +54,12 @@ const search = async (search: string): Promise<Array<EventModel>> => {
   const homeQuery = createQuery();
   const awayQuery = createQuery();
 
-  homeQuery.startsWith("home", search.charAt(0).toUpperCase() + search.slice(1));
-  awayQuery.startsWith("away", search.charAt(0).toUpperCase() + search.slice(1));
+  const innerQuery = new Moralis.Query("Team");
+  innerQuery.startsWith("name", search.charAt(0).toUpperCase() + search.slice(1));
+
+  homeQuery.matchesQuery("home", innerQuery);
+  awayQuery.matchesQuery("away", innerQuery);
+
   const matchQuery = Moralis.Query.or(homeQuery, awayQuery);
 
   const futureQuery = createQuery();

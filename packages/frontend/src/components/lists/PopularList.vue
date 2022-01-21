@@ -1,7 +1,7 @@
 <template>
   <div>
     <div class="bg-gray-700 flex flex-row items-center h-2 lg:h-5 text-xs font-semibold text-gray-300 px-5 justify-end">
-      <div class="flex flex-row mr-[-6px] space-x-3">
+      <div class="flex flex-row mr-[-5px] space-x-3">
         <span class="hidden lg:block w-40 text-center">HOME</span>
         <span class="hidden lg:block w-40 text-center">DRAW</span>
         <span class="hidden lg:block w-40 text-center">AWAY</span>

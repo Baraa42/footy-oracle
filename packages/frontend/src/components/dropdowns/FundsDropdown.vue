@@ -6,7 +6,7 @@
       >
         <div class="flex flex-col text-right">
           <span class="text-xs font-medium text-gray-300 leading-relaxed">Available Funds</span>
-          <span class="text-xs leading-relaxed tracking-wide">{{ balance.available }} {{ activeChain.currencySymbol }}</span>
+          <span class="text-xs leading-relaxed tracking-wide">{{ round(balance.available, 8) }} {{ activeChain.currencySymbol }}</span>
         </div>
         <ChevronDownIcon class="w-4 h-4 ml-2 -mr-1 text-gray-200 hover:text-gray-100" aria-hidden="true" />
       </MenuButton>
@@ -26,7 +26,7 @@
         <div class="divide-y-2 divide-gray-400 divide-opacity-20" v-if="tokens.length != 0">
           <div v-for="token in tokens" :key="token.symbol" class="flex flex-row space-x-2 py-2 justify-end px-2 items-center text-black text-sm">
             <div class="flex flex-row space-x-2 leading-relaxed tracking-wide font-medium">
-              <span>{{ convertCurrency(token.balance) }}</span
+              <span>{{ round(Number(convertCurrency(token.balance)), 8) }}</span
               ><span>{{ token.symbol }}</span>
             </div>
 
@@ -57,6 +57,7 @@ import { useMoralis } from "../../modules/moralis/moralis";
 import { Menu, MenuButton, MenuItems, MenuItem } from "@headlessui/vue";
 import { useCurrency } from "../../modules/settings/currency";
 import { useChain } from "@/modules/moralis/chain";
+import { useMath } from "@/modules/math";
 
 export default defineComponent({
   setup() {
@@ -64,12 +65,13 @@ export default defineComponent({
     const { isToggled, toggle, close } = useToggle();
     const { activeChain } = useChain();
     const { convertCurrency } = useCurrency();
+    const { round } = useMath();
 
     const onClickAway = (event: any) => {
       close();
     };
 
-    return { isAuthenticated, isToggled, toggle, close, onClickAway, balance, tokens, activeChain, convertCurrency };
+    return { isAuthenticated, isToggled, toggle, close, onClickAway, balance, tokens, activeChain, convertCurrency, round };
   },
   components: {
     Menu,

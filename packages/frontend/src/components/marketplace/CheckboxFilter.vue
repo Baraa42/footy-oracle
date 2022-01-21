@@ -1,6 +1,6 @@
 <template>
-  <div>
-    <Disclosure as="div" class="border-b border-gray-200 py-6" v-slot="{ open }">
+  <div class="border-b border-gray-200 py-6">
+    <Disclosure as="div" v-slot="{ open }">
       <h3 class="-my-3 flow-root">
         <DisclosureButton class="py-3 w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500">
           <span class="font-medium text-gray-900">

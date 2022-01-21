@@ -4,10 +4,10 @@
       <div v-if="events && groupedBy">
         <div v-for="(value, name, index) in groupedBy" :key="index">
           <CardSubHeader :title="name" class="capitalize">
-            <div class="flex flex-row space-x-2 ml-auto text-xs font-semibold text-gray-300 -mr-4">
-              <span class="hidden lg:block w-40 text-center pr-6">HOME</span>
-              <span class="hidden lg:block w-40 text-center pr-6">DRAW</span>
-              <span class="hidden lg:block w-40 text-center pr-6">AWAY</span>
+            <div class="flex flex-row space-x-3 ml-auto text-xs font-semibold text-gray-300 mr-[-5px]">
+              <span class="hidden lg:block w-40 text-center">HOME</span>
+              <span class="hidden lg:block w-40 text-center">DRAW</span>
+              <span class="hidden lg:block w-40 text-center">AWAY</span>
             </div>
           </CardSubHeader>
           <div class="p-4 flex flex-col lg:space-y-3 space-y-4 hide-last-hr">

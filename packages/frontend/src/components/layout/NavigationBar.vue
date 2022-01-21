@@ -45,7 +45,7 @@ import Basketball from "@/assets/svg/basketball.svg";
 import Baseball from "@/assets/svg/baseball.svg";
 import Football from "@/assets/svg/football.svg";
 import Gamepad from "@/assets/svg/gamepad.svg";
-import { RefreshIcon, LibraryIcon } from "@heroicons/vue/outline";
+import { RefreshIcon, LibraryIcon } from "@heroicons/vue/solid";
 import TennisBall from "@/assets/svg/tennis_ball.svg";
 import Boxing from "@/assets/svg/boxing.svg";
 import Exchange from "@/assets/svg/exchange.svg";

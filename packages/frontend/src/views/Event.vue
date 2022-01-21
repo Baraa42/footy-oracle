@@ -44,13 +44,13 @@
     </div>
 
     <div class="bg-gray-700 flex flex-row items-center h-5 text-xs font-semibold text-gray-300 px-5 justify-end">
-      <div class="flex flex-row mr-[10.5rem] space-x-2">
+      <div class="flex flex-row space-x-3 mr-[168px]">
         <span class="hidden lg:block w-20 text-center">Back</span>
         <span class="hidden lg:block w-20 text-center">Lay</span>
       </div>
     </div>
 
-    <div class="lg:p-5 p-4 flex flex-col lg:space-y-3 space-y-4">
+    <div class="lg:p-5 p-4 flex flex-col lg:space-y-1 space-y-4">
       <EventMarket :event="event" :selection="selections.HOME" />
       <hr class="lg:hidden" />
       <EventMarket :event="event" :selection="selections.DRAW" />

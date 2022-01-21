@@ -46,7 +46,7 @@
                     :class="[active ? 'bg-gray-200 text-white' : 'lg:bg-white text-black']"
                     class="hover:bg-gray-200 transition-colors flex flex-col py-1 rounded-md lg:px-2"
                   >
-                    <span class="text-gray-900">{{ result.get("home") }} vs. {{ result.get("away") }}</span>
+                    <span class="text-gray-900">{{ result.get("home").get("name") }} vs. {{ result.get("away").get("name") }}</span>
                     <span class="text-xs text-gray-600">{{ result.get("league").get("name") }}</span>
                   </router-link>
                 </MenuItem>

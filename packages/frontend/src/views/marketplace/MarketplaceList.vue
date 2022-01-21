@@ -36,7 +36,7 @@
           <span class="sr-only">View grid</span>
           <ViewGridIcon class="w-5 h-5" aria-hidden="true" />
         </button>
-        <button type="button" class="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 lg:hidden" @click="mobileFiltersOpen = true">
+        <button type="button" class="p-2 -m-2 ml-4 sm:ml-6 text-gray-400 hover:text-gray-500 xl:hidden" @click="toggleMobileFilter()">
           <span class="sr-only">Filters</span>
           <FilterIcon class="w-5 h-5" aria-hidden="true" />
         </button>
@@ -44,11 +44,15 @@
     </div>
 
     <div class="pt-6 pb-24">
-      <div class="grid grid-cols-1 lg:grid-cols-6 gap-x-8 gap-y-10">
-        <MarketplaceFilter v-model="filters" />
+      <div class="grid grid-cols-1 xl:grid-cols-6 xl:gap-x-8 xl:gap-y-10">
+        <MarketplaceFilter v-model="filters" :mobileFiltersOpen="isMobileFilterOpen" @onMobileClose="toggleMobileFilter()" />
 
         <!-- NFT List -->
-        <div v-if="nfts" class="grid grid-cols-2 md:grid-cols-4 xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5" ref="infiniteScroll">
+        <div
+          v-if="nfts"
+          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
+          ref="infiniteScroll"
+        >
           <router-link
             :to="{
               name: 'marketplace-detail',
@@ -56,13 +60,13 @@
             }"
             v-for="nft in nfts"
             :key="nft.id"
-            class="p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
+            class="flex flex-col p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
           >
-            <div class="min-h-[320px]">
+            <div class="h-full">
               <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
             </div>
 
-            <div class="flex justify-between items-center flex-row h-8 mt-0">
+            <div class="flex justify-between items-center flex-row h-8 mt-2">
               <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
               <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
                 <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
@@ -107,6 +111,7 @@ import { useCurrency } from "@/modules/settings/currency";
 import { useActionBar } from "@/modules/layout/actionBar";
 import { useChain } from "@/modules/moralis/chain";
 import { NFTTQueryParms } from "@/interfaces/queries/NFTQueryParms";
+import { useToggle } from "@/modules/layout/toggle";
 
 export default defineComponent({
   setup() {
@@ -124,7 +129,8 @@ export default defineComponent({
     const bottomHit = ref(false);
     const infiniteScroll = ref(null);
     const triggerPulse = ref(false);
-    const mobileFiltersOpen = ref(false);
+
+    const { isToggled: isMobileFilterOpen, toggle: toggleMobileFilter } = useToggle();
 
     const filters = reactive({
       betSides: [],
@@ -235,7 +241,7 @@ export default defineComponent({
     });
     toggleMovement();
 
-    return { nfts, infiniteScroll, sortOptions, filters, mobileFiltersOpen, convertCurrency, activeChain };
+    return { nfts, infiniteScroll, sortOptions, filters, isMobileFilterOpen, toggleMobileFilter, convertCurrency, activeChain };
   },
   components: {
     NftImage,
