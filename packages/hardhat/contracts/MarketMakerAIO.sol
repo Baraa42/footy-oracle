@@ -2,10 +2,9 @@
 pragma solidity ^0.8.0;
 
 import './LPNFT.sol';
-import './Betting.sol';
-import "hardhat/console.sol";
+import './BettingAIO.sol';
 
-contract MarketMaker  {
+contract MarketMakerAIO  {
     struct LiqudityProvider {
         address LPAddress; // Why do we need this when ownership is decided by NFT?
         uint depositAmount;
@@ -30,7 +29,6 @@ contract MarketMaker  {
     constructor(LPNFT _lpNFT) {
         lpNFT = _lpNFT;
         totalDeposit = 0;
-        console.log("Constructor MarketMaker");
     } 
 
     function deposit(string memory uri) public payable {
@@ -78,33 +76,34 @@ contract MarketMaker  {
 
     // User placed a Lay Bet and now MarketMaker will create Back bet
     function createOpposingBackBet(address bettingAddress,
+                                   string calldata _objectId,
                                    BetType _betType,
                                    uint8 _selection,
                                    uint16 _odds) external {        
         uint amount = maxAmountForAnyBet();
-        require(amount != 0, "Insufficient Funds in Liquidity Pool");
+        require(amount != 0, "createOpposingBackBet: Insufficient Funds in Liquidity Pool");
         totalDeposit = totalDeposit - amount;
 
-        Betting betting = Betting(bettingAddress);
-        betting.createBackBet{value: amount}(_betType, _selection, _odds, amount);
+        BettingAIO betting = BettingAIO(bettingAddress);
+        betting.createBackBet{value: amount}(_objectId, _betType, _selection, _odds, amount);
         
         emit MarketMakerCreateBackBet(_betType, _selection, _odds, amount);
-        console.log('createOpposingBackBet completed. Amount=', amount);
     }
     
     // User placed a Back Bet and now MarketMaker will create Lay bet
     function createOpposingLayBet(address bettingAddress,
-                                   BetType _betType,
-                                   uint8 _selection,
-                                   uint16 _odds,
-                                   uint256 backBetAmount,
-                                   uint256 liabilityAmount) external {
+                                  string calldata _objectId,
+                                  BetType _betType,
+                                  uint8 _selection,
+                                  uint16 _odds,
+                                  uint256 backBetAmount,
+                                  uint256 liabilityAmount) external {
+        require(liabilityAmount <= totalDeposit, "createOpposingLayBet: Insufficient Funds in Liquidity Pool");
         totalDeposit = totalDeposit - liabilityAmount;
 
-        Betting betting = Betting(bettingAddress);
-        betting.createLayBet{value: liabilityAmount}(_betType, _selection, _odds, backBetAmount);
+        BettingAIO betting = BettingAIO(bettingAddress);
+        betting.createLayBet{value: liabilityAmount}(_objectId, _betType, _selection, _odds, backBetAmount);
         
         emit MarketMakerCreateLayBet(_betType, _selection, _odds, liabilityAmount);
-        console.log('createOpposingLayBet completed. Amount=', liabilityAmount); 
     }
 }

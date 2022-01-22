@@ -4,17 +4,8 @@
       <div class="w-full rounded shadow-sm lg:max-w-screen-xl m-auto bg-gray-800 p-6" v-if="depositNfts">
         <h1 class="text-4xl font-semibold text-gray-50 mb-2 ml-6">My LP Token NFTs</h1>
         <div v-for="(nft, id) in depositNfts" :key="nft.attributes.tokenId" class="flex flex-col items-center justify-center w-full cursor-pointer group">
-          <!-- Disabled for build  <NftImage :nft="nft"></NftImage> -->
           <div class="flex space-x-4 mb-6 text-sm font-medium">
             <div class="flex-auto flex space-x-4">
-              <!-- Disabled for build
-              <button
-                @click="listOnMarketplace(nft, prices[id])"
-                type="button"
-                class="text-center justify-between inline-flex items-center px-4 py-2 font-medium text-gray-900 bg-gray-100 border border-transparent rounded-md hover:bg-gray-200 focus:outline-none"
-              >
-                <span>List on Marketplace</span>
-              </button> -->
               <input v-model="prices[id]" placeholder="Price" />
               <button
                 @click="withdrawLP(nft)"
@@ -66,17 +57,13 @@ export default defineComponent({
     const route = useRoute();
     const { Moralis, moralisUser, web3 } = useMoralis();
     const activeMode = ref("");
-    const nft_market_place_address = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
 
-    const marketMakerContractAddress = "0xE517DbcD2d9748562DbAB19e8979d35cE730bB29";
-    const marketMakerAbi = useMarketMaker();
-    const marketMakerContract = new web3.value.eth.Contract(marketMakerAbi.marketMakerAbi, marketMakerContractAddress);
-
-    const cloudTest = await Moralis.Cloud.run("HelloWorld");
-    console.log(cloudTest);
+    const {marketMakerAbi, getMarketMakerContractAddress} = useMarketMaker();
+    const marketMakerContractAddress = await getMarketMakerContractAddress();
+    const marketMakerContract = new web3.value.eth.Contract(marketMakerAbi, marketMakerContractAddress);
 
     var totalBalance = await marketMakerContract.methods.getTotalDeposit().call();
-    console.log(totalBalance);
+    console.log('Contract address = '+ marketMakerContractAddress+ ", totalBalance = " + totalBalance);
 
     const prices = ref([]);
     const amount = ref([]);

@@ -5,6 +5,7 @@ import "@openzeppelin/contracts/access/Ownable.sol";
 import "@openzeppelin/contracts/security/ReentrancyGuard.sol";
 import "@chainlink/contracts/src/v0.8/dev/ChainlinkClient.sol";
 import "./BetNFT.sol";
+import "./EnumDeclaration.sol";
 
 contract BettingAIO is Ownable, ChainlinkClient
 {
@@ -15,9 +16,9 @@ contract BettingAIO is Ownable, ChainlinkClient
     uint256 private fee;
 
     enum GameStatus {Open, Closed }
-    enum BetSide {Back, Lay }
-    enum BetType { MatchWinner }
-    enum SelectionMatchWinner {Home, Draw, Away }
+    //enum BetSide {Back, Lay }
+    //enum BetType { MatchWinner }
+    //enum SelectionMatchWinner {Home, Draw, Away }
 
     struct Game {
         GameStatus status;

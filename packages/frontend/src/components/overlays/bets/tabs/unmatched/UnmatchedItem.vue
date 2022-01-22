@@ -43,6 +43,14 @@
     <div v-if="!data.get('confirmed')">
       <WaitingButton text="Waiting for confirmation" />
     </div>
+    <div v-if="data.get('confirmed')">
+      <button
+        @click="marketMakerJoinBet(data)"
+        class="inline-flex w-full justify-center py-2 px-4 border border-transparent shadow-sm rounded text-sm font-medium text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors"
+      >
+        Request MarketMaker Join Bet
+      </button>
+    </div>
   </div>
 </template>
 
@@ -57,6 +65,7 @@ import SoccerBall from "../../../../../assets/svg/soccer_ball.svg";
 import { useOdds } from "../../../../../modules/settings/odds";
 import { UnmatchedBetModel } from "../../../../../interfaces/models/UnmatchedBetModel";
 import WaitingButton from "../../../../buttons/WaitingButton.vue";
+import { marketMakerBet } from "../../../../../modules/moralis/marketMakerBet";
 
 export default defineComponent({
   props: {
@@ -66,6 +75,7 @@ export default defineComponent({
     const { removeUnmatchedBet, selections, types } = useBetslip();
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
+    const { marketMakerJoinBet } = marketMakerBet();
 
     return {
       removeUnmatchedBet,
@@ -74,6 +84,7 @@ export default defineComponent({
       selections,
       types,
       BigNumber,
+      marketMakerJoinBet,
     };
   },
   components: { OddsInput, CurrencyInput, SoccerBall, WaitingButton },
