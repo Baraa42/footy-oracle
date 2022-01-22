@@ -1,4 +1,5 @@
 <template>
+  <LosslessMarkets class="lg:max-w-screen-xl mx-auto mb-4" />
   <CardContainer>
     <div class="bg-gray-800 h-[8rem] rounded-t">
       <div class="flex flex-col items-star justify-between w-full h-full text-white">
@@ -36,6 +37,8 @@ import { useTabs } from "../modules/layout/tabs";
 import LoadingBar from "../components/common/LoadingBar.vue";
 import PopularList from "../components/lists/PopularList.vue";
 import NowNextList from "../components/lists/NowNextList.vue";
+import LosslessBet from "@/components/common/LosslessBet.vue";
+import LosslessMarkets from "@/components/common/LosslessMarkets.vue";
 
 export default defineComponent({
   async setup() {
@@ -70,6 +73,8 @@ export default defineComponent({
     FadeTransition,
     LoadingBar,
     PopularList,
+    LosslessBet,
+    LosslessMarkets,
   },
 });
 </script>

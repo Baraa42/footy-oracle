@@ -150,22 +150,3 @@ export default defineComponent({
   },
 });
 </script>
-
-<style scoped>
-.horizontal-scroll {
-  scroll-snap-type: x proximity;
-}
-
-.horizontal-scroll::-webkit-scrollbar {
-  width: 5px;
-  height: 5px;
-}
-.horizontal-scroll::-webkit-scrollbar-track {
-  background-color: rgba(255, 255, 255, 0.1);
-  border-radius: 10px;
-}
-.horizontal-scroll::-webkit-scrollbar-thumb {
-  @apply bg-gray-700;
-  border-radius: 10px;
-}
-</style>

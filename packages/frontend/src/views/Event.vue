@@ -67,7 +67,7 @@ import EventMarket from "../components/common/EventMarket.vue";
 import CardContainer from "../components/common/CardContainer.vue";
 import EventStartDetail from "../components/common/EventStartDetail.vue";
 import { ChevronRightIcon } from "@heroicons/vue/solid";
-import { StarIcon } from "@heroicons/vue/solid";
+import { StarIcon, QuestionMarkCircleIcon } from "@heroicons/vue/solid";
 import { useEvents } from "../modules/moralis/event";
 import { useFavorites } from "../modules/moralis/favorites";
 import { useBetslip } from "../modules/moralis/betslip";
@@ -76,6 +76,7 @@ import { useCurrency } from "../modules/settings/currency";
 import { useMoralis } from "../modules/moralis/moralis";
 import { EventModel } from "../interfaces/models/EventModel";
 import { useChain } from "@/modules/moralis/chain";
+import LosslessBet from "@/components/common/LosslessBet.vue";
 
 export default defineComponent({
   setup() {
@@ -167,8 +168,10 @@ export default defineComponent({
     EventMarket,
     ChevronRightIcon,
     EventStartDetail,
+    QuestionMarkCircleIcon,
     CardContainer,
     StarIcon,
+    LosslessBet,
   },
 });
 </script>
