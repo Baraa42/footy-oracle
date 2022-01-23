@@ -108,16 +108,16 @@ contract BettingAIO is Ownable, ChainlinkClient
     }
 
     // Create game struct and init vars
-    constructor(BetNFT _betNFT)
+    constructor(BetNFT _betNFT, address _oracle, bytes32 _jobId, address _link)
     {
-        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
-        jobId = "7ecb74753e414b54b26ed1b911b88d67";
+        //setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
+        //oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
+        //jobId = "7ecb74753e414b54b26ed1b911b88d67";
 
         // Chainlink related functions
-       // setChainlinkToken(_link);
-        //oracle = _oracle;
-        //jobId = _jobId;
+        setChainlinkToken(_link);
+        oracle = _oracle;
+        jobId = _jobId;
         fee = 10**16;
 
         betNFT = _betNFT;
@@ -363,7 +363,7 @@ contract BettingAIO is Ownable, ChainlinkClient
     function hasMatchWinnerWon(string memory _objectId, BetSide _betSide, uint8 _selection) public view returns(bool)
     {
         uint8 winner = results[_objectId];
-        require(winner == 0, "No result");
+        require(winner != 0, "No result");
 
         bool hasWon = false;
         if((winner == _selection && _betSide == BetSide.Back) || (winner != _selection && _betSide == BetSide.Lay)) {

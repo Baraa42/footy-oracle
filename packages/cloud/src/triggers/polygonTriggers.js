@@ -58,7 +58,15 @@ Moralis.Cloud.afterSave("MumbaiClosedOfferings", async (request) => {
   );
 });
 
-Moralis.Cloud.afterSave("MumbaiGameEnded", async (request) => {
+Moralis.Cloud.beforeSave("MumbaiUnmatchedBets", async (request) => {
+  await beforeSaveBet(request.object);
+});
+
+Moralis.Cloud.beforeSave("MumbaiResult", async (request) => {
+  await beforeResult(request.object);
+});
+
+Moralis.Cloud.afterSave("MumbaiResult", async (request) => {
   if (
     request.object.get("confirmed") == undefined &&
     request.object.get("isWithdrawn") != true
@@ -67,7 +75,12 @@ Moralis.Cloud.afterSave("MumbaiGameEnded", async (request) => {
     const polygonContract = config.get("polygon_contract");
 
     try {
-      await afterSaveGameEnded(request.object, mumbaiWeb3, polygonContract);
+      await afterSaveResult(
+        request.object,
+        mumbaiWeb3,
+        polygonContract,
+        "mumbaiResult"
+      );
     } catch (e) {
       const { log } = request;
       log.error(e.toString());

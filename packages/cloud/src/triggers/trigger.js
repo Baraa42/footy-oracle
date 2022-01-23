@@ -225,22 +225,39 @@ const afterSaveClosedOfferings = async (
   }
 };
 
-const afterSaveGameEnded = async (gameEnded, web3Chain, contractAddr) => {
+/**
+ * Creates pointer for event
+ *
+ * @param  {} result
+ *
+ */
+const beforeResult = async (result) => {
+  const event = await getEventByApiId(result.get("apiId"));
+  result.set("event", event);
+};
+
+const afterSaveResult = async (result, web3Chain, contractAddr, relation) => {
+  const event = await getEventByApiId(result.get("apiId"));
+  const resultRelation = event.relation(relation);
+  resultRelation.add(result);
+  await event.save();
+
   const gasPrice = await web3Chain.eth.getGasPrice();
   const contract = new web3Chain.eth.Contract(
     BettingContract.abi,
     contractAddr
   );
   const gas = await contract.methods
-    .withdraw(String(gameEnded.get("apiId")))
+    .withdraw(String(result.get("apiId")))
     .estimateGas({ from: account });
-  const result = await contract.methods
-    .withdraw(String(gameEnded.get("apiId")))
+  const contractResult = await contract.methods
+    .withdraw(String(result.get("apiId")))
     .send({
       from: account,
       gasPrice: Math.round(gasPrice * 1.2),
       gas: Math.round(gas * 2),
     });
-  gameEnded.set("isWithdrawn", true);
-  await gameEnded.save(null, { useMasterKey: true });
+  result.set("isWithdrawn", true);
+
+  await result.save(null, { useMasterKey: true });
 };

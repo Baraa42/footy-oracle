@@ -11,6 +11,21 @@
 						"internalType": "contract BetNFT",
 						"name": "_betNFT",
 						"type": "address"
+					},
+					{
+						"internalType": "address",
+						"name": "_oracle",
+						"type": "address"
+					},
+					{
+						"internalType": "bytes32",
+						"name": "_jobId",
+						"type": "bytes32"
+					},
+					{
+						"internalType": "address",
+						"name": "_link",
+						"type": "address"
 					}
 				],
 				"stateMutability": "nonpayable",
@@ -893,11 +908,11 @@
 			]
 		},
 		"contracts/BettingAIO.sol": {
-			"keccak256": "0x36d6025170231c620d3b74e20b727bba746d764653476176f4c89b2ebf79e6be",
+			"keccak256": "0xca653e0dca4616ffb5e9e563af6280be7e609b1d4dc2162d979acdf0a8d9273e",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://7074b2eb64138ec68377d2f85dca27a8587652b8a9adc07e1f9cc4834c92c97e",
-				"dweb:/ipfs/QmfTDkQu2EorXVjy7puTyymQYp3CsXVRcT1QePWjYrykri"
+				"bzz-raw://c5aef9d004cd348c1d13b3aba614374fd6f40b5de7a33d582b3ccebf81fdcafb",
+				"dweb:/ipfs/QmP4jxoKVvR7AUrxCtyvKz1GoXWs33KSLpMbRF5zxzPLbv"
 			]
 		},
 		"contracts/EnumDeclaration.sol": {

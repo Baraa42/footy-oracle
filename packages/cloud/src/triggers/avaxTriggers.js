@@ -50,7 +50,11 @@ Moralis.Cloud.afterSave("FujiClosedOfferings", async (request) => {
   );
 });
 
-Moralis.Cloud.afterSave("FujGameEnded", async (request) => {
+Moralis.Cloud.beforeSave("FujiResult", async (request) => {
+  await beforeResult(request.object);
+});
+
+Moralis.Cloud.afterSave("FujiResult", async (request) => {
   if (
     request.object.get("confirmed") == undefined &&
     request.object.get("isWithdrawn") != true
@@ -59,7 +63,7 @@ Moralis.Cloud.afterSave("FujGameEnded", async (request) => {
     const contract = config.get("fuji_contract");
 
     try {
-      await afterSaveGameEnded(request.object, fuqiWeb3, contract);
+      await afterSaveResult(request.object, fuqiWeb3, contract, "fujiResult");
     } catch (e) {
       const { log } = request;
       log.error(e.toString());
