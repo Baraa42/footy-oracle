@@ -8,7 +8,9 @@ const beforeSaveBet = async (bet) => {
   const event = await getEventByApiId(bet.get("apiId"));
   bet.set("event", event);
   const user = await getUserByAddress(bet.get("from"));
-  bet.set("user", user);
+  if (user) {
+    bet.set("user", user);
+  }
 };
 
 /**
@@ -26,9 +28,11 @@ const afterSaveUnmatchedBet = async (bet, relation) => {
 
   // get user from address and add relation
   const user = await getUserByAddress(bet.get("from"));
-  const userRelation = user.relation(relation);
-  userRelation.add(bet);
-  await user.save(null, { useMasterKey: true });
+  if (user) {
+    const userRelation = user.relation(relation);
+    userRelation.add(bet);
+    await user.save(null, { useMasterKey: true });
+  }
 
   return event;
 };
@@ -91,7 +95,12 @@ const afterSaveUnmatchedBetsUpdated = async (unmatchedBet, className) => {
   unmatcheBetQuery.equalTo("apiId", unmatchedBet.get("apiId"));
   const bet = await unmatcheBetQuery.first();
   if (bet) {
-    bet.set("amount", unmatchedBet.get("amount"));
+    const BN = mumbaiWeb3.utils.BN;
+    const amount = new BN(bet.get("amount"))
+      .sub(new BN(unmatchedBet.get("amount")))
+      .toString();
+
+    bet.set("amount", amount);
     bet.set("isPartMatched", true);
     await bet.save();
   }
@@ -216,9 +225,12 @@ const afterSaveClosedOfferings = async (
   }
 };
 
-const afterSaveGameEnded = async (gameEnded, contractAddr) => {
-  const gasPrice = await web3.eth.getGasPrice();
-  const contract = new web3.eth.Contract(BettingContract.abi, contractAddr);
+const afterSaveGameEnded = async (gameEnded, web3Chain, contractAddr) => {
+  const gasPrice = await web3Chain.eth.getGasPrice();
+  const contract = new web3Chain.eth.Contract(
+    BettingContract.abi,
+    contractAddr
+  );
   const gas = await contract.methods
     .withdraw(String(gameEnded.get("apiId")))
     .estimateGas({ from: account });

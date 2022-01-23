@@ -14,12 +14,12 @@ const types = BetTypeEnum;
 export const marketMakerBet = () => {
   const { encodeOdds, decodeOdds, minOdds } = useOdds();
   const { betslip, userAddress, web3 } = useMoralis();
-  const { bettingAbi, getBettingContract  } = useContract();
-  const {marketMakerAbi, getMarketMakerContractAddress} = useMarketMaker();
-  
+  const { bettingAbi, getBettingContract } = useContract();
+  const { marketMakerAbi, getMarketMakerContractAddress } = useMarketMaker();
+
   const { showError, showSuccess } = useAlert();
   /**
-   * Request Market Maker to take the opposite side of this bet. 
+   * Request Market Maker to take the opposite side of this bet.
    *
    * @param  {Betslip} betslipItem
    * @returns Promise
@@ -40,7 +40,7 @@ export const marketMakerBet = () => {
     const marketMakerContractAddress = await getMarketMakerContractAddress();
     const marketMakerContract = new web3.value.eth.Contract(marketMakerAbi, marketMakerContractAddress);
     var totalBalance = await marketMakerContract.methods.getTotalDeposit().call();
-    console.log('Contract address = '+ marketMakerContractAddress+ ", totalBalance = " + totalBalance);
+    console.log("Contract address = " + marketMakerContractAddress + ", totalBalance = " + totalBalance);
 
     console.log(String(unmatchedBet.get("apiId")));
     console.log('unmatchedBet.get("betSide") = ', unmatchedBet.get("betSide"));
@@ -50,14 +50,15 @@ export const marketMakerBet = () => {
         .createOpposingLayBet(
           bettingContractAddress,
           String(unmatchedBet.get("apiId")),
-          unmatchedBet.get("betSide"),
           unmatchedBet.get("betType"),
           unmatchedBet.get("selection"),
-          unmatchedBet.get("odds")
+          unmatchedBet.get("odds"),
+          "backBetAmount",
+          "liabilityAmount"
         )
         .send(
           {
-            from: userAddress.value
+            from: userAddress.value,
           },
           async (err: any, result: any) => {
             if (!err) {
@@ -77,7 +78,7 @@ export const marketMakerBet = () => {
         )
         .send(
           {
-            from: userAddress.value
+            from: userAddress.value,
           },
           async (err: any, result: any) => {
             if (!err) {
@@ -86,11 +87,10 @@ export const marketMakerBet = () => {
             console.log(result);
           }
         );
-    }
-    else {
+    } else {
       console.log("betside else");
-      console.log('unmatchedBet.get("betSide") == types.LAY ', unmatchedBet.get("betSide") == types.LAY );
-      console.log('unmatchedBet.get("betSide") == types.BACK ', unmatchedBet.get("betSide") == types.BACK );
+      console.log('unmatchedBet.get("betSide") == types.LAY ', unmatchedBet.get("betSide") == types.LAY);
+      console.log('unmatchedBet.get("betSide") == types.BACK ', unmatchedBet.get("betSide") == types.BACK);
     }
   };
   return {

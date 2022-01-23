@@ -23,11 +23,15 @@ Moralis.Cloud.afterSave("MumbaiMatchedBets", async (request) => {
 });
 
 Moralis.Cloud.afterSave("MumbaiUnmatchedBetsRemoved", async (request) => {
-  await afterSaveUnmatchedBetsRemoved(request.object, MumbaiUnmatchedBets);
+  if (request.object.get("confirmed") == undefined) {
+    await afterSaveUnmatchedBetsRemoved(request.object, MumbaiUnmatchedBets);
+  }
 });
 
 Moralis.Cloud.afterSave("MumbaiUnmatchedBetsUpdated", async (request) => {
-  await afterSaveUnmatchedBetsUpdated(request.object, MumbaiUnmatchedBets);
+  if (request.object.get("confirmed") == undefined) {
+    await afterSaveUnmatchedBetsUpdated(request.object, MumbaiUnmatchedBets);
+  }
 });
 
 Moralis.Cloud.afterSave("PolygonNFTOwnersPending", async (request) => {
@@ -63,7 +67,7 @@ Moralis.Cloud.afterSave("MumbaiGameEnded", async (request) => {
     const polygonContract = config.get("polygon_contract");
 
     try {
-      await afterSaveGameEnded(request.object, polygonContract);
+      await afterSaveGameEnded(request.object, mumbaiWeb3, polygonContract);
     } catch (e) {
       const { log } = request;
       log.error(e.toString());

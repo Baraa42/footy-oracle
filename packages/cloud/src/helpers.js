@@ -1,10 +1,10 @@
 /**
  * Add account for deploying smart contracts and sending tokens
  */
-const addAccount = async () => {
+const addAccount = async (web3Chain) => {
   const config = await Moralis.Config.get({ useMasterKey: true });
   const privateKey = config.get("private_key");
-  web3.eth.accounts.wallet.add("0x" + privateKey);
+  web3Chain.eth.accounts.wallet.add("0x" + privateKey);
 };
 
 /**
@@ -14,7 +14,7 @@ const addAccount = async () => {
  * @returns
  */
 const sendLink = async (receiver) => {
-  const gasPrice = await web3.eth.getGasPrice();
+  const gasPrice = await mumbaiWeb3.eth.getGasPrice();
   const gas = await chainlink.methods
     .transfer(receiver, "100000000000000000")
     .estimateGas({ from: account });
@@ -119,8 +119,9 @@ const getUserByAddress = async (address) => {
   userQuery.equalTo("ethAddress", address);
   const user = await userQuery.first({ useMasterKey: true });
 
-  if (!user) throw "No valid address";
-  return user;
+  if (user) {
+    return user;
+  }
 };
 
 /**

@@ -11,7 +11,8 @@ Moralis.Cloud.define("placeOffering", async (request) => {
   const tokenId = request.params.tokenId;
   const price = request.params.price;
   const logger = Moralis.Cloud.getLogger();
-  const nonceOperator = (await web3.eth.getTransactionCount(account)) + 10;
+  const nonceOperator =
+    (await mumbaiWeb3.eth.getTransactionCount(account)) + 10;
   logger.info("nonceOperator = " + nonceOperator);
 
   const config = await Moralis.Config.get({ useMasterKey: true });
@@ -22,7 +23,7 @@ Moralis.Cloud.define("placeOffering", async (request) => {
       offerer,
       hostContract,
       tokenId,
-      web3.utils.toWei(price, "ether")
+      mumbaiWeb3.utils.toWei(price, "ether")
     )
     .encodeABI();
   /*
@@ -31,10 +32,10 @@ Moralis.Cloud.define("placeOffering", async (request) => {
       	nonce: nonceOperator,
       	data:functionCall,
       	gas:1000000,
-      	gasPrice:web3.utils.toWei("2", "gwei")
+      	gasPrice:mumbaiWeb3.utils.toWei("2", "gwei")
     }
     */
-  const gasPrice = await web3.eth.getGasPrice();
+  const gasPrice = await mumbaiWeb3.eth.getGasPrice();
   logger.info("gasPrice = " + gasPrice);
 
   transactionBody = {
@@ -43,14 +44,14 @@ Moralis.Cloud.define("placeOffering", async (request) => {
     gasPrice: Math.round(gasPrice * 1.2),
     gas: Math.round(1000000 * 2),
   };
-  signedTransaction = await web3.eth.accounts.signTransaction(
+  signedTransaction = await mumbaiWeb3.eth.accounts.signTransaction(
     transactionBody,
     privateKey
   );
   logger.info("Completed signedTxn");
   logger.info(signedTransaction);
 
-  fulfillTx = await web3.eth.sendSignedTransaction(
+  fulfillTx = await mumbaiWeb3.eth.sendSignedTransaction(
     signedTransaction.rawTransaction
   );
   logger.info("After sending signed txn " + fulfillTx);

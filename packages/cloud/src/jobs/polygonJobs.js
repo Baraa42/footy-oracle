@@ -1,10 +1,7 @@
-/**
- * Add ETH Account
- */
 Moralis.Cloud.job("polygonAddAccount", async (request) => {
   const { params, headers, log, message } = request;
   try {
-    await addAccount();
+    await addAccount(mumbaiWeb3);
     message("Account added!");
   } catch (e) {
     message("Error occurred!");
@@ -34,8 +31,8 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
   let updated = 0;
   for await (eventItem of events) {
     try {
-      const gasPrice = await web3.eth.getGasPrice();
-      const contract = new web3.eth.Contract(
+      const gasPrice = await mumbaiWeb3.eth.getGasPrice();
+      const contract = new mumbaiWeb3.eth.Contract(
         BettingContract.abi,
         polygonContract
       );

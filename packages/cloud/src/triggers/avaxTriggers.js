@@ -49,3 +49,20 @@ Moralis.Cloud.afterSave("FujiClosedOfferings", async (request) => {
     AvaxNFTOwners
   );
 });
+
+Moralis.Cloud.afterSave("FujGameEnded", async (request) => {
+  if (
+    request.object.get("confirmed") == undefined &&
+    request.object.get("isWithdrawn") != true
+  ) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const contract = config.get("fuji_contract");
+
+    try {
+      await afterSaveGameEnded(request.object, fuqiWeb3, contract);
+    } catch (e) {
+      const { log } = request;
+      log.error(e.toString());
+    }
+  }
+});
