@@ -45,7 +45,11 @@ const getUnmatchedBets = async (event: EventClass): Promise<UnmatchedBetModel[][
    * Get unmatched bets from event
    */
   const relation = event.relation(getAttributeName("UnmatchedBets"));
-  const unmatchedBetsQuery = relation.query().notEqualTo("isMatched", true).equalTo("confirmed", true).select("amount", "betType", "odds", "selection");
+  const unmatchedBetsQuery = relation
+    .query()
+    .notEqualTo("isMatched", true)
+    .equalTo("confirmed", true)
+    .select("amount", "betType", "odds", "betSide", "selection");
   const unmatchedBets = (await unmatchedBetsQuery.find()) as UnmatchedBetModel[];
 
   /**
