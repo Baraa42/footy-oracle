@@ -27,6 +27,7 @@ const config: HardhatUserConfig = {
     compilers: [
       { version: "0.8.9" },
       { version: "0.6.6" },
+      { version: "0.6.12" },
       { version: "0.4.25" },
     ],
   },
@@ -37,23 +38,23 @@ const config: HardhatUserConfig = {
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     fuji: {
-      url: 'https://api.avax-test.network/ext/bc/C/rpc',
+      url: "https://api.avax-test.network/ext/bc/C/rpc",
       gasPrice: 225000000000,
       chainId: 43113,
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
     },
     mainnet: {
-      url: 'https://api.avax.network/ext/bc/C/rpc',
+      url: "https://api.avax.network/ext/bc/C/rpc",
       gasPrice: 225000000000,
       chainId: 43114,
-      accounts: []
+      accounts: [],
     },
     matic_testnet: {
       url: "https://rpc-mumbai.maticvigil.com",
       accounts:
         process.env.PRIVATE_KEY !== undefined ? [process.env.PRIVATE_KEY] : [],
-      gasPrice: 8000000000
+      gasPrice: 8000000000,
     },
   },
   gasReporter: {

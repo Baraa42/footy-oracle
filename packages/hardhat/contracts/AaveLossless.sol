@@ -1,11 +1,10 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.6.0;
+pragma solidity ^0.6.6;
 
-import '../../interfaces/ILendingPool.sol';
-import '../../interfaces/IERC20.sol';
+import '../interfaces/ILendingPool.sol';
+import '../interfaces/IERC20.sol';
 import './Lossless.sol';
-
 
 
 /** @title AaveLossless

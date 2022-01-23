@@ -41,6 +41,17 @@
 			{
 				"inputs": [
 					{
+						"internalType": "string",
+						"name": "apiId",
+						"type": "string"
+					}
+				],
+				"name": "GameNotEnded",
+				"type": "error"
+			},
+			{
+				"inputs": [
+					{
 						"internalType": "uint256",
 						"name": "odds",
 						"type": "uint256"
@@ -118,13 +129,32 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "uint8",
+						"name": "result",
+						"type": "uint8"
+					}
+				],
+				"name": "GameEnded",
+				"type": "event"
+			},
+			{
+				"anonymous": false,
+				"inputs": [
+					{
+						"indexed": false,
+						"internalType": "string",
+						"name": "apiId",
+						"type": "string"
+					},
+					{
+						"indexed": false,
+						"internalType": "enum BetSide",
 						"name": "betSide",
 						"type": "uint8"
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "betType",
 						"type": "uint8"
 					},
@@ -186,13 +216,13 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "betSide",
 						"type": "uint8"
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "betType",
 						"type": "uint8"
 					},
@@ -235,13 +265,13 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "betSide",
 						"type": "uint8"
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "betType",
 						"type": "uint8"
 					},
@@ -284,13 +314,13 @@
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "betSide",
 						"type": "uint8"
 					},
 					{
 						"indexed": false,
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "betType",
 						"type": "uint8"
 					},
@@ -367,7 +397,7 @@
 						"type": "string"
 					},
 					{
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "_betType",
 						"type": "uint8"
 					},
@@ -400,7 +430,7 @@
 						"type": "string"
 					},
 					{
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "_betType",
 						"type": "uint8"
 					},
@@ -451,7 +481,7 @@
 						"type": "string"
 					},
 					{
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "_betSide",
 						"type": "uint8"
 					},
@@ -493,12 +523,12 @@
 						"type": "string"
 					},
 					{
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "_betSide",
 						"type": "uint8"
 					},
 					{
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "_betType",
 						"type": "uint8"
 					},
@@ -557,12 +587,12 @@
 						"type": "string"
 					},
 					{
-						"internalType": "enum BettingAIO.BetSide",
+						"internalType": "enum BetSide",
 						"name": "_betSide",
 						"type": "uint8"
 					},
 					{
-						"internalType": "enum BettingAIO.BetType",
+						"internalType": "enum BetType",
 						"name": "_betType",
 						"type": "uint8"
 					},
@@ -602,6 +632,19 @@
 					}
 				],
 				"name": "transferOwnership",
+				"outputs": [],
+				"stateMutability": "nonpayable",
+				"type": "function"
+			},
+			{
+				"inputs": [
+					{
+						"internalType": "string",
+						"name": "_objectId",
+						"type": "string"
+					}
+				],
+				"name": "withdraw",
 				"outputs": [],
 				"stateMutability": "nonpayable",
 				"type": "function"
@@ -850,11 +893,19 @@
 			]
 		},
 		"contracts/BettingAIO.sol": {
-			"keccak256": "0x960438b32c2076f61c0e92016265f55e114ace09f6fc63cef942749179f41244",
+			"keccak256": "0x36d6025170231c620d3b74e20b727bba746d764653476176f4c89b2ebf79e6be",
 			"license": "MIT",
 			"urls": [
-				"bzz-raw://d6b6a944a98acd194b2eb0a7524c4ff50be06d38587c3284098c84902b4d4b59",
-				"dweb:/ipfs/QmYJwzuqH7UCv5Pi55dfbfiPa9YbtKU6dbS6WmXPuPU6Dx"
+				"bzz-raw://7074b2eb64138ec68377d2f85dca27a8587652b8a9adc07e1f9cc4834c92c97e",
+				"dweb:/ipfs/QmfTDkQu2EorXVjy7puTyymQYp3CsXVRcT1QePWjYrykri"
+			]
+		},
+		"contracts/EnumDeclaration.sol": {
+			"keccak256": "0xb8d12c4c0d3d56031619b2f14f9f9ee7778ab8f5fc96c30c3f6644eaa81beac1",
+			"license": "MIT",
+			"urls": [
+				"bzz-raw://7864b34cb43bda391aab464db68bd135881f473ffda542827e911234c8222fe0",
+				"dweb:/ipfs/Qmf9ZJBWE4FmS6X8AaEhY7E8Lb6KBejypPggjoSpKEroSc"
 			]
 		}
 	},

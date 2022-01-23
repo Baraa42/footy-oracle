@@ -148,16 +148,18 @@ describe("BettingContract", function () {
     const sendTx = await sendERC721(
       betNFT,
       bets.backBets[0].account,
-      account,
+      bets.layBets[0].account,
       backTokenId
     );
     await sendTx.wait();
 
     const withdrawNFTExpectation2 = expect(
-      await bettingContract.connect(account).withdrawWithNFT(backTokenId)
+      await bettingContract
+        .connect(bets.layBets[0].account)
+        .withdrawWithNFT(backTokenId)
     );
     await withdrawNFTExpectation2.to.changeEtherBalance(
-      account,
+      bets.layBets[0].account,
       bets.backBets[0].liabilityParsed
     );
   });

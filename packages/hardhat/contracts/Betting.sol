@@ -69,6 +69,8 @@ contract Betting is Ownable {
 
     // Game has already ended.
     error GameAlreadyEnded();
+    // Game not ended.
+    error GameNotEnded();
     // Bet Amount of `amount` to low.
     error AmountToLow(uint amount);
     // Odds of `odds` to low.
@@ -91,6 +93,15 @@ contract Betting is Ownable {
         if(game.status == GameStatus.Closed) revert GameAlreadyEnded();
         _;
     }
+
+    // check if valid odds
+    modifier checkGameEnded()
+    {
+        if (game.status == GameStatus.Open)
+            revert GameNotEnded();
+        _;
+    }
+
     
     // Create game struct and init vars
     constructor(string memory _objectId, SoccerResolver _resolver, BetNFT _betNFT) {
@@ -252,6 +263,7 @@ contract Betting is Ownable {
                     // mark shifted to NFT bets as won
                     if(wonBets[z].shiftedToNFT) {
                         uint256 tokenId = getTokenId(winnerSide, betType, selection, wonBets[z].odds, wonBets[z].fromAddr);
+                        console.log(tokenId);
                         nftWon[tokenId] = true;
                         continue;
                     }
@@ -263,7 +275,7 @@ contract Betting is Ownable {
         }
     }
  
-    function getTokenId (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, address _address)  view internal returns (uint256) {
+    function getTokenId (BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, address _address)  internal view returns (uint256) {
         return (uint(keccak256(abi.encode(game.objectId, _address, _betSide, _betType, _selection, _odds))) & 0xfff);
     }
 
@@ -297,9 +309,13 @@ contract Betting is Ownable {
         return tokenId;
     }
 
-    function withdrawWithNFT(uint256 tokenId) external  {
+    function withdrawWithNFT(uint256 tokenId) external checkGameEnded()
+    {
+        console.log(tokenId);
+        bool hasWon = nftWon[tokenId];
+        console.log(hasWon);
         betNFT.redeemCollectible(msg.sender, tokenId);
-        require(nftWon[tokenId], "Bet lost");
+        require(hasWon, "Bet lost");
         transferAmount(msg.sender, nftPossibleProfit[tokenId]);
         delete nftPossibleProfit[tokenId];
     }

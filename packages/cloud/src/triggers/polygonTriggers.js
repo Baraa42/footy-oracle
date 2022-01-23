@@ -53,3 +53,20 @@ Moralis.Cloud.afterSave("MumbaiClosedOfferings", async (request) => {
     PolygonNFTOwners
   );
 });
+
+Moralis.Cloud.afterSave("MumbaiGameEnded", async (request) => {
+  if (
+    request.object.get("confirmed") == undefined &&
+    request.object.get("isWithdrawn") != true
+  ) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const polygonContract = config.get("polygon_contract");
+
+    try {
+      await afterSaveGameEnded(request.object, polygonContract);
+    } catch (e) {
+      const { log } = request;
+      log.error(e.toString());
+    }
+  }
+});

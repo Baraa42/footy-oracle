@@ -15,14 +15,10 @@ contract BettingAIO is Ownable, ChainlinkClient
     bytes32 private jobId;
     uint256 private fee;
 
-    enum GameStatus {Open, Closed }
+    // enum GameStatus {Open, Closed }
     //enum BetSide {Back, Lay }
     //enum BetType { MatchWinner }
     //enum SelectionMatchWinner {Home, Draw, Away }
-
-    struct Game {
-        GameStatus status;
-    }
 
     struct UnmatchedBetAmount {
         uint256 amount;
@@ -39,7 +35,7 @@ contract BettingAIO is Ownable, ChainlinkClient
     BetNFT public betNFT;
 
     // Hold all games: ObjectId = Game
-    mapping(string => Game) games;
+    mapping(string => bool) gamesEnded;
     // Hold all unmatched bets: ObjectId -> BetSide -> BetType -> Selection -> Odds = UnmatchedBetAmount[]
     mapping(string => mapping(BetSide => mapping(BetType => mapping(uint8 => mapping(uint16 => UnmatchedBetAmount[]))))) unmatchedBets;
     // Hold all matched bets: ObjectId -> BetSide -> BetType -> Selection = MatchedBet[]
@@ -66,11 +62,14 @@ contract BettingAIO is Ownable, ChainlinkClient
     event MatchedBetPlaced(string apiId, BetSide betSide, BetType betType, uint8 selection, uint16 odds, uint256 amount, address from);
     // Matched bet has been converted to NFT
     event BetConverted(string apiId, uint256 tokenId);
-    
-    //TODO add event for game ended
+    // Game has been ended
+    event GameEnded(string apiId, uint8 result);
+
 
     // Game has already ended.
     error GameAlreadyEnded(string apiId);
+    // Game not ended.
+    error GameNotEnded(string apiId);
     // Bet Amount of `amount` to low.
     error AmountToLow(uint256 amount);
     // Odds of `odds` to low.
@@ -95,8 +94,16 @@ contract BettingAIO is Ownable, ChainlinkClient
     // check if valid odds
     modifier checkGameRunning(string calldata _objectId)
     {
-        if (games[_objectId].status == GameStatus.Closed)
+        if (gamesEnded[_objectId])
             revert GameAlreadyEnded(_objectId);
+        _;
+    }
+
+    // check if valid odds
+    modifier checkGameEnded(string calldata _objectId)
+    {
+        if (!gamesEnded[_objectId])
+            revert GameNotEnded(_objectId);
         _;
     }
 
@@ -106,7 +113,13 @@ contract BettingAIO is Ownable, ChainlinkClient
         setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
         oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
         jobId = "7ecb74753e414b54b26ed1b911b88d67";
-        fee = 10 ** 16;
+
+        // Chainlink related functions
+       // setChainlinkToken(_link);
+        //oracle = _oracle;
+        //jobId = _jobId;
+        fee = 10**16;
+
         betNFT = _betNFT;
     }
 
@@ -224,14 +237,11 @@ contract BettingAIO is Ownable, ChainlinkClient
     }
 
     // Internal function for paying all sides from all matched bets for the game
-    function withdraw(string memory _objectId) internal
+    function withdraw(string memory _objectId) public onlyOwner()
     {
-        games[_objectId].status = GameStatus.Closed;
-        // loop over all used bet types
-        for (uint8 i = 0; i < 1; i++) {
-            BetType betType = BetType(i);
+            BetType betType = BetType.MatchWinner;
             // loop over all selections inside the bet type
-            for (uint8 y = 0; y < 3; y++) {
+            for (uint8 y = 1; y < 4; y++) {
                 uint8 selection = y;
 
                 bool hasBackSideWon = hasMatchWinnerWon(_objectId, BetSide.Back, selection);
@@ -252,7 +262,6 @@ contract BettingAIO is Ownable, ChainlinkClient
                     delete betPossibleProfit[_objectId][winnerSide][betType][selection][wonBets[z].odds][wonBets[z].from];
                 }
             }
-        }
     }
 
     function getTokenId(string memory _objectId, BetSide _betSide, BetType _betType, uint8 _selection, uint16 _odds, address _address)
@@ -293,10 +302,11 @@ contract BettingAIO is Ownable, ChainlinkClient
     }
 
 
-    function withdrawWithNFT(string calldata _objectId, uint256 tokenId) external
+    function withdrawWithNFT(string calldata _objectId, uint256 tokenId) public
     {
+        bool hasWon = nftWon[_objectId][tokenId];
         betNFT.redeemCollectible(msg.sender, tokenId);
-        require(nftWon[_objectId][tokenId], "Bet lost");
+        require(hasWon, "Bet lost");
         transferAmount(msg.sender, nftPossibleProfit[_objectId][tokenId]);
         delete nftPossibleProfit[_objectId][tokenId];
     }
@@ -305,7 +315,7 @@ contract BettingAIO is Ownable, ChainlinkClient
      * Create a Chainlink request to retrieve API response, find the target
      * data, the result is a string in the format "fixtureId_Winner"
      */
-    function requestResult(string memory _objectId) public returns(bytes32 requestId)
+    function requestResult(string memory _objectId) public onlyOwner() returns(bytes32 requestId) 
     {
         Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
         req.add("fixtureId", _objectId);
@@ -325,10 +335,8 @@ contract BettingAIO is Ownable, ChainlinkClient
     {
         (string memory resultString, uint8 winner) = bytes32ToString(_data);
         results[resultString] = winner;
-        if (games[resultString].status != GameStatus.Open) {
-            withdraw(resultString);
-            games[resultString].status = GameStatus.Closed;
-        }
+        gamesEnded[resultString] = true;
+        emit GameEnded(resultString, winner);
     }
 
     function bytes32ToString(bytes32 _bytes32) public pure returns(string memory, uint8)
@@ -355,26 +363,13 @@ contract BettingAIO is Ownable, ChainlinkClient
     function hasMatchWinnerWon(string memory _objectId, BetSide _betSide, uint8 _selection) public view returns(bool)
     {
         uint8 winner = results[_objectId];
-        require(winner != 0, "No result");
+        require(winner == 0, "No result");
 
-        if (_selection == 0) {
-            if (_betSide == BetSide.Back) {
-                return winner == 1;
-            } else {
-                return !(winner == 1);
-            }
-        } else if (_selection == 1) {
-            if (_betSide == BetSide.Back) {
-                return winner == 3;
-            } else {
-                return !(winner == 3);
-            }
-        } else {
-            if (_betSide == BetSide.Back) {
-                return winner == 2;
-            } else {
-                return !(winner == 2);
-            }
+        bool hasWon = false;
+        if((winner == _selection && _betSide == BetSide.Back) || (winner != _selection && _betSide == BetSide.Lay)) {
+            hasWon = true;
         }
+
+        return hasWon;
     }
 }

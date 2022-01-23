@@ -215,3 +215,20 @@ const afterSaveClosedOfferings = async (
     await nft.save(null, { useMasterKey: true });
   }
 };
+
+const afterSaveGameEnded = async (gameEnded, contractAddr) => {
+  const gasPrice = await web3.eth.getGasPrice();
+  const contract = new web3.eth.Contract(BettingContract.abi, contractAddr);
+  const gas = await contract.methods
+    .withdraw(String(gameEnded.get("apiId")))
+    .estimateGas({ from: account });
+  const result = await contract.methods
+    .withdraw(String(gameEnded.get("apiId")))
+    .send({
+      from: account,
+      gasPrice: Math.round(gasPrice * 1.2),
+      gas: Math.round(gas * 2),
+    });
+  gameEnded.set("isWithdrawn", true);
+  await gameEnded.save(null, { useMasterKey: true });
+};

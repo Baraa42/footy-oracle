@@ -1,8 +1,8 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
-import "./LosslessQi.sol";
+import "./LosslessQI.sol";
 import "../interfaces/QiAvaxInterface.sol";
 
 /** @title BenqiLossless
@@ -50,7 +50,7 @@ contract BenqiLossless is LosslessQi {
         address _qiToken,
         uint256 _matchStartTime,
         uint256 _matchFinishTime
-    ) Lossless(_matchStartTime, _matchFinishTime) {
+    ) LosslessQi(_matchStartTime, _matchFinishTime) {
         status = MatchStatus.OPEN;
         qiToken = QiAvaxInterface(_qiToken);
         winningSide = BetSide.OPEN;
