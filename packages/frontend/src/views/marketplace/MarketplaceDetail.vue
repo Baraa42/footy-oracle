@@ -1,5 +1,5 @@
 <template>
-  <div class="lg:max-w-screen-xl w-full m-auto grid grid-cols-1 md:grid-cols-6 gap-y-4 md:gap-x-4 xl:gap-x-8" v-if="nft">
+  <div class="lg:max-w-screen-xl w-full m-auto grid grid-cols-1 md:grid-cols-6 gap-y-4 md:gap-x-4 xl:gap-x-8 h-full" v-if="nft">
     <NftImage :nft="nft" class="md:w-full md:col-span-2 aspect-auto" />
     <div class="md:col-span-4 flex flex-col space-y-4">
       <div class="flex justify-between items-center">

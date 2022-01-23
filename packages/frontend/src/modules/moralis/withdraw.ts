@@ -33,7 +33,9 @@ const withdraw = async (nft: NftOwnerModel): Promise<void> => {
             showSuccess("Profits successfully withdrawn.");
             console.log(result);
           } else {
-            showError("No profits withdrawn, your bet lost.");
+            if (err?.code !== 4001) {
+              showError("No profits withdrawn, your bet lost.");
+            }
             console.log(err);
           }
         }

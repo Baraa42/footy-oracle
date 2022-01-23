@@ -2,6 +2,8 @@ import { useAlert } from "./../layout/alert";
 import { Chain } from "@/interfaces/Chain";
 import Polygon from "@/assets/svg/polygon.svg";
 import PolygonRounded from "@/assets/svg/polygon-rounded.svg";
+import Benqi from "@/assets/svg/benqi.svg";
+import AAVE from "@/assets/svg/aave.svg";
 import AvaxRounded from "@/assets/svg/avax-rounded.svg";
 import { computed, markRaw, Ref, ref } from "vue";
 import Moralis from "moralis/dist/moralis.js";
@@ -26,6 +28,14 @@ const avalancheTestnet: Chain = {
   nativePriceFrom: "avalanche",
   nativePriceAddress: "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
   priceChain: "avalanche",
+  defiProviders: [
+    {
+      name: "BENQI",
+      logo: markRaw(Benqi as {}),
+      depositApy: 4.71,
+      rewardApy: 2.59,
+    },
+  ],
 };
 
 const avalancheMainet: Chain = {
@@ -45,6 +55,14 @@ const avalancheMainet: Chain = {
   nativePriceFrom: "avalanche",
   nativePriceAddress: "0xb31f66aa3c1e785363f0875a1b74e27b85fd66c7",
   priceChain: "avalanche",
+  defiProviders: [
+    {
+      name: "BENQI",
+      logo: markRaw(Benqi as {}),
+      depositApy: 4.71,
+      rewardApy: 2.59,
+    },
+  ],
 };
 
 const polygonTestnet: Chain = {
@@ -67,6 +85,14 @@ const polygonTestnet: Chain = {
   settings: {
     oneInchChain: "polygon",
   },
+  defiProviders: [
+    {
+      name: "AAVE",
+      logo: markRaw(AAVE as {}),
+      depositApy: 0.22,
+      rewardApy: 0,
+    },
+  ],
 };
 
 const chains: Array<Chain> = [polygonTestnet, avalancheTestnet];

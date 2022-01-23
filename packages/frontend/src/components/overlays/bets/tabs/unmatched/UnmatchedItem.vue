@@ -65,7 +65,7 @@ import SoccerBall from "../../../../../assets/svg/soccer_ball.svg";
 import { useOdds } from "../../../../../modules/settings/odds";
 import { UnmatchedBetModel } from "../../../../../interfaces/models/UnmatchedBetModel";
 import WaitingButton from "../../../../buttons/WaitingButton.vue";
-import { marketMakerBet } from "../../../../../modules/moralis/marketMakerBet";
+import { marketMakerBet } from "../../../../../modules/moralis/marketmakerbet";
 
 export default defineComponent({
   props: {

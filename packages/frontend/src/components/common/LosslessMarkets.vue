@@ -1,11 +1,16 @@
 <template>
-  <div class="flex flex-col space-y-4">
-    <div class="flex flex-row items-center space-x-2">
-      <h2 class="text-2xl font-bold text-gray-800">Lossless Markets</h2>
-      <QuestionMarkCircleIcon class="w-6 h-6" />
+  <div class="flex flex-col bg-gray-800 rounded">
+    <div class="flex flex-row items-center justify-between px-5 py-5">
+      <h2 class="font-semibold text-2xl text-white">Lossless Markets</h2>
+      <QuestionMarkCircleIcon class="w-8 h-8 text-gray-500 hover:text-white transition-all cursor-pointer" />
     </div>
-    <div v-if="events" class="flex flex-row flex-nowrap space-x-4 overflow-x-scroll scroll-smooth pb-2 horizontal-scroll no-scrollbar snap-x">
-      <LosslessBet v-for="event in events" class="snap-start" :event="event" />
+    <div class="px-5 py-5">
+      <div
+        v-if="events"
+        class="bg-gray-800 flex flex-row flex-nowrap space-x-4 w-full overflow-x-scroll scroll-smooth horizontal-scroll snap-mandatory no-scrollbar snap-x pb-4"
+      >
+        <LosslessBet v-for="event in events" class="snap-start border-2 border-gray-200 shadow-md" :event="event" />
+      </div>
     </div>
   </div>
 </template>

@@ -1,5 +1,12 @@
 import { Component } from "vue";
 
+export interface DefiProvider {
+  name: string;
+  logo: Component;
+  depositApy: number;
+  rewardApy: number;
+}
+
 export type Chains =
   | "eth"
   | "0x1"
@@ -44,4 +51,5 @@ export interface Chain {
   settings?: any;
   nativePriceAddress: string;
   priceChain: Chains;
+  defiProviders?: DefiProvider[];
 }
