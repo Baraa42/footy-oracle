@@ -44,7 +44,7 @@
           />
         </div>
       </div>
-      <div class="bg-gray-50 rounded shadow-sm w-full h-full p-3 flex flex-col justify-around" v-if="nft?.attributes.offer?.attributes.price">
+      <div class="bg-gray-50 rounded shadow-sm w-full h-40 p-3 flex flex-col justify-around" v-if="nft?.attributes.offer?.attributes.price">
         <span class="text-gray-500">Current Price</span>
 
         <div class="flex flex-row items-center space-x-2 mt-2">
@@ -139,12 +139,16 @@
         </div>
       </div>
       <!-- LP NFT -->
-      <div class="flex flex-col space-y-4 h-full" v-else>
+      <div class="flex flex-col space-y-4 h-full" v-else-if="nft.attributes.symbol == 'LPNFT'">
         <div class="bg-gray-50 rounded shadow-sm w-full">
           <div class="p-3">
             <span class="font-semibold text-gray-700">LP Details</span>
           </div>
         </div>
+      </div>
+      <!-- LP NFT -->
+      <div class="border-4 border-dashed border-gray-200 rounded-lg h-96 lg:h-full flex items-center justify-center" v-else>
+        <span class="text-gray-400 text-xl text-center">Metadata from this NFT is not connected to FootyOracle!</span>
       </div>
     </div>
 
