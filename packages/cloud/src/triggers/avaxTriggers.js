@@ -34,6 +34,18 @@ Moralis.Cloud.beforeSave("AvaxNFTOwners", async (request) => {
   await beforeSaveNFTOwners(request.object, FujiMatchedBets);
 });
 
+Moralis.Cloud.beforeSave("AvaxNFTOwners", async (request) => {
+  await beforeSaveNFTOwners(request.object, FujiMatchedBets);
+});
+
+Moralis.Cloud.afterSave("FujiDepositLP", async (request) => {
+  if (request.object.get("confirmed") == true) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const contract = config.get("avax_lp_nft");
+    await afterSaveDepositLP(request.object, AvaxNFTOwners, contract);
+  }
+});
+
 Moralis.Cloud.afterSave("AvaxNFTOwners", async (request) => {
   await afterSaveNFTOwners(request.object, FujiMatchedBets);
 });

@@ -42,6 +42,14 @@ Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
   await beforeSaveNFTOwners(request.object, MumbaiMatchedBets);
 });
 
+Moralis.Cloud.afterSave("MumbaiDepositLP", async (request) => {
+  if (request.object.get("confirmed")) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const contract = config.get("polygon_lp_nft");
+    await afterSaveDepositLP(request.object, PolygonNFTOwners, contract);
+  }
+});
+
 Moralis.Cloud.afterSave("PolygonNFTOwners", async (request) => {
   await afterSaveNFTOwners(request.object, MumbaiMatchedBets);
 });

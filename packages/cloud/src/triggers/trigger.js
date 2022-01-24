@@ -112,13 +112,13 @@ const afterSaveUnmatchedBetsUpdated = async (unmatchedBet, className) => {
  * @param  {} nft
  * @param  {} className
  */
-const beforeSaveNFTOwners = async (nft, className) => {
+const beforeSaveNFTOwners = async (nft, eventClassName) => {
   const metadata = await resolveMetadataFromNft(nft);
   nft.set("metadata", metadata);
 
   const eventApiId = parseEventApiIdFromMetadata(metadata);
   if (eventApiId) {
-    const matcheBetQuery = new Moralis.Query(className);
+    const matcheBetQuery = new Moralis.Query(eventClassName);
     matcheBetQuery.equalTo("apiId", eventApiId);
     matcheBetQuery.equalTo("tokenId", nft.get("token_id"));
     const matchedBet = await matcheBetQuery.first();
@@ -260,4 +260,18 @@ const afterSaveResult = async (result, web3Chain, contractAddr, relation) => {
   result.set("isWithdrawn", true);
 
   await result.save(null, { useMasterKey: true });
+};
+
+const afterSaveDepositLP = async (lpDeposit, nftClassName, contract) => {
+  const nftsQuery = new Moralis.Query(nftClassName);
+  nftsQuery.equalTo("token_id", lpDeposit.get("tokenId"));
+  nftsQuery.equalTo("token_address", contract);
+  const nft = await nftsQuery.first();
+
+  if (nft) {
+    nft.set("lp", lpDeposit);
+    await nft.save(null, { useMasterKey: true });
+    lpDeposit.set("nft", nft);
+    await lpDeposit.save();
+  }
 };

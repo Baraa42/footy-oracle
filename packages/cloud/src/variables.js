@@ -20,6 +20,8 @@ const Team = Moralis.Object.extend("Team");
 const Sport = Moralis.Object.extend("Sport");
 const PolygonNFTOwners = Moralis.Object.extend("PolygonNFTOwners");
 
+const MumbaiDepositLP = Moralis.Object.extend("MumbaiDepositLP");
+
 const AvaxNFTOwners = Moralis.Object.extend("AvaxNFTOwners");
 
 const MumbaiMatchedBets = Moralis.Object.extend("MumbaiMatchedBets");
@@ -41,6 +43,7 @@ const FujiUnmatchedBetsRemoved = Moralis.Object.extend(
   "FujiUnmatchedBetsRemoved"
 );
 const FujiPlacedOfferings = Moralis.Object.extend("FujiPlacedOfferings");
+const FujiDepositLP = Moralis.Object.extend("FujiDepositLP");
 
 const nft_market_place_address = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
 const nft_market_place_abi = [
