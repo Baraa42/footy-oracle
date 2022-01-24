@@ -56,7 +56,7 @@
           <router-link
             :to="{
               name: 'marketplace-detail',
-              params: { tokenId: nft.attributes.token_id },
+              params: { objectId: nft.id },
             }"
             v-for="nft in nfts"
             :key="nft.id"

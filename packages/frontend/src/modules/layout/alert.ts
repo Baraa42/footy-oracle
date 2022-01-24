@@ -21,7 +21,7 @@ export const useAlert = () => {
     alert.show = true;
   };
 
-  const showError = (message: string) => {
+  const showError = (message = "Oops! Something went wrong, please try again later") => {
     //console.error(message);
     alert.type = AlertType.ERROR;
     alert.message = message;

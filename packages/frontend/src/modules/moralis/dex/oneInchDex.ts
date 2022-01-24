@@ -16,7 +16,6 @@ export const useOneInchDex = () => {
 
     return Moralis.Web3.initPlugins().then(async () => {
       const tokenList = await Moralis.Plugins.oneInch.getSupportedTokens({ chain: activeChain.value.settings?.oneInchChain });
-      console.log(tokenList);
       tokens.value = Object.keys(tokenList.tokens).map((key) => tokenList.tokens[key]);
       return tokens.value;
     });

@@ -3,9 +3,10 @@
     <div class="mb-3 md:mb-4 ml-1 flex justify-between items-center">
       <span class="text-sm text-gray-200 font-semibold" v-if="mode == 'to'">To</span>
       <span class="text-sm text-gray-200 font-semibold" v-else-if="mode == 'from'">From</span>
+      <span class="text-sm text-gray-200 font-semibold" v-else-if="mode == 'input'">{{ label }}</span>
 
-      <div v-if="mode == 'from' && modelValue.token?.symbol && isAuthenticated" class="flex flex-row space-x-2 text-xs items-center">
-        <span class="text-indigo-300 text-sm font-semibold">{{ balance }} {{ modelValue.token.symbol }}</span>
+      <div v-if="(mode == 'from' || mode == 'input') && modelValue.token?.symbol && isAuthenticated" class="flex flex-row space-x-2 text-xs items-center">
+        <span class="text-indigo-300 text-sm font-semibold slashed-zero tracking-wide">{{ balance }} {{ modelValue.token.symbol }}</span>
         <button
           class="bg-gray-800 text-gray-300 hover:text-gray-100 transition-colors shadow-sm shadow-gray-500/20 rounded-md px-2 py-1"
           @click="selectMaxBalance()"
@@ -23,18 +24,24 @@
     <div class="flex flex-row items-center justify-between space-x-4">
       <button
         @click="emitSelectToken()"
+        :disabled="disableSelect"
         type="button"
-        class="inline-flex justify-between items-center px-3 h-12 md:h-14 w-10/12 md:w-60 border border-gray-500 rounded-lg text-md font-medium text-white focus:outline-none focus:ring-2 ring-offset-transparent focus:ring-offset-2 focus:ring-gray-600 transition-colors"
+        :class="{
+          'px-5 w-44': disableSelect,
+          'px-3 w-10/12 md:w-60 focus:outline-none focus:ring-2 ring-offset-transparent focus:ring-offset-2 focus:ring-gray-600': !disableSelect,
+        }"
+        class="inline-flex justify-between items-center h-12 md:h-14 border border-gray-500 rounded-lg text-md font-medium text-white transition-colors"
       >
-        <span v-if="!modelValue.token">
+        <span v-if="!modelValue.token && !disableSelect">
           <span class="md:block hidden">Select a Token</span>
           <span class="block md:hidden">Select</span>
         </span>
+        <span v-else-if="!modelValue.token && disableSelect">Loading...</span>
         <span class="flex items-center space-x-2" v-else
           ><img :src="modelValue.token.logoURI" class="w-6 h-6 md:w-8 md:h-8 rounded-full" />
           <span class="md:text-lg">{{ modelValue.token.symbol }}</span></span
         >
-        <ChevronDownIcon class="-mr-1 ml-2 h-5 w-5 text-gray-400" />
+        <ChevronDownIcon v-if="!disableSelect" class="-mr-1 ml-2 h-5 w-5 text-gray-400" />
       </button>
 
       <div class="flex flex-col justify-between items-center">
@@ -42,14 +49,14 @@
           :disabled="mode == 'to'"
           :value="computedModelValue"
           @input="debouncedEmit($event)"
-          class="text-2xl font-bold placeholder-gray-400 text-gray-50 text-number bg-transparent w-full appearance-none focus:outline-none text-right"
+          class="text-2xl font-bold text-number placeholder:slashed-zero placeholder-gray-400 text-gray-50 text-number bg-transparent w-full appearance-none focus:outline-none text-right"
           placeholder="0.0"
         />
 
         <div
-          v-if="mode == 'from'"
+          v-if="mode == 'from' || mode == 'input'"
           :class="{ 'text-gray-400': !fiatPrice, 'text-gray-50': fiatPrice }"
-          class="w-full justify-end flex items-baseline font-semibold"
+          class="w-full justify-end flex items-baseline font-semibold text-number"
         >
           &#8776; ${{ fiatPrice || 0 }}
         </div>
@@ -66,7 +73,7 @@ import { useMoralis } from "../../modules/moralis/moralis";
 import { useCurrency } from "../../modules/settings/currency";
 import { useDebounce } from "@/modules/layout/debounce";
 export default defineComponent({
-  props: ["mode", "modelValue"],
+  props: ["mode", "modelValue", "disableSelect", "label"],
   emits: ["update:modelValue", "onSelectToken"],
   setup(props, { emit }) {
     const { tokens, isAuthenticated, balance: nativeBalance } = useMoralis();
@@ -77,7 +84,7 @@ export default defineComponent({
      * Show proper from value and rounds to value to approximate
      */
     const computedModelValue = computed((): string | undefined => {
-      if (props.mode === "from") {
+      if (props.mode === "from" || props.mode === "input") {
         return props.modelValue.value;
       } else {
         if (props.modelValue.value) {
@@ -116,7 +123,9 @@ export default defineComponent({
     });
 
     const emitSelectToken = () => {
-      emit("onSelectToken");
+      if (!props.disableSelect) {
+        emit("onSelectToken");
+      }
     };
 
     const emitUpdateValue = (value: any) => {

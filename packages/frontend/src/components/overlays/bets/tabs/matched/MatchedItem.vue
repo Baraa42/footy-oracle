@@ -38,7 +38,7 @@
       <router-link
         :to="{
           name: 'marketplace-detail',
-          params: { tokenId: data.attributes.tokenId || -1 },
+          params: { objectId: data.id || -1 },
         }"
         v-if="data.get('mintStatus') == NftMintStatus.COMPLETED"
         class="inline-flex w-full justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-sm text-white bg-gray-500 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-400 transition-colors"

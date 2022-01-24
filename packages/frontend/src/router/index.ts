@@ -33,14 +33,14 @@ const routes: Array<RouteRecordRaw> = [
     component: () => import(/* webpackChunkName: "marketplace" */ "../views/marketplace/MarketplaceList.vue"),
   },
   {
-    path: "/marketplace/:tokenId",
+    path: "/marketplace/:objectId",
     name: "marketplace-detail",
     component: () => import(/* webpackChunkName: "marketplace" */ "../views/marketplace/MarketplaceDetail.vue"),
   },
   {
-    path: "/addLiquidity",
+    path: "/liquidity",
     name: "addLiquidity",
-    component: () => import(/* webpackChunkName: "nftMarketplace" */ "../views/AddLiquidity.vue"),
+    component: () => import(/* webpackChunkName: "liquidity" */ "../views/AddLiquidity.vue"),
   },
   {
     path: "/sport/:sport",

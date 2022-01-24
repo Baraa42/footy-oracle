@@ -59,6 +59,7 @@
                 </p>
                 <slot></slot>
                 <button
+                  v-if="buttonText"
                   @click="confirmModal()"
                   class="mt-8 w-full px-8 py-3 shadow-sm rounded bg-indigo-500 text-white font-bold hover:bg-indigo-600 transition-colors"
                 >

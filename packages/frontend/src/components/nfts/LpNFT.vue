@@ -1,9 +1,9 @@
 <template>
-  <div class="w-full h-full">
+  <div class="">
     <div
       id="nonPrintable"
       ref="printMe"
-      class="z-0 relative h-[1024px] w-[768px] rounded-md p-4 overflow-hidden transition-transform mix-blend-soft-ligh"
+      class="z-0 relative h-[1024px] w-[768px] rounded-md p-4 overflow-hidden transition-transform"
       :style="{
         'background-color': palette[500],
       }"
@@ -28,7 +28,7 @@
 
         <div class="shadow-md w-full p-4 h-52 mt-12 bg-gray-800/10 rounded backdrop-blur-sm">
           <div class="w-full flex flex-col space-y-6 items-center justify-center h-full -mt-2">
-            <span class="text-3xl text-white/[.05] text-center font-semibold">Amount:</span>
+            <span class="text-3xl text-white/[.20] text-center font-semibold">Amount:</span>
             <div class="w-full flex flex-row space-x-4 justify-center font-semibold">
               <span class="text-number text-6xl">{{ amount }}</span>
               <span class="text-number text-6xl">{{ activeChain.currencyName }}</span>
@@ -42,7 +42,7 @@
 
 <script lang="ts">
 import { BigNumber } from "bignumber.js";
-import { ref, onMounted, Ref, watch } from "vue";
+import { ref, onMounted, Ref, watch, defineComponent } from "vue";
 import domtoimage from "dom-to-image-more";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import { useColors } from "../../modules/colors";
@@ -52,7 +52,14 @@ import NFTBackgroundLayerVue from "./NFTBackgroundLayer.vue";
 import { useChain } from "@/modules/moralis/chain";
 import Logo from "@/assets/svg/logo.svg";
 
-export default {
+const _serializeToString = XMLSerializer.prototype.serializeToString;
+XMLSerializer.prototype.serializeToString = function (node) {
+  var str = _serializeToString.call(this, node);
+  str = str.replace(/background-image:/g, "-webkit-background-clip: text; background-image:");
+  return str;
+};
+
+export default defineComponent({
   props: {
     color: {
       type: String,
@@ -80,16 +87,25 @@ export default {
       texture: "circuit-board",
     });
 
-    backgroundLayers.value.push({
-      id: 1,
-      mode: "gradient",
-      color: palette.value[100],
-      gradientStart: palette.value[900],
-      gradientStop: palette.value[100],
-      gradientDirection: "top right",
-      opacity: "0.5",
-      blendMode: "soft-light",
-    });
+    const emitImage = () => {
+      if (printMe.value) {
+        domtoimage
+          .toBlob(printMe.value)
+          .then(function (dataUrl) {
+            emit("converted", dataUrl);
+          })
+          .catch(function (error) {
+            console.info(error);
+          });
+      }
+    };
+
+    watch(
+      () => props.amount,
+      () => {
+        emitImage();
+      }
+    );
 
     watch(
       () => props.color,
@@ -101,19 +117,7 @@ export default {
     const printMe: Ref<HTMLElement | null> = ref(null);
 
     onMounted(() => {
-      console.log("onUpdated");
-      if (printMe.value) {
-        domtoimage
-          .toBlob(printMe.value)
-          .then(function (dataUrl) {
-            console.log(dataUrl);
-            console.log("image captured");
-            emit("converted", dataUrl);
-          })
-          .catch(function (error) {
-            console.info(error);
-          });
-      }
+      emitImage();
     });
 
     return {
@@ -127,7 +131,12 @@ export default {
     };
   },
   components: { NFTBackgroundLayerVue, Logo },
-};
+});
 </script>
 
-<style></style>
+<style scoped>
+.texture-circuit-board {
+  background-image: url("/textures/circuit-board.svg");
+  background-repeat: repeat;
+}
+</style>

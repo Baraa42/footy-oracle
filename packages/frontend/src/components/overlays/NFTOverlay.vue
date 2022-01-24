@@ -9,7 +9,7 @@
         <router-link
           :to="{
             name: 'marketplace-detail',
-            params: { tokenId: nft.attributes.token_id || -1 },
+            params: { objectId: nft.id || -1 },
           }"
         >
           <NftImage :nft="nft" />

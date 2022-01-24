@@ -3,7 +3,7 @@
     <NftImage :nft="nft" class="md:w-full md:col-span-2 aspect-auto" />
     <div class="md:col-span-4 flex flex-col space-y-4">
       <div class="flex justify-between items-center">
-        <span class="text-2xl font-semibold">Bet #{{ nft.attributes.token_id }}</span>
+        <span class="text-2xl font-semibold">{{ nft.attributes.symbol }} #{{ nft.attributes.token_id }}</span>
         <div>
           <div v-if="userAddress == nft.attributes.owner_of && !nft.attributes.offer" class="flex flex-row space-x-4">
             <button
@@ -69,7 +69,8 @@
         </button>
       </div>
 
-      <div class="flex flex-col space-y-4 h-full">
+      <!-- BET NFT -->
+      <div class="flex flex-col space-y-4 h-full" v-if="nft.attributes.bet?.attributes.event">
         <div class="bg-gray-50 rounded shadow-sm w-full">
           <div class="p-3">
             <span class="font-semibold text-gray-700">Match Details</span>
@@ -128,12 +129,20 @@
             </div>
             <div class="flex flex-row justify-between">
               <span>Amount</span>
-              <span> {{ convertCurrency(nft.attributes.bet?.attributes.amount || "") }} Matic</span>
+              <span> {{ convertCurrency(nft.attributes.bet?.attributes.amount || "") }} {{ activeChain.currencySymbol }}</span>
             </div>
             <div class="flex flex-row justify-between">
               <span>Potential Profit</span>
-              <span v-if="nft.attributes.bet"> {{ calculatePotentialProfit(nft.attributes.bet) }} Matic</span>
+              <span v-if="nft.attributes.bet"> {{ calculatePotentialProfit(nft.attributes.bet) }} {{ activeChain.currencySymbol }}</span>
             </div>
+          </div>
+        </div>
+      </div>
+      <!-- LP NFT -->
+      <div class="flex flex-col space-y-4 h-full" v-else>
+        <div class="bg-gray-50 rounded shadow-sm w-full">
+          <div class="p-3">
+            <span class="font-semibold text-gray-700">LP Details</span>
           </div>
         </div>
       </div>
@@ -163,7 +172,7 @@
               placeholder="0.00"
             />
             <div class="absolute inset-y-0 right-3 flex items-center">
-              <Matic class="w-4 h-4 text-polygon" />
+              <component :is="activeChain.iconRounded" class="w-4 h-4" />
             </div>
           </div>
         </div>
@@ -193,7 +202,6 @@ import WaitingButton from "@/components/buttons/WaitingButton.vue";
 import { useWithdraw } from "@/modules/moralis/withdraw";
 import { useAlert } from "@/modules/layout/alert";
 import { useChain } from "@/modules/moralis/chain";
-import BigNumber from "bignumber.js";
 
 export default defineComponent({
   setup() {
@@ -257,7 +265,9 @@ export default defineComponent({
 
     const onBuy = () => {
       confirmDialog.action = "buy";
-      confirmDialog.title = `Are you sure you want to buy this NFT for ${convertCurrency(nft.value?.attributes.offer?.attributes.price || "")} Matic?`;
+      confirmDialog.title = `Are you sure you want to buy this NFT for ${convertCurrency(nft.value?.attributes.offer?.attributes.price || "")} ${
+        activeChain.value.currencySymbol
+      }?`;
       confirmDialog.description = "";
       confirmDialog.icon = CheckIcon;
       confirmDialog.color = "green";
@@ -312,11 +322,11 @@ export default defineComponent({
     };
 
     watchEffect(() => {
-      const tokenId = route.params.tokenId;
+      const objectId = route.params.objectId;
 
       const query = getNFTQuery({
         filter: {
-          tokenId: Array.isArray(tokenId) ? tokenId[0] : tokenId,
+          id: Array.isArray(objectId) ? objectId[0] : objectId,
         },
         inlcude: ["bet", "bet.event.home", "bet.event.away", "bet.event.league", "offer", "closedOffer"],
       });

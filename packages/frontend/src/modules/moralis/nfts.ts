@@ -365,14 +365,13 @@ const getDepositLPNFTs = async (): Promise<Ref<Array<MumbaiDepositLPModel> | und
   return depositLPNfts;
 };
 
-const generateLPTokenURI = async (marketMakeraddress: string, amount: string): Promise<string> => {
-  const { userAddress, web3 } = useMoralis();
+const generateLPTokenURI = async (marketMakeraddress: string, amount: string, imageUrl: string): Promise<string | undefined> => {
+  const { userAddress } = useMoralis();
 
   if (userAddress.value) {
     const { convertCurrency } = useCurrency();
-    const { saveJsonToIPFS, saveBase64ImageToIPFS } = useIPFS();
+    const { saveJsonToIPFS } = useIPFS();
 
-    const imageUrl = "https://ipfs.io/ipfs/QmPK2yjKxYGYm84gZTCjK7b81EK6HgBUkBy7xGunaGHjth?filename=counter_remix.png";
     const metadata = {
       name: "LP NFT",
       description: "Liquidity Provider NFT ",
@@ -390,13 +389,9 @@ const generateLPTokenURI = async (marketMakeraddress: string, amount: string): P
       ],
     };
 
-    if (metadata) {
-      const tokenUri = await saveJsonToIPFS(userAddress.value, metadata); // save metadata to ipfs
-      console.log("new token uri: ", tokenUri.ipfs());
-      return tokenUri.ipfs();
-    }
+    const tokenUri = await saveJsonToIPFS(userAddress.value, metadata);
+    return tokenUri.ipfs();
   }
-  return "dummy string";
 };
 
 export const useNFTs = () => {
