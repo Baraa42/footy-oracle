@@ -28,6 +28,7 @@ const user: Ref<User> = ref({
   betslip: [],
   unmatchedBets: [],
   matchedBets: [],
+  marketMakerMatchedBets: [],
   listedNfts: [],
   nfts: [],
   depositNfts: [],
@@ -67,6 +68,7 @@ const balance = computed(() => user.value.balances);
 const tokens = computed((): Array<TokenBalance> => user.value.balances.tokens);
 const unmatchedBets = computed((): Array<UnmatchedBetModel> | undefined => user.value.unmatchedBets);
 const matchedBets = computed((): Array<MatchedBetModel> | undefined => user.value.matchedBets);
+const marketMakerMatchedBets = computed((): Array<MatchedBetModel> | undefined => user.value.marketMakerMatchedBets);
 const userAddress = computed((): string | undefined => user.value.moralis?.get("ethAddress"));
 
 const chainOptions: any = {
@@ -194,10 +196,16 @@ const loadFavorites = async () => {
 };
 
 const loadMatchedBets = async () => {
-  const { getMatchedBets } = useBet();
+  const { getMatchedBets, getMarketMakerMatchedBets } = useBet();
   const matchedBets: Ref<Array<MatchedBetModel> | undefined> = await getMatchedBets();
+  const marketMakerMatchedBets: Ref<Array<MatchedBetModel> | undefined> = await getMarketMakerMatchedBets();
+  
   if (matchedBets.value) {
     user.value.matchedBets = matchedBets.value;
+  }
+  
+  if (marketMakerMatchedBets.value) {
+    user.value.marketMakerMatchedBets = marketMakerMatchedBets.value;
   }
 };
 
@@ -224,6 +232,7 @@ const logout = async () => {
     listedNfts: [],
     nfts: [],
     depositNfts: [],
+    marketMakerMatchedBets: [],
   };
 };
 
@@ -243,6 +252,7 @@ export const useMoralis = () => {
     loadNativeBalance,
     unmatchedBets,
     matchedBets,
+    marketMakerMatchedBets,
     tokens,
     nfts,
     loadNfts,

@@ -2,7 +2,7 @@
   <CardContainer>
     <div class="bg-gray-800 h-[7.5rem] rounded-t">
       <div class="flex flex-col items-star justify-between w-full h-full text-white">
-        <h2 class="font-semibold text-2xl px-5 py-5 capitalize">User Bets</h2>
+        <h2 class="font-semibold text-2xl px-5 py-5 capitalize">Market Maker Bets</h2>
 
         <div class="flex flex-row">
           <button
@@ -23,11 +23,11 @@
     <div class="bg-gray-700 flex flex-row items-center h-6 text-xs font-semibold text-gray-300 px-5">
       <div class="grid grid-cols-table">
         <span class="hidden lg:block text-left">MATCH</span>
-        <span class="hidden lg:block text-left">Details</span>
+        <span class="hidden lg:block text-left">TYPE</span>
         <span class="hidden lg:block text-left">ODDS</span>
         <span class="hidden lg:block text-left">STAKE</span>
         <span class="hidden lg:block text-left">LIABILITY</span>
-        <!-- <span class="hidden lg:block text-left">P / L</span> -->
+        <span class="hidden lg:block text-left">P / L</span>
         <span class="hidden lg:block text-left">STATUS</span>
       </div>
     </div>
@@ -57,31 +57,24 @@ export default defineComponent({
         isActive: true,
         component: undefined,
       },
-      /*
       {
         name: "Past",
         component: undefined,
       },
-      */
     ]);
 
-    const { isAuthenticated, matchedBets, unmatchedBets } = useMoralis();
-    console.log("User Matched Bets");
-    console.log(matchedBets);
-
-    console.log("User UnMatched Bets");
-    console.log(unmatchedBets);
+    const { isAuthenticated, marketMakerMatchedBets } = useMoralis();
+    console.log(marketMakerMatchedBets);
+    console.log(marketMakerMatchedBets.value);
     
     // const { getHistoryBets } = useBet();
     let bets: any;
 
     if (isAuthenticated.value) {
       // bets = await getHistoryBets();
-      bets = matchedBets.value;
-      bets = bets.concat(unmatchedBets.value);
-      //console.log("matchedBets.length = ", matchedBets?.value?.length) ;
-      console.log("bets.length = ", bets?.length);
-      console.log(bets)
+      bets = marketMakerMatchedBets.value;
+      console.log("marketMakerMatchedBets.length = ",marketMakerMatchedBets?.value?.length) ;
+      console.log("bets.length = ", bets?.length)
     } else {
       showError("You need to connect your wallet");
     }

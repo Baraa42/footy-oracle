@@ -9,38 +9,25 @@
       </div> 
       -->
     </div>
-    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betSide') == '1'">Lay - {{ getBetSelection() }} </div>
+    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betSide') == '1'">Lay</div>
     <div class="flex items-center text-blue-600 font-semibold" v-if="bet.get('betSide') == '0'">Back - {{ getBetSelection() }}</div>
-
-    <!-- ODDS -->
     <div class="flex items-center">{{ decodeOdds(bet.get("odds")) }}</div>
-
-    <!-- STAKE -->
     <div class="flex items-center">{{ convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
-
-    <!-- LIABILITY -->
     <div class="flex items-center" v-if="bet.get('betSide') == '0'">{{ convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
     <div class="flex items-center" v-if="bet.get('betSide') == '1'">
       {{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(decodeOdds(bet.get("odds"))).minus(1)).toNumber() }}
       {{ activeChain.currencySymbol }}
     </div>
-    
-    <!-- P / L -->
-    <!--
-    <div class="flex items-center" v-if="bet.get('won') == true">{{ convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
-    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betSide') == '0'">- {{convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
+    <div class="flex items-center" v-if="bet.get('won') == true">{{ convertCurrency(bet.get("amount"
+)) }} {{ activeChain.currencySymbol }}</div>
+    <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betSide') == '0'">- {{
+convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
     <div class="flex items-center" v-if="bet.get('won') == false && bet.get('betSide') == '1'">
       -{{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(decodeOdds(bet.get("odds"))).minus(1)).toNumber() }}
       {{ activeChain.currencySymbol }}
     </div>
-    -->
-    
-    <!-- Status -->
-    <div class="flex items-center font-semibold"> {{getBetStatus() }}</div>
-    <!--
     <div class="flex items-center text-green-600 font-semibold" v-if="bet.get('won') == true">Won</div>
     <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('won') == false">Lose</div>
-    -->
   </div>
 </template>
 
@@ -66,22 +53,8 @@ export default defineComponent({
     //console.log(props.bet.get('won'));
     console.log(props.bet?.attributes.event?.getName());
     console.log(props.bet?.attributes.event?.get("home").attributes.name);
-   
-    let chainPrefix = activeChain.value.attributePrefix;
-    chainPrefix = chainPrefix.charAt(0).toUpperCase() + chainPrefix.slice(1);
-    console.log(chainPrefix); 
-
-    const getBetStatus = () => {
-      if (props.bet?.className == chainPrefix + 'MatchedBets') {
-        return 'Matched';
-      }
-      else if (props.bet?.className == chainPrefix + 'UnmatchedBets') {
-        return 'Unmatched';
-      } 
-      else {
-        return '';
-      }
-    };
+    
+    
 
     const getBetSelection = () => {
       if (props.bet?.get('selection') == '1') {
@@ -90,14 +63,14 @@ export default defineComponent({
       else if (props.bet?.get('selection') == '2') {
         return 'Draw';
       } 
-      else if (props.bet?.get('selection') == '3') {
+      else if (props.bet?.get('selection') == '1') {
         return props.bet?.attributes.event?.get("away").attributes.name;
       } 
       else {
         return '';
       }
     };
-    return { activeChain, decodeOdds, convertCurrency, BigNumber, getBetSelection, getBetStatus };
+    return { activeChain, decodeOdds, convertCurrency, BigNumber, getBetSelection };
   },
 });
 </script>

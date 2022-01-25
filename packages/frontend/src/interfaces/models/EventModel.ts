@@ -15,14 +15,14 @@ export interface EventModel extends Moralis.Object<Moralis.Attributes> {
     status: string;
     isCompleted?: boolean;
     /**
-     * Polygon
+     * Fuji
      */
     //polygonContract: string;
     fujiVolume: number;
     fujiUnmatchedBets?: Array<UnmatchedBetModel>;
     fujiMatchedBets?: Array<MatchedBetModel>;
     /**
-     * Avax
+     * Mumbai
      */
     //axaxContract: string;
     mumbaiVolume: number;

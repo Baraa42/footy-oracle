@@ -53,6 +53,7 @@ describe("MarketMakerContract", function () {
     bettingContract = await deployBettingContract("12345", resolver, betNFT);
     //create a marketMaker to test matching unmatched bets with marketMakers funds.
     marketMakerContract = await deployMarketMakerContract(lpNFT);    
+    console.log('marketMakerContract address = ', marketMakerContract.address);
   });
 
   it("deposit and withdraw funds from MarketMaker", async function () {
@@ -145,11 +146,6 @@ describe("MarketMakerContract", function () {
     );
     
     // Now MarketMaker will create a matching bet (lay bet)
-    //bets.backBets[1].amountParsed = ethers.utils.parseEther(".00153");
-    //bets.backBets[1].oddsParsed = utils.parseUnits('4.55', 3);
-  
-    //var maxAmountForAnyBet1 = ethers.utils.parseEther(".0037944");
-
     console.log('liabilityParse = ', bets.backBets[1].liabilityParsed);
     console.log('oddsParsed = ', bets.backBets[1].oddsParsed)
     const createOpposingLayBetExpectation = getCreateOpposingBetExpectation(

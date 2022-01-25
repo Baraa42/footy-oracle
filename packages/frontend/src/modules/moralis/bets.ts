@@ -12,9 +12,11 @@ import { BetQueryParms } from "@/interfaces/queries/BetQueryParms";
 import { useCurrency } from "../settings/currency";
 import { BigNumber } from "bignumber.js";
 import { useChain } from "./chain";
+import {  useMarketMaker } from "./contract"
 
 const unmatchedBets: Ref<Array<UnmatchedBetModel> | undefined> = ref();
 const matchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
+const marketMakerMatchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
 
 /**
  *  Get all unmatched bets from user
@@ -74,6 +76,39 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
   }
 
   return matchedBets;
+};
+
+/**
+ *  Get all unmatched bets from user
+ *  It will keep a live subsription open
+ *
+ * @returns Promise
+ */
+const getMarketMakerMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
+  const { marketMakerAbi, getMarketMakerContractAddress } = useMarketMaker();
+  const marketMakerContractAddress = (await getMarketMakerContractAddress()).toLowerCase();
+
+  //console.log('In getMarketMakerMatchedBets marketMakerContractAddress = ', marketMakerContractAddress);
+
+  if (marketMakerContractAddress) {
+    // Get all matched bets from user
+    const { getClassName } = useChain();
+    const { createQuery } = useMoralisObject(getClassName("MatchedBets"));
+    const query: Moralis.Query<any> = createQuery();
+    const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
+      .equalTo("from", marketMakerContractAddress)
+      .include("event", "event.home", "event.away", "event.league")
+      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
+    marketMakerMatchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
+    
+    // Create live subscriptions
+    const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
+    subscribe(matchedBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
+      subscribeToCreate(subscription, marketMakerMatchedBets.value);
+      subscribeToUpdate(subscription, marketMakerMatchedBets.value, "id");
+    });
+  }
+  return marketMakerMatchedBets;
 };
 
 const calculatePotentialProfit = (bet: MatchedBetModel | UnmatchedBetModel): string | undefined => {
@@ -138,5 +173,5 @@ const getMatchedBetQuery = (parms: BetQueryParms): Moralis.Query => {
 };
 
 export const useBet = () => {
-  return { getUnmatchedBets, getMatchedBets, getUnmatchedBetByIndex, firstUnmatchedBet, getMatchedBetQuery, calculatePotentialProfit };
+  return { getUnmatchedBets, getMatchedBets, getUnmatchedBetByIndex, firstUnmatchedBet, getMatchedBetQuery, calculatePotentialProfit, getMarketMakerMatchedBets };
 };
