@@ -20,7 +20,7 @@
                   </div>
                   <div class="bg-gray-700 rounded-xl p-4 flex flex-col w-full md:w-1/3">
                     <span class="text-gray-200 mb-3 text-lg font-semibold">Your Position:</span>
-                    <span class="text-sm font-semibold text-number" v-if="lpDeposits"
+                    <span class="text-sm font-semibold text-number" v-if="isAuthenticated && lpDeposits"
                       >{{ round(Number(convertCurrency(lpDeposits)), 8) }} {{ activeChain.currencySymbol }}</span
                     >
                   </div>

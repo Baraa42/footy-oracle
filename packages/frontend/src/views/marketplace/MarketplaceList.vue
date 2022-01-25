@@ -48,11 +48,7 @@
         <MarketplaceFilter v-model="filters" :mobileFiltersOpen="isMobileFilterOpen" @onMobileClose="toggleMobileFilter()" />
 
         <!-- NFT List -->
-        <div
-          v-if="nfts"
-          ref="infiniteScroll"
-          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
-        >
+        <div v-if="nfts" ref="infiniteScroll" class="w-full col-span-5">
           <transition-group
             enter-active-class="transition duration-100 ease-out"
             enter-from-class="transform scale-95 opacity-0"
@@ -60,7 +56,7 @@
             leave-active-class="transition duration-75 ease-out"
             leave-from-class="transform scale-100 opacity-100"
             leave-to-class="transform scale-95 opacity-0"
-            class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
+            class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8"
             tag="div"
           >
             <router-link
