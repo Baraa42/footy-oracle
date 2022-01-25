@@ -27,7 +27,7 @@
         <span class="hidden lg:block text-left">ODDS</span>
         <span class="hidden lg:block text-left">STAKE</span>
         <span class="hidden lg:block text-left">LIABILITY</span>
-        <!-- <span class="hidden lg:block text-left">P / L</span> -->
+        <span class="hidden lg:block text-left">P / L</span>
         <span class="hidden lg:block text-left">STATUS</span>
       </div>
     </div>
@@ -43,26 +43,18 @@ import { defineComponent, ref, watch } from "vue";
 import HistoryItem from "../components/common/HistoryItem.vue";
 import CardContainer from "../components/common/CardContainer.vue";
 import { useAlert } from "../modules/layout/alert";
-import { useBet } from "../modules/moralis/bets";
 import { useMoralis } from "../modules/moralis/moralis";
 import { useTabs } from "../modules/layout/tabs";
-import { MatchedBetModel } from "../interfaces/models/MatchedBetModel";
 
 export default defineComponent({
   async setup() {
-    const { showError, showSuccess } = useAlert();
+    const { showError } = useAlert();
     const { tabs, setTab, activeTab } = useTabs([
       {
-        name: "Current",
+        name: "All Bets",
         isActive: true,
         component: undefined,
       },
-      /*
-      {
-        name: "Past",
-        component: undefined,
-      },
-      */
     ]);
 
     const { isAuthenticated, matchedBets, unmatchedBets } = useMoralis();

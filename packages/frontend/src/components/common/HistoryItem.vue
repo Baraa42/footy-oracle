@@ -34,9 +34,9 @@
       {{ activeChain.currencySymbol }}
     </div>
     -->
-    
+    <div class="flex items-center font-semibold"> {{ getProfitLoss() }}</div>
     <!-- Status -->
-    <div class="flex items-center font-semibold"> {{getBetStatus() }}</div>
+    <div class="flex items-center font-semibold"> {{ getBetStatus() }}</div>
     <!--
     <div class="flex items-center text-green-600 font-semibold" v-if="bet.get('won') == true">Won</div>
     <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('won') == false">Lose</div>
@@ -61,12 +61,7 @@ export default defineComponent({
     const { decodeOdds } = useOdds();
     const { activeChain } = useChain();
     console.log(props.bet);
-    console.log(props.bet.get('selection'));
-    console.log(props.bet.get('betSide'));
-    //console.log(props.bet.get('won'));
-    console.log(props.bet?.attributes.event?.getName());
-    console.log(props.bet?.attributes.event?.get("home").attributes.name);
-   
+    
     let chainPrefix = activeChain.value.attributePrefix;
     chainPrefix = chainPrefix.charAt(0).toUpperCase() + chainPrefix.slice(1);
     console.log(chainPrefix); 
@@ -84,20 +79,47 @@ export default defineComponent({
     };
 
     const getBetSelection = () => {
-      if (props.bet?.get('selection') == '1') {
-        return props.bet?.attributes.event?.get("home").attributes.name;
+      if (props.bet?.attributes.event?.attributes.isCompleted) {
+        if (props.bet?.get('won')) {
+          return "Won";
+        }
+        else {
+          return "Lost";
+        }
       }
-      else if (props.bet?.get('selection') == '2') {
-        return 'Draw';
-      } 
-      else if (props.bet?.get('selection') == '3') {
-        return props.bet?.attributes.event?.get("away").attributes.name;
-      } 
       else {
-        return '';
+        if (props.bet?.get('selection') == '1') {
+          return props.bet?.attributes.event?.get("home").attributes.name;
+        }
+        else if (props.bet?.get('selection') == '2') {
+          return 'Draw';
+        } 
+        else if (props.bet?.get('selection') == '3') {
+          return props.bet?.attributes.event?.get("away").attributes.name;
+        } 
+        else {
+          return '';
+        }
       }
     };
-    return { activeChain, decodeOdds, convertCurrency, BigNumber, getBetSelection, getBetStatus };
+
+    const getProfitLoss = () => {
+      if (props.bet?.attributes.event?.attributes.isCompleted) {
+        if (props.bet?.get('won')) {
+          return convertCurrency(props.bet?.get("amount")) +  activeChain.value.currencySymbol ;
+        }
+        else if (props.bet?.get('betSide') == '0'){ // Lost Back Bet
+          return '-' + convertCurrency(props.bet?.get("amount")) + activeChain.value.currencySymbol;
+        }
+        else { // Lost Lay Bet
+          return '-' + new BigNumber(convertCurrency(props.bet?.get("amount"))).times(new BigNumber(decodeOdds(props.bet?.get("odds"))).minus(1)).toNumber() + activeChain.value.currencySymbol ;
+        }
+      }
+      else {
+        return 'N/A';
+      }
+    }
+    return { activeChain, decodeOdds, convertCurrency, BigNumber, getBetSelection, getBetStatus, getProfitLoss };
   },
 });
 </script>

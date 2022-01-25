@@ -36,7 +36,7 @@ module.exports = {
       },
       gridTemplateColumns: {
         table:
-          "minmax(176px, 200px) minmax(400px, 558px) minmax(88px, 124px) minmax(88px, 124px) minmax(88px, 124px) minmax(88px, 124px) minmax(88px, 124px) minmax(88px, 124px)",
+        "minmax(180px, 200px) minmax(150px, 558px) minmax(88px, 124px) minmax(200px, 124px) minmax(200px, 124px) minmax(200px, 124px) minmax(88px, 124px) minmax(88px, 124px)",
       },
       gridTemplateRows: {
         table: "200px minmax(900px, 1fr) 100px",
