@@ -7,6 +7,8 @@ export interface NFTTQueryParms extends QueryParms {
     tokenId?: string;
     hasOffer?: boolean;
     hasBet?: boolean;
+    hasLP?: boolean;
+    hasBetOrLP?: boolean;
   };
   sort?: {
     key: string;

@@ -50,32 +50,43 @@
         <!-- NFT List -->
         <div
           v-if="nfts"
-          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
           ref="infiniteScroll"
+          class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
         >
-          <router-link
-            :to="{
-              name: 'marketplace-detail',
-              params: { objectId: nft.id },
-            }"
-            v-for="nft in nfts"
-            :key="nft.id"
-            class="flex flex-col p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
+          <transition-group
+            enter-active-class="transition duration-100 ease-out"
+            enter-from-class="transform scale-95 opacity-0"
+            enter-to-class="transform scale-100 opacity-100"
+            leave-active-class="transition duration-75 ease-out"
+            leave-from-class="transform scale-100 opacity-100"
+            leave-to-class="transform scale-95 opacity-0"
+            class="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-4 2xl:grid-cols-5 3xl:grid-cols-7 gap-4 xl:gap-8 w-full col-span-5"
+            tag="div"
           >
-            <div class="h-full">
-              <NftImage :nft="nft" class="flex group-hover:-translate-y-1" />
-            </div>
+            <router-link
+              :to="{
+                name: 'marketplace-detail',
+                params: { objectId: nft.id },
+              }"
+              v-for="nft in nfts"
+              :key="nft.id"
+              class="flex flex-col p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
+            >
+              <div class="h-full flex items-center">
+                <NftImage :nft="nft" class="h-max group-hover:-translate-y-1" />
+              </div>
 
-            <div class="flex justify-between items-center flex-row h-8 mt-2">
-              <div class="flex font-semibold text-sm">Bet #{{ nft.attributes.token_id }}</div>
-              <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
-                <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
-                <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center">
-                  <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+              <div class="flex justify-between items-center flex-row h-8 mt-2">
+                <div class="flex font-semibold text-sm">{{ nft.attributes.symbol }} #{{ nft.attributes.token_id }}</div>
+                <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
+                  <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
+                  <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center">
+                    <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+                  </div>
                 </div>
               </div>
-            </div>
-          </router-link>
+            </router-link>
+          </transition-group>
         </div>
       </div>
     </div>
@@ -133,6 +144,7 @@ export default defineComponent({
     const { isToggled: isMobileFilterOpen, toggle: toggleMobileFilter } = useToggle();
 
     const filters = reactive({
+      categories: ["bet", "lp"],
       betSides: [],
       selections: [],
     });
@@ -153,9 +165,7 @@ export default defineComponent({
         key: "block_number",
         direction: "DESC",
       },
-      filter: {
-        hasOffer: true,
-      },
+
       inlcude: ["bet", "offer"],
     };
 
@@ -209,21 +219,50 @@ export default defineComponent({
      */
     watchEffect(() => {
       let filter = false;
+      let appendFilter = {} as any;
+
+      if (filters.categories && filters.categories.length != 0) {
+        appendFilter = {
+          hasBet: false,
+          hasLP: false,
+          hasBetOrLP: false,
+        };
+
+        filters.categories.forEach((item: string) => {
+          if (item === "lp") {
+            appendFilter.hasLP = true;
+          }
+          if (item === "bet") {
+            appendFilter.hasBet = true;
+          }
+        });
+
+        if (appendFilter.hasLP && appendFilter.hasBet) {
+          appendFilter.hasBetOrLP = true;
+          appendFilter.hasLP = false;
+          appendFilter.hasBet = false;
+        }
+      }
+
       const betQuery = getMatchedBetQuery({});
       if (filters.betSides && filters.betSides.length != 0) {
         betQuery.containedIn("betSide", filters.betSides);
         filter = true;
       }
       if (filters.selections && filters.selections.length != 0) {
-        console.log(filters.selections);
-        betQuery.containedIn("selection", filters.selections);
+        const selections = filters.selections.map((item) => Number(item));
+        console.log(selections);
+
+        betQuery.containedIn("selection", selections);
         filter = true;
       }
 
-      if (filter) {
-        loadNfts({ innerQuery: [{ relation: "bet", query: betQuery }] });
+      console.log(filters);
+
+      if (filter && !appendFilter.hasLP) {
+        loadNfts({ filter: appendFilter, innerQuery: [{ relation: "bet", query: betQuery }] });
       } else {
-        loadNfts({ innerQuery: [] });
+        loadNfts({ filter: appendFilter, innerQuery: [] });
       }
     });
 

@@ -1,3 +1,4 @@
+import { BigNumber } from "bignumber.js";
 import { computed, Ref, ref, toRef } from "vue";
 import { useFavorites } from "./favorites";
 import { Betslip } from "../../interfaces/Betslip";
@@ -38,6 +39,7 @@ const user: Ref<User> = ref({
  * Chached Web3 Provider
  */
 const web3 = <Ref<Moralis.Web3>>ref();
+const isWeb3Enabled = ref(false);
 
 /**
  * Reference for all favorite events for logged in user
@@ -71,17 +73,30 @@ const matchedBets = computed((): Array<MatchedBetModel> | undefined => user.valu
 const marketMakerMatchedBets = computed((): Array<MatchedBetModel> | undefined => user.value.marketMakerMatchedBets);
 const userAddress = computed((): string | undefined => user.value.moralis?.get("ethAddress"));
 
+const lpDeposits = computed((): string => {
+  let value = new BigNumber(0);
+  nfts.value
+    ?.filter((nft) => nft.attributes.lp)
+    .forEach((nft) => {
+      if (nft.attributes.lp?.attributes.depositAmount) {
+        value = value.plus(new BigNumber(nft.attributes.lp.attributes.depositAmount));
+      }
+    });
+  return value.toString();
+});
+
 const chainOptions: any = {
   chain: "mumbai",
 };
 
 const enableWeb3 = async (): Promise<boolean> => {
   if (web3.value) {
+    isWeb3Enabled.value = true;
     return true;
   }
-
   try {
     web3.value = await Moralis.Web3.enableWeb3();
+    isWeb3Enabled.value = true;
     return true;
   } catch (err: any) {
     return false;
@@ -169,13 +184,14 @@ const loadTokenBalance = async (): Promise<void> => {
  * @returns Promise
  */
 const loadNfts = async (): Promise<void> => {
-  const { getNFTs, getNFTsListedOnMarketplace, getDepositLPNFTs } = useNFTs();
+  const { getNFTs } = useNFTs();
 
   const localNfts: Ref<Array<NftOwnerModel> | undefined> = await getNFTs();
   if (localNfts.value) {
     user.value.nfts = localNfts.value;
   }
 
+  /** 
   //console.log(localNfts);
 
   const localListedNfts: Ref<Array<ListedNftModel> | undefined> = await getNFTsListedOnMarketplace();
@@ -188,6 +204,7 @@ const loadNfts = async (): Promise<void> => {
   if (localDepositNfts.value) {
     user.value.depositNfts = localDepositNfts.value;
   }
+  */
 };
 
 const loadFavorites = async () => {
@@ -199,11 +216,11 @@ const loadMatchedBets = async () => {
   const { getMatchedBets, getMarketMakerMatchedBets } = useBet();
   const matchedBets: Ref<Array<MatchedBetModel> | undefined> = await getMatchedBets();
   const marketMakerMatchedBets: Ref<Array<MatchedBetModel> | undefined> = await getMarketMakerMatchedBets();
-  
+
   if (matchedBets.value) {
     user.value.matchedBets = matchedBets.value;
   }
-  
+
   if (marketMakerMatchedBets.value) {
     user.value.marketMakerMatchedBets = marketMakerMatchedBets.value;
   }
@@ -260,6 +277,8 @@ export const useMoralis = () => {
     depositNfts,
     loadUserRelatedData,
     enableWeb3,
+    lpDeposits,
     logout,
+    isWeb3Enabled,
   };
 };

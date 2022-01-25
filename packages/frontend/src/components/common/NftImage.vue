@@ -1,12 +1,12 @@
 <template>
-  <img @click="click()" :src="image" class="rounded transition w-full" />
+  <img @click="click()" v-if="image" :src="image" class="rounded transition w-full" />
+  <div v-else></div>
 </template>
 
 <script lang="ts">
 import { NftOwnerModel } from "../../interfaces/models/NftOwnerModel";
-import { computed } from "vue";
-import { useNFTs } from "@/modules/moralis/nfts";
-export default {
+import { computed, defineComponent } from "vue";
+export default defineComponent({
   props: {
     nft: {
       type: Object as () => NftOwnerModel,
@@ -33,5 +33,5 @@ export default {
 
     return { click, image };
   },
-};
+});
 </script>

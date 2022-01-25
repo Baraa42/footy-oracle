@@ -61,6 +61,7 @@
       </li>
     </ul>
 
+    <CheckboxFilter v-model="filters.categories" label="Categories" :options="categoryOptions" :isOpen="true" />
     <CheckboxFilter v-model="filters.betSides" label="Betside" :options="betSideOptions" />
     <CheckboxFilter v-model="filters.selections" label="Selection" :options="selectionsOptions" />
   </form>
@@ -86,8 +87,8 @@ import {
 import { XIcon } from "@heroicons/vue/outline";
 
 const subCategories = [
-  { name: "New", href: "#" },
   { name: "Has Offer", href: "#" },
+  { name: "Unlisted", href: "#" },
 ];
 
 export default defineComponent({
@@ -101,6 +102,19 @@ export default defineComponent({
   emits: ["update:modelValue", "onMobileClose"],
   setup(props, { emit }) {
     const filters = ref<any>(props.modelValue || {});
+
+    const categoryOptions: CheckboxOption[] = [
+      {
+        value: "bet",
+        label: "BET NFT",
+        checked: true,
+      },
+      {
+        value: "lp",
+        label: "LP NFT",
+        checked: true,
+      },
+    ];
 
     const betSideOptions: CheckboxOption[] = [
       {
@@ -117,17 +131,17 @@ export default defineComponent({
 
     const selectionsOptions: CheckboxOption[] = [
       {
-        value: 1,
+        value: "1",
         label: "Home",
         checked: false,
       },
       {
-        value: 2,
+        value: "2",
         label: "Away",
         checked: false,
       },
       {
-        value: 3,
+        value: "3",
         label: "Draw",
         checked: false,
       },
@@ -138,6 +152,7 @@ export default defineComponent({
       subCategories,
       betSideOptions,
       selectionsOptions,
+      categoryOptions,
       closeModal() {
         emit("onMobileClose");
       },

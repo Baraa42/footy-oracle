@@ -1,6 +1,6 @@
 <template>
   <div class="border-b border-gray-200 py-6">
-    <Disclosure as="div" v-slot="{ open }">
+    <Disclosure as="div" v-slot="{ open }" :defaultOpen="isOpen">
       <h3 class="-my-3 flow-root">
         <DisclosureButton class="py-3 w-full flex items-center justify-between text-sm text-gray-400 hover:text-gray-500">
           <span class="font-medium text-gray-900">
@@ -12,24 +12,33 @@
           </span>
         </DisclosureButton>
       </h3>
-      <DisclosurePanel class="pt-6">
-        <div class="space-y-4">
-          <div v-for="(option, optionIdx) in options" :key="option.value" class="flex items-center">
-            <input
-              :id="`filter-${label}-${optionIdx}`"
-              :name="`${label}[]`"
-              :value="option.value"
-              type="checkbox"
-              :checked="option.checked"
-              @change="check(option)"
-              class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
-            />
-            <label :for="`filter-${label}-${optionIdx}`" class="ml-3 text-sm text-gray-600">
-              {{ option.label }}
-            </label>
+      <transition
+        enter-active-class="transition duration-100 ease-out"
+        enter-from-class="transform scale-95 opacity-0"
+        enter-to-class="transform scale-100 opacity-100"
+        leave-active-class="transition duration-75 ease-out"
+        leave-from-class="transform scale-100 opacity-100"
+        leave-to-class="transform scale-95 opacity-0"
+      >
+        <DisclosurePanel class="pt-6">
+          <div class="space-y-4">
+            <div v-for="(option, optionIdx) in options" :key="option.value" class="flex items-center">
+              <input
+                :id="`filter-${label}-${optionIdx}`"
+                :name="`${label}[]`"
+                :value="option.value"
+                type="checkbox"
+                :checked="option.checked"
+                @change="check(option)"
+                class="h-4 w-4 border-gray-300 rounded text-indigo-600 focus:ring-indigo-500"
+              />
+              <label :for="`filter-${label}-${optionIdx}`" class="ml-3 text-sm text-gray-600">
+                {{ option.label }}
+              </label>
+            </div>
           </div>
-        </div>
-      </DisclosurePanel>
+        </DisclosurePanel>
+      </transition>
     </Disclosure>
   </div>
 </template>
@@ -48,6 +57,7 @@ export default defineComponent({
     modelModifiers: {
       default: () => ({}),
     },
+    isOpen: { type: Boolean, required: false },
   },
   setup(props, { emit }) {
     const options: Ref<Array<CheckboxOption>> = ref<any>(props.options || []);

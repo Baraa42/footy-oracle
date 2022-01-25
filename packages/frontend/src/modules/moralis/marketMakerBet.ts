@@ -1,10 +1,8 @@
-import { markRaw } from "vue";
 import { BetTypeEnum } from "../../interfaces/enums/BetTypeEnum";
 import { SelectionEnum } from "../../interfaces/enums/SelectionEnum";
-import { useActionBar } from "../layout/actionBar";
 import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
-import { useContract, useMarketMaker } from "./contract";
+import { useContract } from "./contract";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
 import { useOdds } from "../settings/odds";
 
@@ -15,7 +13,7 @@ export const marketMakerBet = () => {
   const { encodeOdds, decodeOdds, minOdds } = useOdds();
   const { betslip, userAddress, web3 } = useMoralis();
   const { bettingAbi, getBettingContract } = useContract();
-  const { marketMakerAbi, getMarketMakerContractAddress } = useMarketMaker();
+  const { marketMakerAbi, getMarketMakerContractAddress } = useContract();
 
   const { showError, showSuccess } = useAlert();
   /**

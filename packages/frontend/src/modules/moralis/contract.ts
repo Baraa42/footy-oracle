@@ -11,7 +11,6 @@ const fujiContract = <Ref<string>>ref();
 const marketMakerContract = <Ref<string>>ref();
 const nftMarketplaceContract = <Ref<string>>ref();
 
-
 const getBettingContract = async (): Promise<string> => {
   //TODO ask other module which network is active
   if (!mumbaiContract.value) {
@@ -40,9 +39,10 @@ const getNFTMarketplaceContract = async (): Promise<string> => {
 };
 
 export const useContract = () => {
-  return { bettingAbi: BettingContractJson.abi as AbiItem[], getBettingContract };
-};
-
-export const useMarketMaker = () => {
-  return { marketMakerAbi: MarketMakerContractJson.abi as AbiItem[], getMarketMakerContractAddress };
+  return {
+    bettingAbi: BettingContractJson.abi as AbiItem[],
+    getBettingContract,
+    marketMakerAbi: MarketMakerContractJson.abi as AbiItem[],
+    getMarketMakerContractAddress,
+  };
 };

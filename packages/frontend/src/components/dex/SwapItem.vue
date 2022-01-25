@@ -6,7 +6,7 @@
       <span class="text-sm text-gray-200 font-semibold" v-else-if="mode == 'input'">{{ label }}</span>
 
       <div v-if="(mode == 'from' || mode == 'input') && modelValue.token?.symbol && isAuthenticated" class="flex flex-row space-x-2 text-xs items-center">
-        <span class="text-indigo-300 text-sm font-semibold slashed-zero tracking-wide">{{ balance }} {{ modelValue.token.symbol }}</span>
+        <span class="text-indigo-300 text-sm font-semibold tracking-wide">{{ balance }} {{ modelValue.token.symbol }}</span>
         <button
           class="bg-gray-800 text-gray-300 hover:text-gray-100 transition-colors shadow-sm shadow-gray-500/20 rounded-md px-2 py-1"
           @click="selectMaxBalance()"
@@ -49,7 +49,7 @@
           :disabled="mode == 'to'"
           :value="computedModelValue"
           @input="debouncedEmit($event)"
-          class="text-2xl font-bold text-number placeholder:slashed-zero placeholder-gray-400 text-gray-50 text-number bg-transparent w-full appearance-none focus:outline-none text-right"
+          class="text-2xl font-bold text-number placeholder-gray-400 text-gray-50 text-number bg-transparent w-full appearance-none focus:outline-none text-right"
           placeholder="0.0"
         />
 
@@ -129,7 +129,7 @@ export default defineComponent({
     };
 
     const emitUpdateValue = (value: any) => {
-      emit("update:modelValue", Object.assign(props.modelValue, { value: value }));
+      emit("update:modelValue", Object.assign(props.modelValue, { value: value.replaceAll(",", ".") }));
     };
 
     const updateValue = (event: any) => {

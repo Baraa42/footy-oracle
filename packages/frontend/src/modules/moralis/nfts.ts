@@ -48,6 +48,7 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     //nftQuery.equalTo("name", collectionName);
     nftQuery.equalTo("owner_of", userAddress.value);
     nftQuery.descending("block_number");
+    nftQuery.include("lp");
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
 
     // Create live subscriptions
@@ -69,7 +70,24 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
 const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
   const { getClassName } = useChain();
   const { createQuery, handleQuery } = useMoralisObject(getClassName("NFTOwners"));
-  const query: Moralis.Query = createQuery();
+  let query: Moralis.Query = createQuery();
+
+  if (parms.filter?.hasBetOrLP) {
+    const queryBet = createQuery();
+    const queryLp = createQuery();
+    queryBet.exists("bet");
+    queryLp.exists("lp");
+    query = Moralis.Query.or(queryBet, queryLp);
+  } else {
+    if (parms.filter?.hasBet) {
+      query.exists("bet");
+    }
+
+    if (parms.filter?.hasLP) {
+      query.exists("lp");
+    }
+  }
+
   handleQuery(query, parms);
 
   if (parms.filter?.tokenId) {
@@ -78,10 +96,6 @@ const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
 
   if (parms.filter?.hasOffer) {
     query.exists("offer");
-  }
-
-  if (parms.filter?.hasBet) {
-    query.exists("bet");
   }
 
   return query;
