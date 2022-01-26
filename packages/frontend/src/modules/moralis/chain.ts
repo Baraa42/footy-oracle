@@ -96,7 +96,7 @@ const polygonTestnet: Chain = {
 };
 
 const chains: Array<Chain> = [polygonTestnet, avalancheTestnet];
-const activeChain = <Ref<Chain>>ref(chains[0]);
+const activeChain = <Ref<Chain>>ref(chains[1]);
 const chainsWithoutActive = computed((): Chain[] => chains.filter((chain) => chain.chainId != activeChain.value.chainId));
 const moralisClassList = [
   "Balance",

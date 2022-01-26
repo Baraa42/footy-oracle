@@ -2,7 +2,7 @@ import Moralis from "moralis/dist/moralis.js";
 import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
 import MarketMakerContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
 import { Contract } from "web3-eth-contract";
-import { computed, Ref, ref, watch } from "vue";
+import { Ref, ref, watch } from "vue";
 import { AbiItem } from "web3-utils";
 import { useChain } from "./chain";
 import { useMoralis } from "./moralis";
@@ -47,10 +47,8 @@ export const useContract = () => {
     }
   };
 
-  const loadAll = () => {
-    loadBettingContract();
-    loadMarketMakerContractAddress();
-    loadNFTMarketplaceContract();
+  const loadAll = async () => {
+    await Promise.all([loadBettingContract(), loadMarketMakerContractAddress(), loadNFTMarketplaceContract()]);
   };
 
   // reset contracts after network switch
@@ -59,8 +57,7 @@ export const useContract = () => {
   });
 
   if (!isLoaded.value) {
-    loadAll();
-    isLoaded.value = true;
+    loadAll().then(() => (isLoaded.value = true));
   }
 
   return {

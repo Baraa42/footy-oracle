@@ -108,16 +108,27 @@ contract BettingAIO is Ownable, ChainlinkClient
     }
 
     // Create game struct and init vars
-    constructor(BetNFT _betNFT, address _oracle, bytes32 _jobId, address _link)
+    constructor(BetNFT _betNFT)
     {
-        //setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
-        //oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
-        //jobId = "7ecb74753e414b54b26ed1b911b88d67";
+        /*
+        // Polygon Mumbai
+        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
+        oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
+        jobId = "7ecb74753e414b54b26ed1b911b88d67";
+        */
+
+        // AVAX Fuji
+        setChainlinkToken(0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846);
+        oracle = 0xD5c4D9Fe36d09e71940676b312D1500078E24C6a;
+        jobId = "fee82cce27ec45c3af4d2ba0b9e2dd02";
 
         // Chainlink related functions
+        /*
         setChainlinkToken(_link);
         oracle = _oracle;
         jobId = _jobId;
+        */
+        
         fee = 10**16;
 
         betNFT = _betNFT;
