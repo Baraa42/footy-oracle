@@ -18,7 +18,6 @@ import { useSubscription } from "./subscription";
 import { NFTTQueryParms } from "@/interfaces/queries/NFTQueryParms";
 import { useChain } from "./chain";
 
-const { bettingAbi } = useContract();
 const { showError, showSuccess } = useAlert();
 const placeholder = "https://via.placeholder.com/600x600.png?text=Image%20not%20found";
 const NftMintStatus = NFTMintStatus;
@@ -111,7 +110,6 @@ const getNFTQuery = (parms: NFTTQueryParms): Moralis.Query => {
  */
 const mint = async (matchedBet: MatchedBetModel, blob: Blob, customMessage: any): Promise<void> => {
   const { userAddress, web3 } = useMoralis();
-
   if (userAddress.value) {
     const tokenId = getTokenId(matchedBet, userAddress.value);
 
@@ -125,15 +123,13 @@ const mint = async (matchedBet: MatchedBetModel, blob: Blob, customMessage: any)
     if (metadata) {
       const tokenUri = await saveJsonToIPFS(matchedBet.id, metadata); // save metadata to ipfs
 
-      const { getBettingContract } = useContract();
-      const contractAddr = await getBettingContract();
-      const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
+      const { bettingContract } = useContract();
 
       setTimeout(() => {
         customMessage.message = "Waiting for user confirmation";
       }, 2000);
 
-      contract.methods
+      bettingContract.value.methods
         .transferBetToNFT(matchedBet.get("apiId"), matchedBet.get("betSide"), 0, matchedBet.get("selection"), matchedBet.get("odds"), tokenUri.ipfs())
         .send(
           {

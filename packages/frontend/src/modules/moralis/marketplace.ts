@@ -1,14 +1,16 @@
-import { MumbaiDepositLPModel, NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
+import { useContract } from "./contract";
+import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import BigNumber from "bignumber.js";
 import { useAlert } from "../layout/alert";
+import { useChain } from "./chain";
 import { useMoralis } from "./moralis";
 
-const nftMarketPlaceAddress = "0xDC81312829E51220e1882EE26f5976d432CC7a43";
-
 export const useMarketplace = () => {
+  const { getAttributeName } = useChain();
   const { moralisUser, web3, Moralis } = useMoralis();
   const { showError, showSuccess } = useAlert();
   const ethereum = window.ethereum;
+  const { nftMarketplaceContractAddress } = useContract();
 
   const listOnMarketplace = async (nft: NftOwnerModel, price: number): Promise<boolean> => {
     try {
@@ -51,7 +53,8 @@ export const useMarketplace = () => {
 
   const placeOffering = async (_hostContract: string, _tokenId: string, _price: string): Promise<any> => {
     const params = { hostContract: _hostContract, offerer: moralisUser?.value?.get("ethAddress"), tokenId: _tokenId, price: _price };
-    const result = await Moralis.Cloud.run("placeOffering", params);
+
+    const result = await Moralis.Cloud.run(getAttributeName("placeOffering") as string, params);
     return result;
   };
 
@@ -65,7 +68,7 @@ export const useMarketplace = () => {
           { type: "uint256", name: "tokenURI" },
         ],
       },
-      [nftMarketPlaceAddress, tokenId]
+      [nftMarketplaceContractAddress.value, tokenId]
     );
 
     const transactionParameters = {
@@ -92,7 +95,7 @@ export const useMarketplace = () => {
     );
 
     const transactionParameters = {
-      to: nftMarketPlaceAddress,
+      to: nftMarketplaceContractAddress.value,
       from: moralisUser?.value?.get("ethAddress"),
       value: priceEncoded,
       data: encodedFunction,

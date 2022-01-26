@@ -1,53 +1,75 @@
 import Moralis from "moralis/dist/moralis.js";
 import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
 import MarketMakerContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
-
-import { Ref, ref, watch } from "vue";
+import { Contract } from "web3-eth-contract";
+import { computed, Ref, ref, watch } from "vue";
 import { AbiItem } from "web3-utils";
 import { useChain } from "./chain";
+import { useMoralis } from "./moralis";
 
-const bettingContract = <Ref<string>>ref();
-const marketMakerContract = <Ref<string>>ref();
-const nftMarketplaceContract = <Ref<string>>ref();
+const bettingContractAddress = <Ref<string>>ref();
+const marketMakerContractAddress = <Ref<string>>ref();
+const nftMarketplaceContractAddress = <Ref<string>>ref();
+
+const bettingContract = <Ref<Contract>>ref();
+const marketMakerContract = <Ref<Contract>>ref();
+const nftMarketplaceContract = <Ref<Contract>>ref();
+
+const isLoaded = ref(false);
 
 export const useContract = () => {
-  const { getConfigName, activeChain } = useChain();
+  const { web3 } = useMoralis();
+  const { activeChain, getConfigName } = useChain();
+
+  const loadBettingContract = async (): Promise<void> => {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const result = config.get(getConfigName("betting_contract"));
+    if (result) {
+      bettingContractAddress.value = result.toLowerCase();
+      bettingContract.value = new web3.value.eth.Contract(BettingContractJson.abi as AbiItem[], bettingContractAddress.value);
+    }
+  };
+
+  const loadMarketMakerContractAddress = async (): Promise<void> => {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const result = config.get(getConfigName("market_maker_contract"));
+    if (result) {
+      marketMakerContractAddress.value = result.toLowerCase();
+      marketMakerContract.value = new web3.value.eth.Contract(MarketMakerContractJson.abi as AbiItem[], marketMakerContractAddress.value);
+    }
+  };
+
+  const loadNFTMarketplaceContract = async (): Promise<void> => {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    const result = config.get(getConfigName("nft_marketplace_contract"));
+    if (result) {
+      nftMarketplaceContractAddress.value = result.toLowerCase();
+    }
+  };
+
+  const loadAll = () => {
+    loadBettingContract();
+    loadMarketMakerContractAddress();
+    loadNFTMarketplaceContract();
+  };
 
   // reset contracts after network switch
   watch(activeChain, () => {
-    bettingContract.value = "";
-    marketMakerContract.value = "";
-    nftMarketplaceContract.value = "";
+    loadAll();
   });
 
-  const getBettingContract = async (): Promise<string> => {
-    if (!bettingContract.value || bettingContract.value === "") {
-      const config = await Moralis.Config.get({ useMasterKey: false });
-      bettingContract.value = config.get(getConfigName("betting_contract"));
-    }
-    return bettingContract.value;
-  };
-
-  const getMarketMakerContractAddress = async (): Promise<string> => {
-    if (!marketMakerContract.value || marketMakerContract.value === "") {
-      const config = await Moralis.Config.get({ useMasterKey: false });
-      marketMakerContract.value = config.get(getConfigName("market_maker_contract"));
-    }
-    return marketMakerContract.value;
-  };
-
-  const getNFTMarketplaceContract = async (): Promise<string> => {
-    if (!nftMarketplaceContract.value || nftMarketplaceContract.value === "") {
-      const config = await Moralis.Config.get({ useMasterKey: false });
-      nftMarketplaceContract.value = config.get(getConfigName("nft_marketplace_contract"));
-    }
-    return nftMarketplaceContract.value;
-  };
+  if (!isLoaded.value) {
+    loadAll();
+    isLoaded.value = true;
+  }
 
   return {
-    getBettingContract,
-    getMarketMakerContractAddress,
-    getNFTMarketplaceContract,
+    bettingContract,
+    marketMakerContract,
+    nftMarketplaceContract,
+    bettingContractAddress,
+    marketMakerContractAddress,
+    nftMarketplaceContractAddress,
     bettingAbi: BettingContractJson.abi as AbiItem[],
     marketMakerAbi: MarketMakerContractJson.abi as AbiItem[],
   };

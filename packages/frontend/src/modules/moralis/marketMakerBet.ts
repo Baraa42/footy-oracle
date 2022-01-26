@@ -4,16 +4,13 @@ import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
 import { useContract } from "./contract";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
-import { useOdds } from "../settings/odds";
 
 const selections = SelectionEnum;
 const types = BetTypeEnum;
 
 export const marketMakerBet = () => {
-  const { encodeOdds, decodeOdds, minOdds } = useOdds();
-  const { betslip, userAddress, web3 } = useMoralis();
-  const { bettingAbi, getBettingContract } = useContract();
-  const { marketMakerAbi, getMarketMakerContractAddress } = useContract();
+  const { userAddress } = useMoralis();
+  const { bettingContractAddress, bettingContract, marketMakerContractAddress, marketMakerContract } = useContract();
 
   const { showError, showSuccess } = useAlert();
   /**
@@ -28,25 +25,16 @@ export const marketMakerBet = () => {
       return;
     }
 
-    const bettingContractAddress = await getBettingContract();
-    if (!bettingContractAddress) {
-      showError("No contract deployed for this game");
-      return;
-    }
-    const bettingContract = new web3.value.eth.Contract(bettingAbi, bettingContractAddress);
-
-    const marketMakerContractAddress = await getMarketMakerContractAddress();
-    const marketMakerContract = new web3.value.eth.Contract(marketMakerAbi, marketMakerContractAddress);
-    var totalBalance = await marketMakerContract.methods.getTotalDeposit().call();
-    console.log("Contract address = " + marketMakerContractAddress + ", totalBalance = " + totalBalance);
+    var totalBalance = await marketMakerContract.value.methods.getTotalDeposit().call();
+    console.log("Contract address = " + marketMakerContractAddress.value + ", totalBalance = " + totalBalance);
 
     console.log(String(unmatchedBet.get("apiId")));
     console.log('unmatchedBet.get("betSide") = ', unmatchedBet.get("betSide"));
 
     if (unmatchedBet.get("betSide") == 0) {
-      marketMakerContract.methods
+      marketMakerContract.value.methods
         .createOpposingLayBet(
-          bettingContractAddress,
+          bettingContractAddress.value,
           String(unmatchedBet.get("apiId")),
           unmatchedBet.get("betType"),
           unmatchedBet.get("selection"),
@@ -66,9 +54,9 @@ export const marketMakerBet = () => {
           }
         );
     } else if (unmatchedBet.get("betSide") == 1) {
-      marketMakerContract.methods
+      marketMakerContract.value.methods
         .createOpposingBackBet(
-          bettingContractAddress,
+          bettingContractAddress.value,
           String(unmatchedBet.get("apiId")),
           unmatchedBet.get("betType"),
           unmatchedBet.get("selection"),

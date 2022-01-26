@@ -18,7 +18,7 @@ const types = BetTypeEnum;
 export const useBetslip = () => {
   const { encodeOdds, decodeOdds, minOdds } = useOdds();
   const { betslip, userAddress, web3 } = useMoralis();
-  const { bettingAbi, getBettingContract } = useContract();
+  const { bettingContract } = useContract();
   const { showError, showSuccess } = useAlert();
   const { setActionBarItem, activeActionBarItem } = useActionBar();
 
@@ -84,17 +84,13 @@ export const useBetslip = () => {
       return;
     }
 
-    const contractAddr = await getBettingContract();
-
-    if (!contractAddr) {
+    if (!bettingContract.value) {
       showError("No contract deployed for this game");
       return;
     }
 
-    const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
-
     if (betslipItem.type === types.BACK) {
-      contract.methods
+      bettingContract.value.methods
         .createBackBet(
           String(betslipItem.event.attributes.apiId),
           0,
@@ -116,7 +112,7 @@ export const useBetslip = () => {
           }
         );
     } else if (betslipItem.type === types.LAY) {
-      contract.methods
+      bettingContract.value.methods
         .createLayBet(
           String(betslipItem.event.attributes.apiId),
           0,
@@ -148,9 +144,7 @@ export const useBetslip = () => {
    */
   const removeUnmatchedBet = async (unmatchedBet: UnmatchedBetModel): Promise<void> => {
     if (userAddress.value) {
-      const contractAddr = await getBettingContract();
-      const contract = new web3.value.eth.Contract(bettingAbi, contractAddr);
-      contract.methods
+      bettingContract.value.methods
         .removeUnmatchedBet(
           String(unmatchedBet.get("apiId")),
           unmatchedBet.get("betSide"),

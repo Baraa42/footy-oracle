@@ -85,18 +85,17 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
  * @returns Promise
  */
 const getMarketMakerMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
-  const { marketMakerAbi, getMarketMakerContractAddress } = useContract();
-  const marketMakerContractAddress = (await getMarketMakerContractAddress()).toLowerCase();
+  const { marketMakerAbi, marketMakerContractAddress } = useContract();
 
   //console.log('In getMarketMakerMatchedBets marketMakerContractAddress = ', marketMakerContractAddress);
 
-  if (marketMakerContractAddress) {
+  if (marketMakerContractAddress.value) {
     // Get all matched bets from user
     const { getClassName } = useChain();
     const { createQuery } = useMoralisObject(getClassName("MatchedBets"));
     const query: Moralis.Query<any> = createQuery();
     const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
-      .equalTo("from", marketMakerContractAddress)
+      .equalTo("from", marketMakerContractAddress.value)
       .include("event", "event.home", "event.away", "event.league")
       .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
     marketMakerMatchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
