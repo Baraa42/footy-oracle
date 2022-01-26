@@ -11,8 +11,6 @@ const main = async(): Promise<any> => {
   await lpnft.deployed();
   console.log(`LPNFT deployed to: ${lpnft.address}`);
 
-  var tokenId = await lpnft.getNextFreeTokenId();
-
   const MarketMaker = await ethers.getContractFactory("MarketMakerAIO");
   const marketMaker = await MarketMaker.deploy(lpnft.address);
   await marketMaker.deployed();

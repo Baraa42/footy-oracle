@@ -9,7 +9,8 @@ import { useChain } from "./chain"
 
 const mumbaiContract = <Ref<string>>ref();
 const fujiContract = <Ref<string>>ref();
-const marketMakerContract = <Ref<string>>ref();
+const mumbaiMarketMakerContract = <Ref<string>>ref();
+const fujiMarketMakerContract = <Ref<string>>ref();
 const nftMarketplaceContract = <Ref<string>>ref();
 const { activeChain, polygonTestnet, avalancheTestnet } = useChain();
 
@@ -42,12 +43,31 @@ const getMumbaiBettingContract = async (): Promise<string> => {
 };
 
 const getMarketMakerContractAddress = async (): Promise<string> => {
-  //TODO ask other module which network is active
-  if (!marketMakerContract.value) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    marketMakerContract.value = config.get("polygonMarketMakerAIOContract");
+  if (activeChain.value.chainId === polygonTestnet.chainId) {
+    return getMumbaiMarketMakerContractAddress();
   }
-  return marketMakerContract.value;
+  else if (activeChain.value.chainId === avalancheTestnet.chainId) {
+    return getFujiMarketMakerContractAddress();
+  }
+  else {
+    return getFujiMarketMakerContractAddress();
+  }
+};
+
+const getMumbaiMarketMakerContractAddress = async (): Promise<string> => {
+  if (!mumbaiMarketMakerContract.value) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    mumbaiMarketMakerContract.value = config.get("polygonMarketMakerAIOContract");
+  }
+  return mumbaiMarketMakerContract.value;
+};
+
+const getFujiMarketMakerContractAddress = async (): Promise<string> => {
+  if (!fujiMarketMakerContract.value) {
+    const config = await Moralis.Config.get({ useMasterKey: false });
+    fujiMarketMakerContract.value = config.get("avaxMarketMakerAIOContract");
+  }
+  return fujiMarketMakerContract.value;
 };
 
 const getNFTMarketplaceContract = async (): Promise<string> => {
