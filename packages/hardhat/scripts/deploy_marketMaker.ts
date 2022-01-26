@@ -1,13 +1,10 @@
 import { 
   Contract, 
-  ContractFactory 
 } from "ethers"
 import { ethers } from "hardhat"
 
 const hre = require("hardhat");
 const main = async(): Promise<any> => {
-
-
   const LPNFT = await ethers.getContractFactory("LPNFT");
   const lpnft: Contract = await LPNFT.deploy("LP NFT", "LPNFT");
 
