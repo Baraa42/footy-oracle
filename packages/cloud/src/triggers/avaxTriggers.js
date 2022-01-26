@@ -39,10 +39,9 @@ Moralis.Cloud.beforeSave("AvaxNFTOwners", async (request) => {
 });
 
 Moralis.Cloud.afterSave("FujiDepositLP", async (request) => {
-  if (request.object.get("confirmed") == true) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const contract = config.get("avax_lp_nft");
-    await afterSaveDepositLP(request.object, AvaxNFTOwners, contract);
+  if (request.object.get("confirmed")) {
+    const contractAddr = await getConfig("fuji_lp_nft");
+    await afterSaveDepositLP(request.object, AvaxNFTOwners, contractAddr);
   }
 });
 
@@ -71,11 +70,15 @@ Moralis.Cloud.afterSave("FujiResult", async (request) => {
     request.object.get("confirmed") == undefined &&
     request.object.get("isWithdrawn") != true
   ) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const contract = config.get("fuji_contract");
+    const contractAddr = await getConfig("fuji_betting_contract");
 
     try {
-      await afterSaveResult(request.object, fuqiWeb3, contract, "fujiResult");
+      await afterSaveResult(
+        request.object,
+        fuqiWeb3,
+        contractAddr,
+        "fujiResult"
+      );
     } catch (e) {
       const { log } = request;
       log.error(e.toString());

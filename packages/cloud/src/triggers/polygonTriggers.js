@@ -44,9 +44,8 @@ Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
 
 Moralis.Cloud.afterSave("MumbaiDepositLP", async (request) => {
   if (request.object.get("confirmed")) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const contract = config.get("polygon_lp_nft");
-    await afterSaveDepositLP(request.object, PolygonNFTOwners, contract);
+    const contractAddr = await getConfig("mumbai_lp_nft");
+    await afterSaveDepositLP(request.object, PolygonNFTOwners, contractAddr);
   }
 });
 
@@ -79,14 +78,13 @@ Moralis.Cloud.afterSave("MumbaiResult", async (request) => {
     request.object.get("confirmed") == undefined &&
     request.object.get("isWithdrawn") != true
   ) {
-    const config = await Moralis.Config.get({ useMasterKey: false });
-    const polygonContract = config.get("polygon_contract");
+    const bettingContractAddr = await getConfig("mumbai_betting_contract");
 
     try {
       await afterSaveResult(
         request.object,
         mumbaiWeb3,
-        polygonContract,
+        bettingContractAddr,
         "mumbaiResult"
       );
     } catch (e) {

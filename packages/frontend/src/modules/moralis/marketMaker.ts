@@ -15,7 +15,6 @@ export const useMarketMaker = () => {
   const { showError, showSuccess } = useAlert();
 
   if (!marketMakerContractAddress.value) {
-    console.log("init useMarketMaker");
     getMarketMakerContractAddress().then((address: string) => {
       marketMakerContractAddress.value = address;
       marketMakerContract.value = new web3.value.eth.Contract(marketMakerAbi, marketMakerContractAddress.value);

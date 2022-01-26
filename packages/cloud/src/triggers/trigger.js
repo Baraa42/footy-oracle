@@ -100,9 +100,13 @@ const afterSaveUnmatchedBetsUpdated = async (unmatchedBet, className) => {
       .sub(new BN(unmatchedBet.get("amount")))
       .toString();
 
-    bet.set("amount", amount);
-    bet.set("isPartMatched", true);
-    await bet.save();
+    if (amount === "0") {
+      await bet.destroy();
+    } else {
+      bet.set("amount", amount);
+      bet.set("isPartMatched", true);
+      await bet.save();
+    }
   }
 };
 
@@ -262,6 +266,12 @@ const afterSaveResult = async (result, web3Chain, contractAddr, relation) => {
   await result.save(null, { useMasterKey: true });
 };
 
+/**
+ *
+ * @param {*} lpDeposit
+ * @param {*} nftClassName
+ * @param {*} contract
+ */
 const afterSaveDepositLP = async (lpDeposit, nftClassName, contract) => {
   const nftsQuery = new Moralis.Query(nftClassName);
   nftsQuery.equalTo("token_id", lpDeposit.get("tokenId"));

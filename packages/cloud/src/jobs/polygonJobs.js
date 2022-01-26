@@ -17,7 +17,7 @@ Moralis.Cloud.job("polygonRequestResult", async (request) => {
   const { params, headers, log, message } = request;
 
   const config = await Moralis.Config.get({ useMasterKey: false });
-  const polygonContract = config.get("polygon_contract");
+  const polygonContract = config.get("mumbai_betting_contract");
 
   const currentTimestamp = Math.floor(Date.now() / 1000);
   const futureTimestamp = currentTimestamp + 2 * 60 * 60;

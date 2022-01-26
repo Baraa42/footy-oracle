@@ -204,6 +204,16 @@ const getAttributeName = <T>(attributeName: string): keyof T => {
 };
 
 /**
+ * Get prefixed config name for active chain
+ *
+ * @param  {string} configName
+ * @returns string
+ */
+const getConfigName = (configName: string): string => {
+  return `${activeChain.value.attributePrefix}_${configName.toLowerCase()}`;
+};
+
+/**
  * Gets the right dex implementation for the active chain
  *
  * @returns
@@ -246,5 +256,6 @@ export const useChain = () => {
     getAttributeName,
     getDex,
     checkCurrentChain,
+    getConfigName,
   };
 };

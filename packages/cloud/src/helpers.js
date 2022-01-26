@@ -8,24 +8,15 @@ const addAccount = async (web3Chain) => {
 };
 
 /**
- * Send 0.1 link token to smart contract
+ * Helper for getting moralis config
  *
- * @param {string} receiver
+ * @param {*} name
+ * @param {*} useMasterKey
  * @returns
  */
-const sendLink = async (receiver) => {
-  const gasPrice = await mumbaiWeb3.eth.getGasPrice();
-  const gas = await chainlink.methods
-    .transfer(receiver, "100000000000000000")
-    .estimateGas({ from: account });
-  const result = await chainlink.methods
-    .transfer(receiver, "100000000000000000")
-    .send({
-      from: account,
-      gasPrice: gasPrice * 1.2,
-      gas: gas * 2,
-    });
-  return result;
+const getConfig = async (name, useMasterKey = false) => {
+  const config = await Moralis.Config.get({ useMasterKey: useMasterKey });
+  return config.get(name);
 };
 
 /**
