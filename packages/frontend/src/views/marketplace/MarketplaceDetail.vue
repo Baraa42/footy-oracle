@@ -3,7 +3,7 @@
     <NftImage :nft="nft" class="md:w-full md:col-span-2 aspect-auto" />
     <div class="md:col-span-4 flex flex-col space-y-4">
       <div class="flex justify-between items-center">
-        <span class="text-2xl font-semibold">{{ nft.attributes.symbol }} #{{ nft.attributes.token_id }}</span>
+        <span class="text-2xl font-bold text-gray-800">{{ nft.attributes.symbol }} #{{ nft.attributes.token_id }}</span>
         <div>
           <div v-if="userAddress == nft.attributes.owner_of && !nft.attributes.offer" class="flex flex-row space-x-4">
             <button
@@ -13,7 +13,7 @@
               Sell
             </button>
             <button
-              @click="onWithdraw()"
+              @click="nft?.attributes.bet ? onWithdrawBet() : onWithdrawLP()"
               class="px-8 py-2 shadow-sm rounded bg-gray-700 text-white font-bold hover:bg-gray-800 transition-colors hidden md:block"
             >
               Withdraw
@@ -45,7 +45,7 @@
         </div>
       </div>
       <div class="bg-gray-50 rounded shadow-sm w-full h-40 p-3 flex flex-col justify-around" v-if="nft?.attributes.offer?.attributes.price">
-        <span class="text-gray-500">Current Price</span>
+        <span class="text-gray-500 font-medium">Current Price</span>
 
         <div class="flex flex-row items-center space-x-2 mt-2">
           <component :is="activeChain.iconRounded" class="w-7 h-7 text-white" />
@@ -72,32 +72,38 @@
       <!-- BET NFT -->
       <div class="flex flex-col space-y-4 h-full" v-if="nft.attributes.bet?.attributes.event">
         <div class="bg-gray-50 rounded shadow-sm w-full">
-          <div class="p-3">
-            <span class="font-semibold text-gray-700">Match Details</span>
+          <div class="px-3 pt-3">
+            <span class="headline">Match Details</span>
           </div>
+
           <div class="p-3 flex flex-col space-y-2">
             <div class="flex flex-row justify-between">
-              <span>Match</span>
+              <span class="label">Match</span>
+              <router-link v-if="nft.attributes.bet?.attributes.event" class="link" :to="nft.attributes.bet.attributes.event.getDetailLink()">{{
+                nft.attributes.bet.attributes.event.getName()
+              }}</router-link>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">League</span>
               <router-link
-                v-if="nft.attributes.bet?.attributes.event"
-                class="text-indigo-500 font-semibold hover:text-indigo-900"
-                :to="nft.attributes.bet.attributes.event.getDetailLink()"
-                >{{ nft.attributes.bet.attributes.event.getName() }}</router-link
+                v-if="nft.attributes.bet?.attributes.event.attributes.league"
+                class="link"
+                :to="{
+                  name: 'league',
+                  params: { sport: 'soccer', league: nft.attributes.bet?.attributes.event?.attributes.league?.id },
+                }"
+                >{{ nft.attributes.bet.attributes.event.attributes.league.attributes.name }}</router-link
               >
             </div>
             <div class="flex flex-row justify-between">
-              <span>Start</span>
-              <span v-if="nft.attributes.bet?.attributes.event">{{ getDateTime(nft.attributes.bet.attributes.event?.attributes.start || 0) }}</span>
+              <span class="label">Start</span>
+              <span class="value" v-if="nft.attributes.bet?.attributes.event">{{
+                getDateTime(nft.attributes.bet.attributes.event?.attributes.start || 0)
+              }}</span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>League</span>
-              <span v-if="nft.attributes.bet?.attributes.event?.attributes.league"
-                >{{ nft.attributes.bet.attributes.event.attributes.league.attributes.name }}
-              </span>
-            </div>
-            <div class="flex flex-row justify-between">
-              <span>Season</span>
-              <span v-if="nft.attributes.bet?.attributes.event?.attributes.league">
+              <span class="label">Season</span>
+              <span class="value" v-if="nft.attributes.bet?.attributes.event?.attributes.league">
                 {{ nft.attributes.bet.attributes.event.attributes.league.attributes.season }}</span
               >
             </div>
@@ -105,44 +111,76 @@
         </div>
 
         <div class="col-span-2 bg-gray-50 rounded shadow-sm w-full">
-          <div class="p-3">
-            <span class="font-semibold text-gray-700">Bet Details</span>
+          <div class="px-3 pt-3">
+            <span class="headline">Bet Details</span>
           </div>
           <div class="p-3 flex flex-col space-y-2">
             <div class="flex flex-row justify-between">
-              <span>Market</span>
-              <span>Match Winner</span>
+              <span class="label">Owner</span>
+              <span class="value" v-if="nft.attributes.owner_of.toLowerCase() === userAddress?.toLowerCase()">You</span>
+              <span class="value" v-else> {{ nft.attributes.owner_of.substring(0, 5) }}...{{ nft.attributes.owner_of.substring(38, 42) }} </span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>Side</span>
-              <span>{{ nft.attributes.bet?.attributes.betSide == 1 ? "Back" : "Lay" }} </span>
+              <span class="label">Created</span>
+              <span class="value">{{ getDateTime(Number(nft.attributes.bet.attributes.createdAt)) }}</span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>Selection</span>
-              <span v-if="nft.attributes.bet?.attributes.selection == 1">{{ nft.attributes.bet?.attributes.event?.attributes.home.attributes.name }}</span>
-              <span v-if="nft.attributes.bet?.attributes.selection == 2">{{ nft.attributes.bet?.attributes.event?.attributes.away.attributes.name }}</span>
-              <span v-if="nft.attributes.bet?.attributes.selection == 3">Draw</span>
+              <span class="label">Market</span>
+              <span class="value">Match Winner</span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>Odds</span>
-              <span> {{ decodeOdds(nft.attributes.bet?.attributes.odds || "") }}</span>
+              <span class="label">Side</span>
+              <span class="value">{{ nft.attributes.bet?.attributes.betSide == 1 ? "Back" : "Lay" }} </span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>Amount</span>
-              <span> {{ convertCurrency(nft.attributes.bet?.attributes.amount || "") }} {{ activeChain.currencySymbol }}</span>
+              <span class="label">Selection</span>
+              <span class="value" v-if="nft.attributes.bet?.attributes.selection == 1">{{
+                nft.attributes.bet?.attributes.event?.attributes.home.attributes.name
+              }}</span>
+              <span class="value" v-if="nft.attributes.bet?.attributes.selection == 2">{{
+                nft.attributes.bet?.attributes.event?.attributes.away.attributes.name
+              }}</span>
+              <span class="value" v-if="nft.attributes.bet?.attributes.selection == 3">Draw</span>
             </div>
             <div class="flex flex-row justify-between">
-              <span>Potential Profit</span>
-              <span v-if="nft.attributes.bet"> {{ calculatePotentialProfit(nft.attributes.bet) }} {{ activeChain.currencySymbol }}</span>
+              <span class="label">Odds</span>
+              <span class="value"> {{ decodeOdds(nft.attributes.bet?.attributes.odds || "") }}</span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">Amount</span>
+              <span class="value"> {{ convertCurrency(nft.attributes.bet?.attributes.amount || "") }} {{ activeChain.currencySymbol }}</span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">Potential Profit</span>
+              <span class="value" v-if="nft.attributes.bet"> {{ calculatePotentialProfit(nft.attributes.bet) }} {{ activeChain.currencySymbol }}</span>
             </div>
           </div>
         </div>
       </div>
       <!-- LP NFT -->
-      <div class="flex flex-col space-y-4 h-full" v-else-if="nft.attributes.symbol == 'LPNFT'">
+      <div class="flex flex-col space-y-4 h-full" v-else-if="nft.attributes.lp">
         <div class="bg-gray-50 rounded shadow-sm w-full">
-          <div class="p-3">
-            <span class="font-semibold text-gray-700">LP Details</span>
+          <div class="px-3 pt-3">
+            <span class="headline">LP Details</span>
+          </div>
+          <div class="p-3 flex flex-col space-y-2">
+            <div class="flex flex-row justify-between">
+              <span class="label">Deposit</span>
+              <span class="value">{{ convertCurrency(nft.attributes.lp.attributes.depositAmount) }} {{ activeChain.currencySymbol }}</span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">Reward</span>
+              <span class="value">0 {{ activeChain.currencySymbol }}</span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">Owner</span>
+              <span class="value" v-if="nft.attributes.owner_of.toLowerCase() === userAddress?.toLowerCase()">You</span>
+              <span class="value" v-else> {{ nft.attributes.owner_of.substring(0, 5) }}...{{ nft.attributes.owner_of.substring(38, 42) }} </span>
+            </div>
+            <div class="flex flex-row justify-between">
+              <span class="label">Created</span>
+              <span class="value">{{ getDateTime(Number(nft.attributes.lp.attributes.createdAt)) }}</span>
+            </div>
           </div>
         </div>
       </div>
@@ -191,7 +229,7 @@ import { useNFTs } from "@/modules/moralis/nfts";
 import { useSubscription } from "@/modules/moralis/subscription";
 import Moralis from "moralis/dist/moralis.js";
 import { computed, defineComponent, onUnmounted, Ref, ref, watchEffect } from "vue";
-import { useRoute } from "vue-router";
+import { useRoute, useRouter } from "vue-router";
 import NftImage from "@/components/common/NftImage.vue";
 import { useTimezone } from "@/modules/settings/timezone";
 import { useOdds } from "@/modules/settings/odds";
@@ -206,6 +244,7 @@ import WaitingButton from "@/components/buttons/WaitingButton.vue";
 import { useWithdraw } from "@/modules/moralis/withdraw";
 import { useAlert } from "@/modules/layout/alert";
 import { useChain } from "@/modules/moralis/chain";
+import { useMarketMaker } from "@/modules/moralis/marketMaker";
 
 export default defineComponent({
   setup() {
@@ -290,7 +329,7 @@ export default defineComponent({
       }
     };
 
-    const onWithdraw = () => {
+    const onWithdrawBet = () => {
       confirmDialog.action = "withdraw";
       // game is over
       if (nft.value?.attributes.bet?.attributes.event?.attributes.isCompleted) {
@@ -325,6 +364,30 @@ export default defineComponent({
       }
     };
 
+    const onWithdrawLP = () => {
+      confirmDialog.action = "withdraw";
+      confirmDialog.icon = CashIcon;
+      confirmDialog.color = "indigo";
+      confirmDialog.buttonText = "Confirm";
+      confirmDialog.description = "";
+      confirmDialog.title = `Are you sure you want to withdraw the deposit of this NFT?`;
+
+      confirmDialog.onConfirm = async () => {
+        if (nft.value) {
+          const { withdrawLP } = useMarketMaker();
+          const withdrawing = await withdrawLP(nft.value);
+          confirmDialog.toggle();
+        }
+      };
+
+      if (isAuthenticated.value) {
+        confirmDialog.toggle();
+      } else {
+        showError("You need to connect your wallet");
+      }
+    };
+
+    const router = useRouter();
     watchEffect(() => {
       const objectId = route.params.objectId;
 
@@ -332,11 +395,16 @@ export default defineComponent({
         filter: {
           id: Array.isArray(objectId) ? objectId[0] : objectId,
         },
-        inlcude: ["bet", "bet.event.home", "bet.event.away", "bet.event.league", "offer", "closedOffer"],
+        inlcude: ["bet", "bet.event.home", "bet.event.away", "bet.event.league", "offer", "closedOffer", "lp"],
       });
 
       query.first().then((data: any) => {
-        nft.value = data as NftOwnerModel;
+        if (data) {
+          nft.value = data as NftOwnerModel;
+        } else {
+          showError("NFT could not be found.");
+          router.push({ name: "NotFound" });
+        }
       });
 
       subscribe(query).then((subscription: Moralis.LiveQuerySubscription) => {
@@ -361,7 +429,8 @@ export default defineComponent({
       onSell,
       activeChain,
       onClose,
-      onWithdraw,
+      onWithdrawBet,
+      onWithdrawLP,
       onBuy,
       sellPrice,
     };
@@ -369,3 +438,20 @@ export default defineComponent({
   components: { NftImage, ConfirmationDialog, WaitingButton },
 });
 </script>
+
+<style scoped>
+.headline {
+  @apply font-semibold text-gray-700 text-lg;
+}
+.label {
+  @apply text-gray-500 font-medium;
+}
+
+.value {
+  @apply text-gray-900 font-medium;
+}
+
+.link {
+  @apply text-indigo-500 font-semibold hover:text-indigo-900;
+}
+</style>

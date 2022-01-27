@@ -1,3 +1,4 @@
+import { NftOwnerModel } from "@/interfaces/models/NftOwnerModel";
 import { useContract } from "./contract";
 import { useMoralis } from "./moralis";
 import { useNFTs } from "./nfts";
@@ -10,8 +11,8 @@ export const useMarketMaker = () => {
   const { showError, showSuccess } = useAlert();
 
   const getTotalDeposits = async (): Promise<string | undefined> => {
+    console.log("getTotalDeposits");
     if (marketMakerContract.value) {
-      console.log("yes");
       try {
         return await marketMakerContract.value.methods.getTotalDeposit().call();
       } catch (err: any) {
@@ -42,17 +43,19 @@ export const useMarketMaker = () => {
     }
   };
 
-  const withdrawLP = async (nft: any) => {
-    console.log("Attempting to withdraw NFT : ", nft);
-    marketMakerContract.value.methods
-      .withdraw(nft.attributes.tokenId)
-      .send({ from: userAddress.value })
-      .on("transactionHash", (hash: any) => {
-        console.log("Withdraw Completed. Hash = ", hash);
-      })
-      .catch((err: any) => {
-        console.log("Withdraw Failed: " + err.message);
-      });
+  const withdrawLP = async (nft: NftOwnerModel) => {
+    if (userAddress.value) {
+      console.log("Attempting to withdraw NFT : ", nft);
+      marketMakerContract.value.methods
+        .withdraw(nft.attributes.token_id)
+        .send({ from: userAddress.value })
+        .on("transactionHash", (hash: any) => {
+          console.log("Withdraw Completed. Hash = ", hash);
+        })
+        .catch((err: any) => {
+          console.log("Withdraw Failed: " + err.message);
+        });
+    }
   };
 
   return { getTotalDeposits, depositLiquidity, withdrawLP };

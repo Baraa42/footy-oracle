@@ -3,7 +3,7 @@ Moralis.Cloud.beforeSave("FujiUnmatchedBets", async (request) => {
 });
 
 Moralis.Cloud.beforeSave("FujiMatchedBets", async (request) => {
-  await beforeSaveBet(request.object, "Fuji");
+  await beforeSaveBet(request.object);
 });
 
 Moralis.Cloud.afterSave("FujiUnmatchedBets", async (request) => {
@@ -40,7 +40,7 @@ Moralis.Cloud.beforeSave("AvaxNFTOwners", async (request) => {
 
 Moralis.Cloud.afterSave("FujiDepositLP", async (request) => {
   if (request.object.get("confirmed")) {
-    const contractAddr = await getConfig("fuji_lp_nft");
+    const contractAddr = await getConfig("fuji_lp_nft_contract");
     await afterSaveDepositLP(request.object, AvaxNFTOwners, contractAddr);
   }
 });

@@ -24,12 +24,8 @@ const NftMintStatus = NFTMintStatus;
 
 const nfts: Ref<Array<NftOwnerModel> | undefined> = ref();
 
-const lpNfts: Ref<Array<MumbaiDepositLPModel> | undefined> = ref();
-
 var delistedOfferingIds: Array<string> = [];
 var listedNfts: Ref<Array<ListedNftModel> | undefined> = ref();
-const collectionName = "xyz"; //contract = '0xb4de4d37e5766bc3e314f3eda244b1d0c097363c'
-
 var depositLPNfts: Ref<Array<MumbaiDepositLPModel> | undefined> = ref();
 
 /**
@@ -51,9 +47,10 @@ const getNFTs = async (): Promise<Ref<Array<NftOwnerModel> | undefined>> => {
     nfts.value = (await nftQuery.find()) as Array<NftOwnerModel>;
 
     // Create live subscriptions
-    const { subscribe, subscribeToCreate } = useSubscription();
+    const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
     subscribe(nftQuery).then((subscription: Moralis.LiveQuerySubscription) => {
       subscribeToCreate(subscription, nfts.value);
+      subscribeToUpdate(subscription, nfts.value, "id");
     });
   }
 
@@ -412,7 +409,6 @@ export const useNFTs = () => {
     getNFTQuery,
     getTokenId,
     mint,
-    collectionName,
     getOpenseaLink,
     resolveMetadataFromNft,
     getNFTsListedOnMarketplace,

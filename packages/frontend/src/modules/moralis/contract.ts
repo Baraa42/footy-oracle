@@ -53,7 +53,11 @@ export const useContract = () => {
 
   // reset contracts after network switch
   watch(activeChain, () => {
-    loadAll();
+    if (isLoaded.value) {
+      console.log("changed");
+      isLoaded.value = false;
+      loadAll().then(() => (isLoaded.value = true));
+    }
   });
 
   if (!isLoaded.value) {

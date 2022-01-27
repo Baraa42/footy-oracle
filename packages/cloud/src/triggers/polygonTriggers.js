@@ -3,7 +3,7 @@ Moralis.Cloud.beforeSave("MumbaiUnmatchedBets", async (request) => {
 });
 
 Moralis.Cloud.beforeSave("MumbaiMatchedBets", async (request) => {
-  await beforeSaveBet(request.object, "Mumbai");
+  await beforeSaveBet(request.object);
 });
 
 Moralis.Cloud.afterSave("MumbaiUnmatchedBets", async (request) => {
@@ -44,7 +44,7 @@ Moralis.Cloud.beforeSave("PolygonNFTOwners", async (request) => {
 
 Moralis.Cloud.afterSave("MumbaiDepositLP", async (request) => {
   if (request.object.get("confirmed")) {
-    const contractAddr = await getConfig("mumbai_lp_nft");
+    const contractAddr = await getConfig("mumbai_lp_nft_contract");
     await afterSaveDepositLP(request.object, PolygonNFTOwners, contractAddr);
   }
 });

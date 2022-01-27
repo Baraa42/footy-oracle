@@ -13,7 +13,7 @@
         ' bg-red-500': type == alertTypes.ERROR,
         ' bg-green-500': type == alertTypes.SUCCESS,
       }"
-      class="z-[100] sticky text-gray-100 px-3 py-3 sm:px-6 sm:py-4 border-0 rounded-sm bottom-18 sm:bottom-5 ml-auto mr-auto left-0 right-0 w-11/12 sm:w-5/12 shadow flex justify-between items-center"
+      class="z-[100] sticky w-11/12 sm:w-1/2 mx-auto text-gray-100 px-3 py-3 sm:px-6 sm:py-4 border-0 rounded-sm bottom-18 sm:bottom-5 shadow flex justify-between items-center"
     >
       <div class="flex space-x-2">
         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">

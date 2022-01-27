@@ -1,7 +1,7 @@
 <template>
-  <div class="mx-auto px-4 sm:px-6 lg:px-8">
-    <div class="relative z-10 flex items-baseline justify-between pt-8 pb-6 border-b border-gray-200">
-      <h1 class="text-4xl font-extrabold tracking-tight text-gray-900">NFT Marketplace</h1>
+  <div>
+    <div class="relative z-10 flex items-baseline justify-between pt-4 pb-6 border-b border-gray-200">
+      <h1 class="text-2xl md:text-4xl font-extrabold tracking-tight text-gray-900">NFT Marketplace</h1>
 
       <div class="flex items-center">
         <Menu as="div" class="relative inline-block text-left">
@@ -43,12 +43,12 @@
       </div>
     </div>
 
-    <div class="pt-6 pb-24">
-      <div class="grid grid-cols-1 xl:grid-cols-6 xl:gap-x-8 xl:gap-y-10">
-        <MarketplaceFilter v-model="filters" :mobileFiltersOpen="isMobileFilterOpen" @onMobileClose="toggleMobileFilter()" />
+    <div class="pt-6">
+      <div class="flex flex-col xl:flex-row xl:space-x-8">
+        <MarketplaceFilter class="w-full xl:w-2/12" v-model="filters" :mobileFiltersOpen="isMobileFilterOpen" @onMobileClose="toggleMobileFilter()" />
 
         <!-- NFT List -->
-        <div v-if="nfts" ref="infiniteScroll" class="w-full col-span-5">
+        <div v-if="nfts" ref="infiniteScroll" class="w-full xl:w-10/12">
           <transition-group
             enter-active-class="transition duration-100 ease-out"
             enter-from-class="transform scale-95 opacity-0"
@@ -69,7 +69,7 @@
               class="flex flex-col p-4 bg-white rounded shadow-sm relative group cursor-pointer hover:shadow-md transition-all"
             >
               <div class="h-full flex items-center">
-                <NftImage :nft="nft" class="h-max group-hover:-translate-y-1" />
+                <NftImage :nft="nft" class="group-hover:-translate-y-1" />
               </div>
 
               <div class="flex justify-between items-center flex-row h-8 mt-2">
@@ -146,8 +146,8 @@ export default defineComponent({
     });
 
     const sortOptions = [
-      { name: "Recently Listed", href: "#", current: true },
-      { name: "Recently Created", href: "#", current: false },
+      { name: "Recently Created", href: "#", current: true },
+      { name: "Recently Listed", href: "#", current: false },
       { name: "Recently Sold", href: "#", current: false },
       { name: "Recently Received", href: "#", current: false },
       { name: "Price: Low to High", href: "#", current: false },

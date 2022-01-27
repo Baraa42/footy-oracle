@@ -77,32 +77,17 @@ import { useDownload } from "@/modules/download";
 import { useCurrency } from "@/modules/settings/currency";
 import { useMath } from "@/modules/math";
 import { useMarketMaker } from "@/modules/moralis/marketMaker";
+import { useAlert } from "@/modules/layout/alert";
 export default defineComponent({
   setup() {
+    const { showError } = useAlert();
+    const { getTotalDeposits, depositLiquidity } = useMarketMaker();
+
     const liqidityModel: SwapItem = reactive({
       token: undefined,
       value: undefined,
       price: undefined,
     });
-
-    /**
-     * Provide liqidity
-     */
-    const { getTotalDeposits, depositLiquidity } = useMarketMaker();
-    const onDeposit = async () => {
-      if (liqidityModel.value && nftBase64.value) {
-        await depositLiquidity(liqidityModel.value, nftBase64.value);
-      }
-    };
-
-    /**
-     * Converts component to image
-     */
-    const nftBase64 = <Ref<string>>ref();
-    const { blobToB64 } = useDownload();
-    const onConverted = async (blob: Blob) => {
-      nftBase64.value = (await blobToB64(blob)) as string;
-    };
 
     /**
      * Get total deposits, reactive if web3 changes
@@ -118,6 +103,28 @@ export default defineComponent({
         });
       }
     });
+
+    /**
+     * Provide liqidity
+     */
+    const onDeposit = async () => {
+      if (isAuthenticated.value) {
+        if (liqidityModel.value && nftBase64.value) {
+          await depositLiquidity(liqidityModel.value, nftBase64.value);
+        }
+      } else {
+        showError("You need to connect your wallet");
+      }
+    };
+
+    /**
+     * Converts component to image
+     */
+    const nftBase64 = <Ref<string>>ref();
+    const { blobToB64 } = useDownload();
+    const onConverted = async (blob: Blob) => {
+      nftBase64.value = (await blobToB64(blob)) as string;
+    };
 
     /**
      * Loads native token and price

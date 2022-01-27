@@ -61,10 +61,14 @@ import { LocationQueryValue, useRoute } from "vue-router";
 import { useMath } from "@/modules/math";
 import { TokenPrice } from "@/interfaces/web3/TokenPrice";
 import { useChain } from "@/modules/moralis/chain";
+import { useMoralis } from "@/modules/moralis/moralis";
+import { useAlert } from "@/modules/layout/alert";
 export default defineComponent({
   setup() {
     const { toggle, isToggled } = useToggle();
     const { activeChain, getDex } = useChain();
+    const { isAuthenticated } = useMoralis();
+    const { showError } = useAlert();
 
     const { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice } = getDex();
 
@@ -147,8 +151,11 @@ export default defineComponent({
     );
 
     const onSwap = async () => {
-      console.log("swap");
-      await trySwap(from, to);
+      if (isAuthenticated.value) {
+        await trySwap(from, to);
+      } else {
+        showError("You need to connect your wallet");
+      }
     };
 
     const switchTokens = () => {
@@ -190,6 +197,7 @@ export default defineComponent({
     );
 
     return {
+      isAuthenticated,
       to,
       from,
       quote,

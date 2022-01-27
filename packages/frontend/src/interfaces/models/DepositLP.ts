@@ -14,5 +14,7 @@ export interface DepositLP extends Moralis.Object<Moralis.Attributes> {
     transaction_index?: number;
     log_index?: number;
     confirmed: boolean;
+    createdAt: string;
+    updatedAt: string;
   };
 }
