@@ -1,6 +1,7 @@
 import Moralis from "moralis/dist/moralis.js";
 import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
 import MarketMakerContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
+import NFTMarketplaceContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
 import { Contract } from "web3-eth-contract";
 import { Ref, ref, watch } from "vue";
 import { AbiItem } from "web3-utils";
@@ -44,6 +45,7 @@ export const useContract = () => {
     const result = config.get(getConfigName("nft_marketplace_contract"));
     if (result) {
       nftMarketplaceContractAddress.value = result.toLowerCase();
+      nftMarketplaceContract.value = new web3.value.eth.Contract(NFTMarketplaceContractJson.abi as AbiItem[], nftMarketplaceContractAddress.value);
     }
   };
 

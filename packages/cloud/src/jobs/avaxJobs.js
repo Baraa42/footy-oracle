@@ -1,7 +1,7 @@
 Moralis.Cloud.job("fujiAddAccount", async (request) => {
   const { params, headers, log, message } = request;
   try {
-    await addAccount(fuqiWeb3);
+    await addAccount(fujiWeb3);
     message("Account added!");
   } catch (e) {
     message("Error occurred!");
