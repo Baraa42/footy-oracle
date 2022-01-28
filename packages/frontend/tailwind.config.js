@@ -35,8 +35,7 @@ module.exports = {
         inter: ["Inter", ...defaultTheme.fontFamily.sans],
       },
       gridTemplateColumns: {
-        table:
-        "minmax(180px, 200px) minmax(150px, 558px) minmax(88px, 124px) minmax(200px, 124px) minmax(200px, 124px) minmax(200px, 124px) minmax(88px, 124px) minmax(88px, 124px)",
+        table: "3fr 2fr 1fr 3fr 1fr 1fr",
       },
       gridTemplateRows: {
         table: "200px minmax(900px, 1fr) 100px",

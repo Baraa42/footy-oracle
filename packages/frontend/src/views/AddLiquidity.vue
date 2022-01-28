@@ -1,5 +1,5 @@
 <template>
-  <div>
+  <div class="flex flex-col space-y-8">
     <CardContainer>
       <div class="bg-gray-800 rounded pb-4 transition-all">
         <div class="flex flex-col items-star justify-between w-full h-full text-white">
@@ -54,6 +54,8 @@
       </div>
     </CardContainer>
 
+    <MarketMakerHistory v-if="marketMakerContractAddress" />
+
     <div class="opacity-0 absolute top-0 -z-10">
       <LpNFT v-if="liqidityModel.value && !isNaN(Number(liqidityModel.value))" :amount="liqidityModel.value" @converted="onConverted" color="#111827" />
     </div>
@@ -78,10 +80,13 @@ import { useCurrency } from "@/modules/settings/currency";
 import { useMath } from "@/modules/math";
 import { useMarketMaker } from "@/modules/moralis/marketMaker";
 import { useAlert } from "@/modules/layout/alert";
+import MarketMakerHistory from "@/components/lists/MarketMakerHistory.vue";
+import { useContract } from "@/modules/moralis/contract";
 export default defineComponent({
   setup() {
     const { showError } = useAlert();
     const { getTotalDeposits, depositLiquidity } = useMarketMaker();
+    const { marketMakerContractAddress } = useContract();
 
     const liqidityModel: SwapItem = reactive({
       token: undefined,
@@ -157,8 +162,9 @@ export default defineComponent({
       round,
       onConverted,
       convertCurrency,
+      marketMakerContractAddress,
     };
   },
-  components: { RefreshIcon, NftImage, ListedNftImage, CardContainer, SwapItemVue, LpNFT, QuestionMarkCircleIcon },
+  components: { RefreshIcon, NftImage, ListedNftImage, CardContainer, SwapItemVue, LpNFT, QuestionMarkCircleIcon, MarketMakerHistory },
 });
 </script>

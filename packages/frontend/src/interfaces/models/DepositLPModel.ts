@@ -1,7 +1,7 @@
 import { NftOwnerModel } from "./NftOwnerModel";
 import Moralis from "moralis/dist/moralis.js";
 
-export interface DepositLP extends Moralis.Object<Moralis.Attributes> {
+export interface DepositLPModel extends Moralis.Object<Moralis.Attributes> {
   attributes: {
     tokenId: string;
     uri: string;

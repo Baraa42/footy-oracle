@@ -40,7 +40,7 @@
 
 <script lang="ts">
 import { defineComponent, ref, watch } from "vue";
-import HistoryItem from "../components/common/HistoryItem.vue";
+import HistoryItem from "../components/common/HistoryItemCopy.vue";
 import CardContainer from "../components/common/CardContainer.vue";
 import { useAlert } from "../modules/layout/alert";
 import { useMoralis } from "../modules/moralis/moralis";
@@ -63,7 +63,7 @@ export default defineComponent({
 
     console.log("User UnMatched Bets");
     console.log(unmatchedBets);
-    
+
     // const { getHistoryBets } = useBet();
     let bets: any;
 
@@ -73,7 +73,7 @@ export default defineComponent({
       bets = bets.concat(unmatchedBets.value);
       //console.log("matchedBets.length = ", matchedBets?.value?.length) ;
       console.log("bets.length = ", bets?.length);
-      console.log(bets)
+      console.log(bets);
     } else {
       showError("You need to connect your wallet");
     }

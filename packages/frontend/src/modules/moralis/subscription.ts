@@ -1,5 +1,5 @@
 import Moralis from "moralis/dist/moralis.js";
-import { Ref, ref } from "vue";
+import { onUnmounted, Ref, ref, unm } from "vue";
 
 /**
  * Helper for push new object into array
@@ -122,6 +122,11 @@ export const useSubscription = () => {
   const unsubscribe = () => {
     subscription.value?.unsubscribe();
   };
+
+  onUnmounted(() => {
+    console.log("onUnmounted");
+    unsubscribe();
+  });
 
   return {
     subscribe,

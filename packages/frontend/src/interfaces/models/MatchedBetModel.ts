@@ -29,7 +29,7 @@ export interface MatchedBetModel extends Moralis.Object<Moralis.Attributes> {
     tokenId?: string;
     event?: EventModel;
     user?: UserModel;
-    createdAt: string;
-    updatedAt: string;
+    createdAt: Date;
+    updatedAt: Date;
   };
 }

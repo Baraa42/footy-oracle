@@ -1,5 +1,5 @@
 import NotFound from "../views/errors/NotFound.vue";
-import { createRouter, createWebHistory, createWebHashHistory, RouteRecordRaw } from "vue-router";
+import { createRouter, createWebHashHistory, RouteRecordRaw } from "vue-router";
 
 const routes: Array<RouteRecordRaw> = [
   {
@@ -26,11 +26,6 @@ const routes: Array<RouteRecordRaw> = [
     path: "/history",
     name: "history",
     component: () => import(/* webpackChunkName: "history" */ "../views/History.vue"),
-  },
-  {
-    path: "/marketmakerhistory",
-    name: "marketmakerhistory",
-    component: () => import(/* webpackChunkName: "marketmakerhistory" */ "../views/MarketMakerHistory.vue"),
   },
   {
     path: "/marketplace",
@@ -68,6 +63,10 @@ const routes: Array<RouteRecordRaw> = [
 const router = createRouter({
   history: createWebHashHistory(),
   routes,
+  scrollBehavior(to, from, savedPosition) {
+    // always scroll to top
+    return { top: 0 };
+  },
 });
 
 export default router;

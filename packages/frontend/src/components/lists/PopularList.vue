@@ -100,7 +100,6 @@ export default defineComponent({
      * Load more events callback function
      */
     const loadMoreEvents = () => {
-      console.log("Load");
       if (bottomHit.value) {
         return;
       }

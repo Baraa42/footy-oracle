@@ -85,28 +85,28 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
  * @returns Promise
  */
 const getMarketMakerMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
-  const { marketMakerAbi, marketMakerContractAddress } = useContract();
+  const { marketMakerContractAddress } = useContract();
 
-  //console.log('In getMarketMakerMatchedBets marketMakerContractAddress = ', marketMakerContractAddress);
+  // Get all matched bets from user
+  const { getClassName } = useChain();
+  const { createQuery } = useMoralisObject(getClassName("MatchedBets"));
+  const query: Moralis.Query<any> = createQuery();
+  const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
+    .equalTo("from", marketMakerContractAddress.value)
+    .include("event", "event.home", "event.away", "event.league.country", "result")
+    .select("amount", "betType", "odds", "betSide", "selection", "apiId", "confirmed", "event");
+  marketMakerMatchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
 
-  if (marketMakerContractAddress.value) {
-    // Get all matched bets from user
-    const { getClassName } = useChain();
-    const { createQuery } = useMoralisObject(getClassName("MatchedBets"));
-    const query: Moralis.Query<any> = createQuery();
-    const matchedBetsQuery: Moralis.Query<MatchedBetModel> = query
-      .equalTo("from", marketMakerContractAddress.value)
-      .include("event", "event.home", "event.away", "event.league")
-      .select("amount", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
-    marketMakerMatchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
+  console.log(marketMakerContractAddress.value);
+  console.log(marketMakerMatchedBets.value);
 
-    // Create live subscriptions
-    const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
-    subscribe(matchedBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
-      subscribeToCreate(subscription, marketMakerMatchedBets.value);
-      subscribeToUpdate(subscription, marketMakerMatchedBets.value, "id");
-    });
-  }
+  // Create live subscriptions
+  const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
+  subscribe(matchedBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
+    subscribeToCreate(subscription, marketMakerMatchedBets.value);
+    subscribeToUpdate(subscription, marketMakerMatchedBets.value, "id");
+  });
+
   return marketMakerMatchedBets;
 };
 

@@ -1,4 +1,4 @@
-import { DepositLP } from "./DepositLP";
+import { DepositLPModel } from "./DepositLPModel";
 import Moralis from "moralis/dist/moralis.js";
 import { MatchedBetModel } from "./MatchedBetModel";
 
@@ -32,7 +32,7 @@ export interface NftOwnerModel extends Moralis.Object<Moralis.Attributes> {
     bet?: MatchedBetModel;
     offer?: ListedNftModel;
     closedOffer?: ListedNftModel;
-    lp?: DepositLP;
+    lp?: DepositLPModel;
   };
 }
 
