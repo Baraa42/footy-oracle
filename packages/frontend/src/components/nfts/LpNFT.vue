@@ -17,13 +17,13 @@
       <div class="relative flex flex-col z-50 w-full p-4 text-white">
         <Logo class="flex h-32 w-max z-50" />
         <h1 class="text-9xl font-bold uppercase mt-16 tracking-tight leading-tighter text-transparent bg-clip-text bg-gradient-to-b from-gray-50 to-gray-200">
-          Liqidity<br />Provider
+          Liquidity<br />Provider
         </h1>
         <h1
           class="text-9xl font-bold uppercase tracking-tight leading-tighter text-transparent -mt-8 bg-clip-text bg-gradient-to-t from-white/[.05] to-white/[.0]"
           style="transform: scale(1, -1)"
         >
-          Liqidity<br />Provider
+          Liquidity<br />Provider
         </h1>
 
         <div class="shadow-md w-full p-4 h-52 mt-12 bg-gray-800/10 rounded backdrop-blur-sm">

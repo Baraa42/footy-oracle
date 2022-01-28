@@ -25,13 +25,13 @@
                     >
                   </div>
                   <div class="bg-gray-700 rounded-xl p-4 flex flex-col w-full md:w-1/3">
-                    <span class="text-gray-200 mb-3 text-lg font-semibold">Earnd:</span>
+                    <span class="text-gray-200 mb-3 text-lg font-semibold">Earned:</span>
                     <span class="text-sm font-semibold text-number" v-if="totalDeposits">0 {{ activeChain.currencySymbol }}</span>
                   </div>
                 </div>
 
                 <div class="flex flex-col space-y-4">
-                  <SwapItemVue mode="input" label="Provide" :disableSelect="true" v-model="liqidityModel" />
+                  <SwapItemVue mode="input" label="Provide" :disableSelect="true" v-model="liquidityModel" />
 
                   <button
                     @click="onDeposit()"
@@ -45,7 +45,7 @@
 
             <div class="w-full md:w-4/12 xl:w-3/12 bg-gray-700 rounded-xl aspect-[2.5/3.6] mt-8 md:mt-8">
               <div class="p-4 space-y-4 h-full">
-                <span class="text-sm text-gray-200 font-semibold">Recive</span>
+                <span class="text-sm text-gray-200 font-semibold">Receive</span>
                 <img v-if="nftBase64" :src="nftBase64" />
               </div>
             </div>
@@ -55,7 +55,7 @@
     </CardContainer>
 
     <div class="opacity-0 absolute top-0 -z-10">
-      <LpNFT v-if="liqidityModel.value && !isNaN(Number(liqidityModel.value))" :amount="liqidityModel.value" @converted="onConverted" color="#111827" />
+      <LpNFT v-if="liquidityModel.value && !isNaN(Number(liquidityModel.value))" :amount="liquidityModel.value" @converted="onConverted" color="#111827" />
     </div>
   </div>
 </template>
@@ -83,7 +83,7 @@ export default defineComponent({
     const { showError } = useAlert();
     const { getTotalDeposits, depositLiquidity } = useMarketMaker();
 
-    const liqidityModel: SwapItem = reactive({
+    const liquidityModel: SwapItem = reactive({
       token: undefined,
       value: undefined,
       price: undefined,
@@ -105,12 +105,12 @@ export default defineComponent({
     });
 
     /**
-     * Provide liqidity
+     * Provide liquidity
      */
     const onDeposit = async () => {
       if (isAuthenticated.value) {
-        if (liqidityModel.value && nftBase64.value) {
-          await depositLiquidity(liqidityModel.value, nftBase64.value);
+        if (liquidityModel.value && nftBase64.value) {
+          await depositLiquidity(liquidityModel.value, nftBase64.value);
         }
       } else {
         showError("You need to connect your wallet");
@@ -132,11 +132,11 @@ export default defineComponent({
     const { activeChain, getDex } = useChain();
     const { getSupportedTokens, tokens, getTokenPrice } = getDex();
     getSupportedTokens().then(() => {
-      if (!liqidityModel.token) {
-        liqidityModel.token = tokens.value?.find((item) => item.symbol === activeChain.value.currencySymbol);
+      if (!liquidityModel.token) {
+        liquidityModel.token = tokens.value?.find((item) => item.symbol === activeChain.value.currencySymbol);
       }
-      if (!liqidityModel.price && liqidityModel.token) {
-        getTokenPrice(liqidityModel.token.address).then((price: TokenPrice | undefined) => (liqidityModel.price = price));
+      if (!liquidityModel.price && liquidityModel.token) {
+        getTokenPrice(liquidityModel.token.address).then((price: TokenPrice | undefined) => (liquidityModel.price = price));
       }
     });
 
@@ -147,7 +147,7 @@ export default defineComponent({
     const { round } = useMath();
 
     return {
-      liqidityModel,
+      liquidityModel,
       totalDeposits,
       isAuthenticated,
       lpDeposits,

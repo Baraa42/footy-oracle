@@ -1,5 +1,3 @@
-
-
 /**
  * NFT Marketplace place offering
  *
@@ -13,15 +11,6 @@ const placeOffering = async (request, web3Chain, nftMarketPlaceAddr) => {
     const offerer = request.params.offerer;
     const tokenId = request.params.tokenId;
     const price = request.params.price;
-    /*
-    logger.info("hostContract = "+ hostContract);
-    logger.info(" offerer = "+ offerer);
-    logger.info(" tokenId = "+ tokenId);
-    logger.info(" price = "+ price);
-    */
-    logger.info ("account = " + account);
-    const nonceOperator = (await web3Chain.eth.getTransactionCount(account)) + 20;
-    logger.info("nonceOperator = " + nonceOperator);
 
     const config = await Moralis.Config.get({ useMasterKey: true });
     const privateKey = config.get("private_key");

@@ -21,13 +21,13 @@ export const useMarketMaker = () => {
     }
   };
 
-  const depositLiquidity = async (liqidity: string, base64Image: string) => {
+  const depositLiquidity = async (liquidity: string, base64Image: string) => {
     if (userAddress.value) {
       const { generateLPTokenURI } = useNFTs();
       const { saveBase64ImageToIPFS } = useIPFS();
 
       const image = await saveBase64ImageToIPFS(userAddress.value, base64Image);
-      const amount = web3.value.utils.toWei(liqidity, "ether");
+      const amount = web3.value.utils.toWei(liquidity, "ether");
       const uri = await generateLPTokenURI(marketMakerContractAddress.value, amount.toString(), image.ipfs());
 
       marketMakerContract.value.methods
