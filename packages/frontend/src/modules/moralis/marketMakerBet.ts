@@ -4,8 +4,8 @@ import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
 import { useContract } from "./contract";
 import { UnmatchedBetModel } from "../../interfaces/models/UnmatchedBetModel";
+import { BigNumber } from "bignumber.js";
 
-const selections = SelectionEnum;
 const types = BetTypeEnum;
 
 export const marketMakerBet = () => {
@@ -31,6 +31,14 @@ export const marketMakerBet = () => {
     console.log(String(unmatchedBet.get("apiId")));
     console.log('unmatchedBet.get("betSide") = ', unmatchedBet.get("betSide"));
 
+
+    const oddsDivided = new BigNumber(unmatchedBet.get("odds")).minus(1000).div(1000);
+    const liability = new BigNumber(unmatchedBet.get("amount")).times(oddsDivided).toNumber();
+
+    console.log('oddsDivided = ', oddsDivided);
+    console.log('liability = ', liability);
+
+    // If user created a Back Bet, MM will create a Lay bet
     if (unmatchedBet.get("betSide") == 0) {
       marketMakerContract.value.methods
         .createOpposingLayBet(
@@ -39,8 +47,8 @@ export const marketMakerBet = () => {
           unmatchedBet.get("betType"),
           unmatchedBet.get("selection"),
           unmatchedBet.get("odds"),
-          "backBetAmount",
-          "liabilityAmount"
+          unmatchedBet.get("amount"),
+          liability.toString()
         )
         .send(
           {
@@ -53,7 +61,8 @@ export const marketMakerBet = () => {
             console.log(result);
           }
         );
-    } else if (unmatchedBet.get("betSide") == 1) {
+    }
+    else if (unmatchedBet.get("betSide") == 1) { // If user created a Lay Bet, MM will create a Back Bet
       marketMakerContract.value.methods
         .createOpposingBackBet(
           bettingContractAddress.value,
