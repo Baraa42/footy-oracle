@@ -26,7 +26,7 @@ import { ref, defineComponent, markRaw } from "vue";
 import ActionBarButton from "../buttons/ActionBarButton.vue";
 import OverlayWrapper from "../overlays/OverlayWrapper.vue";
 import SlideTransition from "../transitions/SlideTransition.vue";
-import { StarIcon, CogIcon, SearchIcon, RefreshIcon, CashIcon, BookmarkIcon, TicketIcon } from "@heroicons/vue/outline";
+import { StarIcon, CogIcon, SearchIcon, RefreshIcon, CashIcon, BookmarkIcon, TicketIcon } from "@heroicons/vue/solid";
 import WithdrawOverlay from "../overlays/NFTOverlay.vue";
 import SettingsOverlay from "../overlays/SettingsOverlay.vue";
 import FavoritesOverlay from "../overlays/FavoritesOverlay.vue";

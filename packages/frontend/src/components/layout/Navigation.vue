@@ -1,6 +1,6 @@
 <template>
   <nav class="min-h-[4rem] lg:min-h-[5rem] bg-gray-900 w-full fixed shadow lg:shadow-none pt-save pr-save pl-save z-50">
-    <div class="min-h-[4rem] lg:min-h-[5rem] flex flex-row items-center h-full w-full text-white px-3 lg:px-5">
+    <div class="min-h-[4rem] lg:min-h-[5rem] flex flex-row items-center h-full w-full text-white px-3 lg:px-5 lg:pr-2">
       <div class="flex items-center space-x-4 lg:space-x-0 md:w-52 w-max">
         <button class="lg:hidden focus:outline-none flex items-center justify-center" @click="setNavigationToActionBar()">
           <MenuIcon class="w-6 h-6" v-if="!isMobileMenuOpen" />
@@ -13,7 +13,7 @@
         <SearchInput />
       </div>
 
-      <div class="flex ml-auto md:space-x-8 space-x-4 items-center">
+      <div class="flex ml-auto md:space-x-8 space-x-4 items-center p-0 m-0">
         <FundsDropdown class="hidden lg:block" />
         <ChainDropdown />
 
@@ -26,9 +26,9 @@
           <span class="block lg:hidden">Connect</span>
         </button>
 
-        <div v-if="isAuthenticated" class="flex flex-row items-center lg:space-x-8">
+        <div v-if="isAuthenticated" class="flex flex-row items-center lg:space-x-2 cursor-pointer group transition-colors" @click="setProfileToActionBar()">
           <span class="font-semibold hidden md:block">{{ moralisUser?.get("ethAddress").substring(0, 6) }}...</span>
-          <button @click="setProfileToActionBar()" class="focus:outline-none">
+          <button class="focus:outline-none h-14 w-14 rounded-full group-hover:bg-gray-800 flex items-center justify-center">
             <UserIcon class="w-6 h-6 lg:w-8 lg:h-8" />
           </button>
         </div>

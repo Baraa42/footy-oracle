@@ -1,3 +1,4 @@
+import { Adapter } from "./../../../interfaces/Quote";
 import { useMoralis } from "./../moralis";
 import useDex from "./dex";
 import { SwapItem } from "../../../interfaces/SwapItem";
@@ -5,6 +6,7 @@ import { Token } from "@/interfaces/Token";
 import { AbiItem } from "web3-utils";
 import avaxTokens from "@/assets/yieldyak/tokens.json";
 import YakRouterAbi from "avax-aggregator/abis/YakRouter.json";
+import yieldYak from "@/assets/yieldyak/yieldyak.json";
 import Moralis from "moralis/dist/moralis.js";
 import { useChain } from "../chain";
 import { Quote } from "@/interfaces/Quote";
@@ -42,9 +44,40 @@ export const useYieldYakDex = () => {
         const toTokenAddr = to.token.address === "0x0000000000000000000000000000000000000000" ? "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7" : to.token.address;
 
         const result = await yakRouterContract.methods
-          .findBestPathWithGas(Moralis.Units.Token(from.value, from.token.decimals).toString(), fromTokenAddr, toTokenAddr, 2, 225000000000)
+          .findBestPathWithGas(Moralis.Units.Token(from.value, from.token.decimals).toString(), fromTokenAddr, toTokenAddr, 3, 225000000000)
           .call();
         console.log(result);
+
+        const adapters = result.adapters.map((item: string, index: number) => {
+          let fromToken = tokens.value?.find((token) => token.address == result.path[index]);
+          let toToken = tokens.value?.find((token) => token.address == result.path[index + 1]);
+
+          if (!fromToken) {
+            fromToken = tokens.value?.find((token) => token.address == result.path[index - 1]);
+          }
+          if (!toToken) {
+            toToken = tokens.value?.find((token) => token.address == toTokenAddr);
+          }
+
+          if (item in yieldYak.adapters) {
+            const names: any = yieldYak.adapters;
+            const name: string = names[item].platform.charAt(0).toUpperCase() + names[item].platform.slice(1);
+
+            return {
+              address: item,
+              name: name,
+              fromToken: fromToken,
+              toToken: toToken,
+            };
+          } else {
+            return {
+              address: item,
+              name: "Unknown Dex",
+              fromToken: fromToken,
+              toToken: toToken,
+            };
+          }
+        });
 
         const quote: Quote = {
           fromToken: from.token,
@@ -52,6 +85,7 @@ export const useYieldYakDex = () => {
           toTokenAmount: result.amounts[result.amounts.length - 1],
           fromTokenAmount: result.amounts[0],
           protocols: [],
+          adapters: adapters,
           estimatedGas: result.gasEstimate,
         };
 

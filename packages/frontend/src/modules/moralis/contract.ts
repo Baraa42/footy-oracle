@@ -19,7 +19,7 @@ const nftMarketplaceContract = <Ref<Contract>>ref();
 const isLoaded = ref(false);
 
 export const useContract = () => {
-  const { web3 } = useMoralis();
+  const { web3, isWeb3Enabled } = useMoralis();
   const { activeChain, getConfigName } = useChain();
 
   const loadBettingContract = async (): Promise<void> => {
@@ -27,7 +27,9 @@ export const useContract = () => {
     const result = config.get(getConfigName("betting_contract"));
     if (result) {
       bettingContractAddress.value = result.toLowerCase();
-      bettingContract.value = new web3.value.eth.Contract(BettingContractJson.abi as AbiItem[], bettingContractAddress.value);
+      if (isWeb3Enabled.value) {
+        bettingContract.value = new web3.value.eth.Contract(BettingContractJson.abi as AbiItem[], bettingContractAddress.value);
+      }
     }
   };
 
@@ -36,7 +38,9 @@ export const useContract = () => {
     const result = config.get(getConfigName("market_maker_contract"));
     if (result) {
       marketMakerContractAddress.value = result.toLowerCase();
-      marketMakerContract.value = new web3.value.eth.Contract(MarketMakerContractJson.abi as AbiItem[], marketMakerContractAddress.value);
+      if (isWeb3Enabled.value) {
+        marketMakerContract.value = new web3.value.eth.Contract(MarketMakerContractJson.abi as AbiItem[], marketMakerContractAddress.value);
+      }
     }
   };
 
@@ -45,7 +49,9 @@ export const useContract = () => {
     const result = config.get(getConfigName("nft_marketplace_contract"));
     if (result) {
       nftMarketplaceContractAddress.value = result.toLowerCase();
-      nftMarketplaceContract.value = new web3.value.eth.Contract(NFTMarketplaceContractJson.abi as AbiItem[], nftMarketplaceContractAddress.value);
+      if (isWeb3Enabled.value) {
+        nftMarketplaceContract.value = new web3.value.eth.Contract(NFTMarketplaceContractJson.abi as AbiItem[], nftMarketplaceContractAddress.value);
+      }
     }
   };
 

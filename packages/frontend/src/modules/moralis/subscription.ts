@@ -1,5 +1,5 @@
 import Moralis from "moralis/dist/moralis.js";
-import { onUnmounted, Ref, ref, unm } from "vue";
+import { onUnmounted, Ref, ref } from "vue";
 
 /**
  * Helper for push new object into array

@@ -72,29 +72,31 @@ const getUnmatchedBets = async (event: EventClass): Promise<UnmatchedBetModel[][
    * Add unmatched bet in right place
    * and sum amount with same type, selection and odds
    */
-  unmatchedBets.forEach((bet: UnmatchedBetModel) => {
-    if (!unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")]) {
-      unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")] = [];
-    }
-
-    if (unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].length === 0) {
-      unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].push(bet);
-    } else {
-      let hasSameOdds = false;
-      unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].forEach((element: UnmatchedBetModel, index: number) => {
-        if (element.get("odds") == bet.get("odds")) {
-          hasSameOdds = true;
-          let amount1 = unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")][index].get("amount");
-          let amount2 = bet.get("amount");
-          const added = new BigNumber(amount1).plus(amount2).toString();
-          unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")][index].set("amount", added);
-        }
-      });
-      if (!hasSameOdds) {
-        unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].push(bet);
+  unmatchedBets
+    .filter((bet) => Number(bet.attributes.amount) >= 0)
+    .forEach((bet: UnmatchedBetModel) => {
+      if (!unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")]) {
+        unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")] = [];
       }
-    }
-  });
+
+      if (unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].length === 0) {
+        unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].push(bet);
+      } else {
+        let hasSameOdds = false;
+        unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].forEach((element: UnmatchedBetModel, index: number) => {
+          if (element.get("odds") == bet.get("odds")) {
+            hasSameOdds = true;
+            let amount1 = unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")][index].get("amount");
+            let amount2 = bet.get("amount");
+            const added = new BigNumber(amount1).plus(amount2).toString();
+            unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")][index].set("amount", added);
+          }
+        });
+        if (!hasSameOdds) {
+          unmatchedBetsGrouped[bet.get("betSide")][bet.get("selection")].push(bet);
+        }
+      }
+    });
 
   /**
    * Sort unmatchedBets by odds

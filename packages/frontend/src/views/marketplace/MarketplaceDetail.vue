@@ -122,7 +122,7 @@
             </div>
             <div class="flex flex-row justify-between">
               <span class="label">Created</span>
-              <span class="value">{{ getDateTime(Number(nft.attributes.bet.attributes.createdAt)) }}</span>
+              <span class="value">{{ new Date(nft.attributes.bet.attributes.createdAt).toLocaleString() }}</span>
             </div>
             <div class="flex flex-row justify-between">
               <span class="label">Market</span>
