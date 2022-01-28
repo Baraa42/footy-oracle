@@ -94,7 +94,6 @@ export default defineComponent({
     };
 
     const emitEvent = (event: Event) => {
-      console.log("emit");
       const element: HTMLInputElement | null = event.target as HTMLInputElement;
 
       if (element.value) {

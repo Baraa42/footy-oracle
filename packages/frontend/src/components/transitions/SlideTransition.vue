@@ -1,9 +1,9 @@
 <template>
   <transition
-    enter-active-class="transform transition ease-in-out duration-500"
+    enter-active-class="transform transition ease-in-out duration-300"
     :enter-from-class="getEnterFromClasses()"
     :enter-to-class="getEnterToClasses()"
-    leave-active-class="transform transition ease-in-out duration-500"
+    leave-active-class="transform transition ease-in-out duration-300"
     :leave-from-class="getLeaveFromClasses()"
     :leave-to-class="getLeaveToClasses()"
   >
@@ -25,7 +25,7 @@ export default defineComponent({
   props: {
     duration: {
       type: String,
-      default: "duration-500",
+      default: "duration-300",
     },
     from: String as PropType<Direction | String>,
     "xs-from": String as PropType<Direction | String>,
@@ -67,10 +67,7 @@ export default defineComponent({
       leaveToClass: "-translate-x-full",
     };
 
-    const formatClassesWithBreakpoints = (
-      classes: string,
-      breakpoint: string
-    ): string => {
+    const formatClassesWithBreakpoints = (classes: string, breakpoint: string): string => {
       let withBreakpoints: string = "";
       classes.split(" ").forEach((item: string) => {
         if (item.length !== 0) {
@@ -91,40 +88,16 @@ export default defineComponent({
 
           switch (direction) {
             case "left":
-              classes +=
-                breakpoint.length !== 0
-                  ? formatClassesWithBreakpoints(
-                      slideFromLeftClasses[state],
-                      breakpoint
-                    )
-                  : slideFromLeftClasses[state];
+              classes += breakpoint.length !== 0 ? formatClassesWithBreakpoints(slideFromLeftClasses[state], breakpoint) : slideFromLeftClasses[state];
               break;
             case "right":
-              classes +=
-                breakpoint.length !== 0
-                  ? formatClassesWithBreakpoints(
-                      slideFromRightClasses[state],
-                      breakpoint
-                    )
-                  : slideFromRightClasses[state];
+              classes += breakpoint.length !== 0 ? formatClassesWithBreakpoints(slideFromRightClasses[state], breakpoint) : slideFromRightClasses[state];
               break;
             case "top":
-              classes +=
-                breakpoint.length !== 0
-                  ? formatClassesWithBreakpoints(
-                      slideFromTopClasses[state],
-                      breakpoint
-                    )
-                  : slideFromTopClasses[state];
+              classes += breakpoint.length !== 0 ? formatClassesWithBreakpoints(slideFromTopClasses[state], breakpoint) : slideFromTopClasses[state];
               break;
             case "bottom":
-              classes +=
-                breakpoint.length !== 0
-                  ? formatClassesWithBreakpoints(
-                      slideFromBottomClasses[state],
-                      breakpoint
-                    )
-                  : slideFromBottomClasses[state];
+              classes += breakpoint.length !== 0 ? formatClassesWithBreakpoints(slideFromBottomClasses[state], breakpoint) : slideFromBottomClasses[state];
               break;
             default:
               break;

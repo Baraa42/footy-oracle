@@ -58,11 +58,11 @@ export default defineComponent({
     ]);
 
     const { isAuthenticated, matchedBets, unmatchedBets } = useMoralis();
-    console.log("User Matched Bets");
-    console.log(matchedBets);
+    //console.log("User Matched Bets");
+    //console.log(matchedBets);
 
-    console.log("User UnMatched Bets");
-    console.log(unmatchedBets);
+    //console.log("User UnMatched Bets");
+    //console.log(unmatchedBets);
 
     // const { getHistoryBets } = useBet();
     let bets: any;
@@ -72,8 +72,8 @@ export default defineComponent({
       bets = matchedBets.value;
       bets = bets.concat(unmatchedBets.value);
       //console.log("matchedBets.length = ", matchedBets?.value?.length) ;
-      console.log("bets.length = ", bets?.length);
-      console.log(bets);
+      //console.log("bets.length = ", bets?.length);
+      //console.log(bets);
     } else {
       showError("You need to connect your wallet");
     }

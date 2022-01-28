@@ -158,7 +158,6 @@ export default defineComponent({
     const loadQuote = async () => {
       quote.value = undefined;
       if (to.token && from.value && from.token) {
-        console.log("loadQuote");
         to.value = undefined;
         const quoteResult = await getQuote(from, to);
         if (quoteResult) {

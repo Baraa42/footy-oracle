@@ -247,13 +247,9 @@ export default defineComponent({
       }
       if (filters.selections && filters.selections.length != 0) {
         const selections = filters.selections.map((item) => Number(item));
-        console.log(selections);
-
         betQuery.containedIn("selection", selections);
         filter = true;
       }
-
-      console.log(filters);
 
       if (filter && !appendFilter.hasLP) {
         loadNfts({ filter: appendFilter, innerQuery: [{ relation: "bet", query: betQuery }] });

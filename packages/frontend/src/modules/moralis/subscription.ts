@@ -124,7 +124,7 @@ export const useSubscription = () => {
   };
 
   onUnmounted(() => {
-    console.log("onUnmounted");
+    //console.log("onUnmounted");
     unsubscribe();
   });
 

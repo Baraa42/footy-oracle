@@ -156,7 +156,7 @@ export default defineComponent({
         domtoimage
           .toBlob(printMe.value)
           .then(function (dataUrl) {
-            console.log("nft captured");
+            //console.log("nft captured");
             emit("converted", dataUrl);
           })
           .catch(function (error) {

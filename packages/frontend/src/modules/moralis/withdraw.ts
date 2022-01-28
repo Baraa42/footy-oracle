@@ -17,8 +17,8 @@ const withdraw = async (nft: NftOwnerModel): Promise<void> => {
     if (nft?.attributes.bet?.attributes.event?.attributes.isCompleted) {
       const { bettingContract } = useContract();
 
-      console.log(String(nft?.attributes.bet?.attributes.event?.attributes.apiId));
-      console.log(Number(nft.attributes.token_id));
+      // console.log(String(nft?.attributes.bet?.attributes.event?.attributes.apiId));
+      // console.log(Number(nft.attributes.token_id));
 
       bettingContract.value.methods.withdrawWithNFT(String(nft?.attributes.bet?.attributes.event?.attributes.apiId), Number(nft.attributes.token_id)).send(
         {

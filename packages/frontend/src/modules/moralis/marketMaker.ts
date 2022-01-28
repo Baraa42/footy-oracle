@@ -11,7 +11,7 @@ export const useMarketMaker = () => {
   const { showError, showSuccess } = useAlert();
 
   const getTotalDeposits = async (): Promise<string | undefined> => {
-    console.log("getTotalDeposits");
+    //console.log("getTotalDeposits");
     if (marketMakerContract.value) {
       try {
         return await marketMakerContract.value.methods.getTotalDeposit().call();

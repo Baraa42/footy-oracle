@@ -23,7 +23,7 @@ export const useBetslip = () => {
   const { setActionBarItem, activeActionBarItem } = useActionBar();
 
   const betSlipActionBar: ActionBarItem = {
-    name: "My Bets",
+    name: "Bets",
     component: markRaw(MyBetsOverlay),
   };
 

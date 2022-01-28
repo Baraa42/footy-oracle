@@ -20,7 +20,7 @@ export default defineComponent({
 
     const image = computed((): string | undefined => {
       if (Array.isArray(props.nft.attributes.metadata)) {
-        console.log(props.nft.attributes.metadata[0].image);
+        //console.log(props.nft.attributes.metadata[0].image);
         return props.nft.attributes.metadata[0].image;
       } else if (props.nft.attributes?.metadata?.image) {
         return props.nft.attributes.metadata.image;

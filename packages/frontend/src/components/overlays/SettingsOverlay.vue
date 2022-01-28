@@ -9,7 +9,7 @@
       <Select v-model="selectedLanguage" :options="languages" :label="selectedLanguage.label" />
     </div>
     <div>
-      <label class="block text-sm font-medium text-gray-700 pl-1">Display Currency</label>
+      <label class="block text-sm font-medium text-gray-700 pl-1">Fiat Currency</label>
       <Select v-model="selectedCurrency" :options="currencies" :label="selectedCurrency.label" />
     </div>
     <div>

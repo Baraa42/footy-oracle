@@ -1,18 +1,16 @@
 import { ref } from "vue";
 import Moralis from "moralis/dist/moralis.js";
-import { BigNumber } from "bignumber.js";
 import { SelectOption } from "../../interfaces/layout/SelectOption";
 import { Ref } from "vue";
-import { useMoralis } from "../moralis/moralis";
 
 /**
  * Currencies settings array
  */
 const currencies: Array<SelectOption> = [
   //{ value: "eth", label: "Ethereum (ETH)" },
-  { value: "matic", label: "Polygon (MATIC)" },
-  //{ value: "usd", label: "US Dollar (USD)" },
-  //{ value: "eur", label: "Euro (EUR)" },
+  //{ value: "matic", label: "Polygon (MATIC)" },
+  { value: "usd", label: "US Dollar (USD)" },
+  // { value: "eur", label: "Euro (EUR)" },
   //{ value: "gbp", label: "Pfound (GBP)" },
   //{ value: "jyp", label: "Yen (JPY)" },
 ];

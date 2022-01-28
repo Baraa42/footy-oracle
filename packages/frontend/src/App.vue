@@ -6,7 +6,7 @@
       :class="{
         '3xl:-translate-x-52 3xl:max-w-full': isActionBarActive && isActionBarMovement,
       }"
-      class="relative h-full mt-16 lg:mt-20 lg:mr-18 lg:ml-52 p-3 md:p-6 xl:p-8 mb-14 lg:mb-0 ease-in-out duration-500 transform"
+      class="relative h-full mt-16 lg:mt-20 lg:mr-18 lg:ml-52 p-3 md:p-6 xl:p-8 mb-14 lg:mb-0 ease-in-out duration-300 transform"
     >
       <router-view v-slot="{ Component }" class="pl-save mt-save mb-save">
         <template v-if="Component">
