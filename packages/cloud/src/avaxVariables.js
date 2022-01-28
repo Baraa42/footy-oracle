@@ -1,5 +1,5 @@
-const fuqiChain = "0xa869";
-const fuqiWeb3 = Moralis.web3ByChain(fuqiChain);
+const fujiChain = "0xa869";
+const fujiWeb3 = Moralis.web3ByChain(fujiChain);
 
 const AvaxNFTOwners = Moralis.Object.extend("AvaxNFTOwners");
 const FujiMatchedBets = Moralis.Object.extend("FujiMatchedBets");

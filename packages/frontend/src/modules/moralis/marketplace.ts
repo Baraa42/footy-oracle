@@ -15,8 +15,9 @@ export const useMarketplace = () => {
   const listOnMarketplace = async (nft: NftOwnerModel, price: number): Promise<boolean> => {
     try {
       const formatPrice = new BigNumber(price).toString();
-      const approval = await approveMarketPlace(nft.attributes.token_address, nft.attributes.token_id);
-      const offering = await placeOffering(nft.attributes.token_address, nft.attributes.token_id, formatPrice);
+      await approveMarketPlace(nft.attributes.token_address, nft.attributes.token_id);
+      await placeOffering(nft.attributes.token_address, nft.attributes.token_id, formatPrice);
+
       showSuccess("NFT successfully put for sale, please wait for confirmation");
       return true;
     } catch (err: any) {

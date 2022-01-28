@@ -75,7 +75,7 @@ Moralis.Cloud.afterSave("FujiResult", async (request) => {
     try {
       await afterSaveResult(
         request.object,
-        fuqiWeb3,
+        fujiWeb3,
         contractAddr,
         "fujiResult"
       );
