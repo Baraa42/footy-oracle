@@ -1,4 +1,4 @@
-# footy-oracle-frontend
+# Footy Oracle
 
 ## Project url :
 
