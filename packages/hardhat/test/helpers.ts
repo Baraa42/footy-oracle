@@ -12,6 +12,7 @@ import {
   MockOracle,
   MarketMaker,
   LPNFT,
+  BenqiLosslessDummy
 } from "../typechain";
 import crypto from "crypto";
 import { formatEther } from "ethers/lib/utils";
@@ -138,6 +139,13 @@ export const deployMarketMakerContract = async (
   );
   await marketMakerContract.deployed();
   return marketMakerContract;
+};
+
+export const deployLosslessContract = async (): Promise<BenqiLosslessDummy> => {
+  const BenqiLosslessDummyContract = await ethers.getContractFactory("BenqiLosslessDummy");
+  const benqiLosslessDummyContract: BenqiLosslessDummy = await BenqiLosslessDummyContract.deploy();
+  await benqiLosslessDummyContract.deployed();
+  return benqiLosslessDummyContract;
 };
 
 export const deployContracts = async () => {
