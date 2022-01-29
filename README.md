@@ -52,16 +52,18 @@ Players can bet on their favorite team without losing money (Same principe as Po
 
 #### How it works : 
 - User choose a bet and an amount to bet on the game.
-- User earn `*points*` proportional to his stake and the time left to the start of the game.
+- User earn `points` proportional to his stake and the time left to the start of the game.
 - User money is lent on Benqi or Aave in the background.
 - Game is finished, Chainlink node sets the winning team and the contract withdraws from the lending pool.
 - The contract pick randomly a player amongst those who bet correctly.
 - The contract update each player balance and gives the winner the yield generated from the game e.g if there are 1000 players each betting 1 AVAX on the game, and the game generated is 10 AVAX, then 999 players will receive their money back and the winner will receive an additional 10 AVAX.
+- No need to set the odds for lossless betting, the amount bet on each game are displayed and users can see if they will have more chance of winning if they bet on another side.
 
 #### How it works from contract side :
 - Manager.sol is the contract that handles the creation of new games contract, betting, depositing/withdrawing from pools and accounting.
-- Each game can be sponsored, meaning a third party can stake money on this game without being eligible to winning but contributing to the yield generated.
-- Each game had start an finish time.
+- Each game can be sponsored, meaning a third party can stake money on this game without being eligible to winning the prize but contributing to the yield generated.
+- Each game has start an finish time.
+- Bets can only placed before start time.
 - Users can only withdraw the money that they bet on the game after its finished.
 
 ## Technologies used :
