@@ -40,6 +40,9 @@ contract Manager is Ownable {
     // mapping gameId => array containing players that placed a bet
     mapping(uint256 => address[]) public gameIdToPlayers;
 
+    // mapping gameId => game contract address
+    mapping(string => address) public stringToAddress;
+
     event GameCreated(uint256 gameId, address gameAddress);
     event GameSponsored(uint256 gameId, uint256 amount);
     event BetPlaced(
@@ -74,6 +77,28 @@ contract Manager is Ownable {
             _matchFinishTime
         );
         address _gameAddress = address(_game);
+        gameIdToAddress[gamesCount] = _gameAddress;
+        addressToGameId[_gameAddress] = gamesCount;
+        games.push(_game);
+        emit GameCreated(gamesCount, _gameAddress);
+        gamesCount++;
+    }
+
+    /* @dev Creates a game, only owner can : Feed in timestamp of start and finish
+     */
+    function createDummy(
+        string calldata _object,
+        address _qiToken,
+        uint256 _matchStartTime,
+        uint256 _matchFinishTime
+    ) external onlyOwner {
+        BenqiLossless _game = new BenqiLossless(
+            _qiToken,
+            _matchStartTime,
+            _matchFinishTime
+        );
+        address _gameAddress = address(_game);
+        stringToAddress[_object] = _gameAddress;
         gameIdToAddress[gamesCount] = _gameAddress;
         addressToGameId[_gameAddress] = gamesCount;
         games.push(_game);
@@ -139,6 +164,19 @@ contract Manager is Ownable {
             ? BenqiLossless.BetSide.DRAW
             : BenqiLossless.BetSide.AWAY;
         emit BetPlaced(_gameId, bettingSide, amount);
+    }
+
+    function placeBetDummy(string calldata _gameId, uint256 _betSide)
+        external
+        payable
+    {
+        // Get amount and gameAddress
+        uint256 amount = msg.value;
+        address gameAddress = stringToAddress[_gameId];
+
+        // Place bet
+        BenqiLosslessInterface Igame = BenqiLosslessInterface(gameAddress);
+        Igame.placeBet(msg.sender, amount, _betSide);
     }
 
     /**
