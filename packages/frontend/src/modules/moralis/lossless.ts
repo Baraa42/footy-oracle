@@ -1,4 +1,4 @@
-import { SelectionEnum } from './../../interfaces/enums/SelectionEnum';
+import { SelectionEnum } from "./../../interfaces/enums/SelectionEnum";
 import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
 import { useContract } from "./contract";
@@ -18,7 +18,7 @@ export const useLosslessBet = () => {
    * @param  {number} amount Bet Amount
    * @returns Promise
    */
-  const createLosslessBet = async (event: EventModel, select: SelectionEnum, amount : number): Promise<void> => {
+  const createLosslessBet = async (event: EventModel, select: SelectionEnum, amount: number): Promise<void> => {
     if (!userAddress.value) {
       showError("You need to connect your wallet");
       return;
@@ -29,7 +29,7 @@ export const useLosslessBet = () => {
       return;
     }
     var betAmount = new BigNumber(amount).toString();
-    console.log('losslessManagerContractAddress = ', losslessManagerContractAddress.value);
+    console.log("losslessManagerContractAddress = ", losslessManagerContractAddress.value);
 
     /*
     var balance = await losslessManagerContract.value.methods.getQiTokenBalance(event.attributes.apiId).call();
@@ -42,20 +42,18 @@ export const useLosslessBet = () => {
     console.log("Get game address = ", gameAddress);
     */
 
-    losslessManagerContract.value.methods
-      .placeBet(String(event.attributes.apiId), select)
-      .send(
-        {
-          from: userAddress.value,
-          value: web3.value.utils.toWei(betAmount, "ether"),
-        },
-        async (err: any, result: any) => {
-          if (!err) {
-            showSuccess("Lossless Bet successfully placed");
-          }
-          console.log(result);
+    losslessManagerContract.value.methods.placeBet(String(event.attributes.apiId), Number(select)).send(
+      {
+        from: userAddress.value,
+        value: web3.value.utils.toWei(betAmount, "ether"),
+      },
+      async (err: any, result: any) => {
+        if (!err) {
+          showSuccess("Lossless Bet successfully placed");
         }
-      );
+        console.log(result);
+      }
+    );
   };
-  return {createLosslessBet};
+  return { createLosslessBet };
 };

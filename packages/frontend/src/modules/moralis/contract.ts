@@ -2,7 +2,7 @@ import Moralis from "moralis/dist/moralis.js";
 import BettingContractJson from "footy-oracle-contract/artifacts/contracts/BettingAIO.sol/BettingAIO.json";
 import MarketMakerContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
 import NFTMarketplaceContractJson from "footy-oracle-contract/artifacts/contracts/MarketMakerAIO.sol/MarketMakerAIO.json";
-import LosslessManagerContractJson from "footy-oracle-contract/artifacts/contracts/LosslessManager.sol//LosslessManager.json";
+import LosslessManagerContractJson from "footy-oracle-contract/artifacts/contracts/LosslessManager.sol/LosslessManager.json";
 
 import { Contract } from "web3-eth-contract";
 import { Ref, ref, watch } from "vue";
@@ -54,8 +54,7 @@ export const useContract = () => {
     if (result) {
       nftMarketplaceContractAddress.value = result.toLowerCase();
       if (isWeb3Enabled.value) {
-        nftMarketplaceContract.value = new web3.value.eth.Contract(NFTMarketplaceContractJson.abi as AbiItem[],
-                                                                   nftMarketplaceContractAddress.value);
+        nftMarketplaceContract.value = new web3.value.eth.Contract(NFTMarketplaceContractJson.abi as AbiItem[], nftMarketplaceContractAddress.value);
       }
     }
   };
@@ -68,8 +67,7 @@ export const useContract = () => {
     if (result) {
       losslessManagerContractAddress.value = result.toLowerCase();
       if (isWeb3Enabled.value) {
-        losslessManagerContract.value = new web3.value.eth.Contract(LosslessManagerContractJson.abi as AbiItem[],
-                                                                    losslessManagerContractAddress.value);
+        losslessManagerContract.value = new web3.value.eth.Contract(LosslessManagerContractJson.abi as AbiItem[], losslessManagerContractAddress.value);
       }
     }
   };
@@ -101,6 +99,6 @@ export const useContract = () => {
     bettingAbi: BettingContractJson.abi as AbiItem[],
     marketMakerAbi: MarketMakerContractJson.abi as AbiItem[],
     losslessManagerContract,
-    losslessManagerContractAddress
+    losslessManagerContractAddress,
   };
 };

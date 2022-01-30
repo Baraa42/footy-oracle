@@ -54,18 +54,20 @@
       <div class="mt-4 flex flex-row h-5 outline outline-gray-200 divide-x divide-gray-50/10 rounded text-gray-50 text-xs font-semibold">
         <div
           class="h-full opacity-90 flex items-center rounded-l justify-center"
-          style="width: 40%"
+          style="width: 33.33%"
           :style="{ background: event.attributes.home.attributes.primaryColor }"
         >
-          {{ percentageTotalSelectionValue (selections.HOME)}} %
+          {{ percentageTotalSelectionValue(selections.HOME) }} %
         </div>
-        <div class="h-full opacity-90 flex items-center justify-center bg-gray-600" style="width: 27%">{{ percentageTotalSelectionValue (selections.DRAW)}} %</div>
+        <div class="h-full opacity-90 flex items-center justify-center bg-gray-600" style="width: 33.33%">
+          {{ percentageTotalSelectionValue(selections.DRAW) }} %
+        </div>
         <div
           class="h-full flex opacity-90 items-center rounded-r justify-center"
-          style="width: 33%"
+          style="width: 33.33%"
           :style="{ background: event.attributes.away.attributes.primaryColor }"
         >
-          {{ percentageTotalSelectionValue (selections.AWAY)}}%
+          {{ percentageTotalSelectionValue(selections.AWAY) }}%
         </div>
       </div>
 
@@ -164,6 +166,7 @@ import { QuestionMarkCircleIcon } from "@heroicons/vue/solid";
 import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
 import BigNumber from "bignumber.js";
 import { useCurrency } from "../../modules/settings/currency";
+import { useMath } from "@/modules/math";
 
 export default defineComponent({
   props: {
@@ -178,6 +181,7 @@ export default defineComponent({
     const { showError } = useAlert();
     const { convertCurrency } = useCurrency();
     const { activeChain } = useChain();
+    const { round } = useMath();
     const defiProvider = computed((): DefiProvider | undefined => (activeChain.value.defiProviders ? activeChain.value.defiProviders[0] : undefined));
 
     const { isAuthenticated, losslessBets } = useMoralis();
@@ -187,7 +191,7 @@ export default defineComponent({
     const betAmount = <Ref<string>>ref();
     const betAmountNumber = computed((): number => Number(betAmount?.value.replaceAll(",", ".")));
 
-    const {createLosslessBet} = useLosslessBet();
+    const { createLosslessBet } = useLosslessBet();
 
     const getNameFromSelection = computed((): string => {
       if (selection.value === selections.HOME) {
@@ -200,52 +204,50 @@ export default defineComponent({
     });
 
     const percentageTotalSelectionValue = (select: SelectionEnum): string => {
-      var totalAmount = new BigNumber (0);
-      var selectionAmount = new BigNumber (0);
+      var totalAmount = new BigNumber(0);
+      var selectionAmount = new BigNumber(0);
       var zero = new BigNumber(0);
-      
-      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
-         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
-           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
-           totalAmount = totalAmount.plus(amount);
-           
-           if (losslessBet.attributes.selection == select) {
-             selectionAmount = selectionAmount.plus(amount);
-           }
-         }
+
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => {
+        if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
+          var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+          totalAmount = totalAmount.plus(amount);
+
+          if (losslessBet.attributes.selection == select) {
+            selectionAmount = selectionAmount.plus(amount);
+          }
+        }
       });
       if (totalAmount.gt(zero)) {
         console.log(selectionAmount.div(totalAmount).times(100).toString());
-        return selectionAmount.div(totalAmount).times(100).toString(); 
+        return String(round(selectionAmount.div(totalAmount).times(100).toNumber(), 2));
       }
-      return zero.toString();      
+      return String(round(zero.toNumber(), 2));
     };
 
-
     const countTotalSelectionValue = (select: SelectionEnum): string => {
-      var totalAmount = new BigNumber (0);
-      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
-         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId) && 
-             losslessBet.attributes.selection == select) {
-           console.log(losslessBet);
-           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
-           totalAmount = totalAmount.plus(amount);
-         }
-       });
-      return totalAmount.toString();      
+      var totalAmount = new BigNumber(0);
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => {
+        if (losslessBet.attributes.apiId == String(props.event.attributes.apiId) && losslessBet.attributes.selection == select) {
+          console.log(losslessBet);
+          var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+          totalAmount = totalAmount.plus(amount);
+        }
+      });
+      return String(round(totalAmount.toNumber(), 2));
     };
 
     const getTotalQiBalance = computed((): string => {
-      var totalAmount = new BigNumber (0);
-      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
-         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
-           console.log(losslessBet);
-           console.log(losslessBet.attributes.amount);
-           console.log(losslessBet.attributes.apiId);
-           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
-           totalAmount = totalAmount.plus(amount);
-         }
-       });
+      var totalAmount = new BigNumber(0);
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => {
+        if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
+          console.log(losslessBet);
+          console.log(losslessBet.attributes.amount);
+          console.log(losslessBet.attributes.apiId);
+          var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+          totalAmount = totalAmount.plus(amount);
+        }
+      });
       return totalAmount.toString();
     });
 
@@ -256,7 +258,6 @@ export default defineComponent({
       confirmDialog.color = "indigo";
       confirmDialog.buttonText = "Confirm";
       confirmDialog.onConfirm = async () => {
-
         console.log("onConfirm ", props.event.attributes);
         console.log(betAmountNumber.value);
         createLosslessBet(props.event, select, betAmountNumber.value);
@@ -286,7 +287,7 @@ export default defineComponent({
       getTotalQiBalance,
       countTotalSelectionValue,
       percentageTotalSelectionValue,
-      };
+    };
   },
   components: { ConfirmationDialog, QuestionMarkCircleIcon },
 });
