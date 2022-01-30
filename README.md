@@ -31,19 +31,27 @@ Classical exchange for betting that matches back/lay (bid/ask) bets, in addition
 #### How it works from contract side : 
 - What contract does what.
 
+### Liquidity Pool and Market Maker
+Liquidity Pool : Any user can deposit to a common pool of funds. Liquidity Providers will be issued LP NFTs. These NFTs can be traded on the Marketplace and can be used to redeem the deposit. 
 
-
-### Liquidity Market
-Liquidity Market : User can stake money in the liquidity pool, this money is used to match bettors when odds are deemed favorable to the LP.
+Market Maker: Market Maker will use the funds in the Liquidity Pool to join an unmmatched bet when the odds are deemed favorable to itself.
 
 #### How it works : 
 - Users can stake money in the liquidity pool.
-- The LP will try to use this money to match some unmatched bets when odds are deemed favorable to LP.
-- Odds surveillance through APIs ?
+- The Market Maker will try to use this money to match some unmatched bets when odds are deemed favorable to LP.
+- Currently user has to request the Market Maker to match their bet.
 
 #### How it works from contract side : 
-- What contract does what.
+- Smart Contract accepts the liqudity, issues LP NFTs and joins bets. 
 
+#### Advantages : 
+- In a P2P platform, no bet needs to go unmatched. 
+- Liquidity Providers will better returns if Market Maker chooses the odds smartly. 
+- LP NFTs have a secondary market and can function as an indicator of Market Maker's ability to choose the best bets and odds. 
+
+#### Roadmap : 
+- Market Maker will deposit idle funds to Benqi / Compound / Aave to get better returns. 
+- It will use external APIs (through the UI) to determine favorable odds for bets it can join. 
 
 
 
@@ -68,7 +76,7 @@ Players can bet on their favorite team without losing money (Same principe as Po
 
 ## Technologies used :
 - Moralis.
-- Hardhat/brownie.
+- Hardhat, Brownie.
 - Add more.
 
 ## Procotols used :
@@ -76,7 +84,6 @@ Players can bet on their favorite team without losing money (Same principe as Po
 - Aave.
 - Chainlink.
 - YieldYak.
-- Opensea/Raribe ?
 
 ## Installation and Requierements :
 ?
