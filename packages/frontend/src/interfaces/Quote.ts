@@ -15,4 +15,5 @@ export interface Quote {
   protocols: any[][][];
   adapters?: Adapter[];
   estimatedGas: number;
+  raw?: any;
 }

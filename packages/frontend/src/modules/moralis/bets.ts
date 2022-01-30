@@ -97,8 +97,8 @@ const getMarketMakerMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> |
     .select("amount", "betType", "odds", "betSide", "selection", "apiId", "confirmed", "event");
   marketMakerMatchedBets.value = (await matchedBetsQuery.find()) as Array<MatchedBetModel>;
 
-  console.log(marketMakerContractAddress.value);
-  console.log(marketMakerMatchedBets.value);
+  //console.log(marketMakerContractAddress.value);
+  //console.log(marketMakerMatchedBets.value);
 
   // Create live subscriptions
   const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();

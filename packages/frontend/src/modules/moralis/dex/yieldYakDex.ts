@@ -1,3 +1,4 @@
+import { useAlert } from "./../../layout/alert";
 import { Adapter } from "./../../../interfaces/Quote";
 import { useMoralis } from "./../moralis";
 import useDex from "./dex";
@@ -36,8 +37,8 @@ export const useYieldYakDex = () => {
       const yakRouterContract: any = new web3.value.eth.Contract(YakRouterAbi as AbiItem[], yakRouterAddr);
 
       try {
-        const { avalancheMainet, switchNetwork } = useChain();
-        await switchNetwork(avalancheMainet);
+        //const { avalancheMainet, switchNetwork } = useChain();
+        // await switchNetwork(avalancheMainet);
 
         const fromTokenAddr =
           from.token.address === "0x0000000000000000000000000000000000000000" ? "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7" : from.token.address;
@@ -87,6 +88,7 @@ export const useYieldYakDex = () => {
           protocols: [],
           adapters: adapters,
           estimatedGas: result.gasEstimate,
+          raw: result,
         };
 
         console.log(quote);
@@ -97,7 +99,29 @@ export const useYieldYakDex = () => {
       }
     }
   };
-  const trySwap = async (from: SwapItem, to: SwapItem, chain: string = "polygon") => {};
+  const trySwap = async (from: SwapItem, to: SwapItem, quote?: Quote) => {
+    const { web3, userAddress } = useMoralis();
+    const { showSuccess } = useAlert();
+    if (quote?.raw && userAddress.value) {
+      const yakRouterContract: any = new web3.value.eth.Contract(YakRouterAbi as AbiItem[], yakRouterAddr);
+
+      const trade: Array<any> = [];
+
+      yakRouterContract.methods
+        .swapNoSplit([quote.raw.amounts[0], quote.raw.amounts[quote.raw.amounts.length - 1], quote.raw.path, quote.raw.adapters], userAddress.value, 0)
+        .send(
+          {
+            from: userAddress.value,
+          },
+          async (err: any, result: any) => {
+            if (!err) {
+              showSuccess("Tokens successfully placed");
+            }
+            console.log(result);
+          }
+        );
+    }
+  };
 
   return { getSupportedTokens, getQuote, trySwap, tokens, getTokenPrice, findToken };
 };

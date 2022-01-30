@@ -9,7 +9,7 @@
       </div> 
       -->
     </div>
-    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betSide') == '1'">Lay - {{ getBetSelection() }} </div>
+    <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('betSide') == '1'">Lay - {{ getBetSelection() }}</div>
     <div class="flex items-center text-blue-600 font-semibold" v-if="bet.get('betSide') == '0'">Back - {{ getBetSelection() }}</div>
 
     <!-- ODDS -->
@@ -24,7 +24,7 @@
       {{ new BigNumber(convertCurrency(bet.get("amount"))).times(new BigNumber(decodeOdds(bet.get("odds"))).minus(1)).toNumber() }}
       {{ activeChain.currencySymbol }}
     </div>
-    
+
     <!-- P / L -->
     <!--
     <div class="flex items-center" v-if="bet.get('won') == true">{{ convertCurrency(bet.get("amount")) }} {{ activeChain.currencySymbol }}</div>
@@ -34,9 +34,9 @@
       {{ activeChain.currencySymbol }}
     </div>
     -->
-    <div class="flex items-center font-semibold"> {{ getProfitLoss() }}</div>
+    <div class="flex items-center font-semibold">{{ getProfitLoss() }}</div>
     <!-- Status -->
-    <div class="flex items-center font-semibold"> {{ getBetStatus() }}</div>
+    <div class="flex items-center font-semibold">{{ getBetStatus() }}</div>
     <!--
     <div class="flex items-center text-green-600 font-semibold" v-if="bet.get('won') == true">Won</div>
     <div class="flex items-center text-red-600 font-semibold" v-if="bet.get('won') == false">Lose</div>
@@ -54,71 +54,65 @@ import { useChain } from "@/modules/moralis/chain";
 
 export default defineComponent({
   props: {
-   bet: { type: Object as () => MatchedBetModel, required: true },
+    bet: { type: Object as () => MatchedBetModel, required: true },
   },
   setup(props) {
     const { convertCurrency } = useCurrency();
     const { decodeOdds } = useOdds();
     const { activeChain } = useChain();
-    console.log(props.bet);
-    
+
     let chainPrefix = activeChain.value.attributePrefix;
     chainPrefix = chainPrefix.charAt(0).toUpperCase() + chainPrefix.slice(1);
-    console.log(chainPrefix); 
 
     const getBetStatus = () => {
-      if (props.bet?.className == chainPrefix + 'MatchedBets') {
-        return 'Matched';
-      }
-      else if (props.bet?.className == chainPrefix + 'UnmatchedBets') {
-        return 'Unmatched';
-      } 
-      else {
-        return '';
+      if (props.bet?.className == chainPrefix + "MatchedBets") {
+        return "Matched";
+      } else if (props.bet?.className == chainPrefix + "UnmatchedBets") {
+        return "Unmatched";
+      } else {
+        return "";
       }
     };
 
     const getBetSelection = () => {
       if (props.bet?.attributes.event?.attributes.isCompleted) {
-        if (props.bet?.get('won')) {
+        if (props.bet?.get("won")) {
           return "Won";
-        }
-        else {
+        } else {
           return "Lost";
         }
-      }
-      else {
-        if (props.bet?.get('selection') == '1') {
+      } else {
+        if (props.bet?.get("selection") == "1") {
           return props.bet?.attributes.event?.get("home").attributes.name;
-        }
-        else if (props.bet?.get('selection') == '2') {
-          return 'Draw';
-        } 
-        else if (props.bet?.get('selection') == '3') {
+        } else if (props.bet?.get("selection") == "2") {
+          return "Draw";
+        } else if (props.bet?.get("selection") == "3") {
           return props.bet?.attributes.event?.get("away").attributes.name;
-        } 
-        else {
-          return '';
+        } else {
+          return "";
         }
       }
     };
 
     const getProfitLoss = () => {
       if (props.bet?.attributes.event?.attributes.isCompleted) {
-        if (props.bet?.get('won')) {
-          return convertCurrency(props.bet?.get("amount")) +  activeChain.value.currencySymbol ;
+        if (props.bet?.get("won")) {
+          return convertCurrency(props.bet?.get("amount")) + activeChain.value.currencySymbol;
+        } else if (props.bet?.get("betSide") == "0") {
+          // Lost Back Bet
+          return "-" + convertCurrency(props.bet?.get("amount")) + activeChain.value.currencySymbol;
+        } else {
+          // Lost Lay Bet
+          return (
+            "-" +
+            new BigNumber(convertCurrency(props.bet?.get("amount"))).times(new BigNumber(decodeOdds(props.bet?.get("odds"))).minus(1)).toNumber() +
+            activeChain.value.currencySymbol
+          );
         }
-        else if (props.bet?.get('betSide') == '0'){ // Lost Back Bet
-          return '-' + convertCurrency(props.bet?.get("amount")) + activeChain.value.currencySymbol;
-        }
-        else { // Lost Lay Bet
-          return '-' + new BigNumber(convertCurrency(props.bet?.get("amount"))).times(new BigNumber(decodeOdds(props.bet?.get("odds"))).minus(1)).toNumber() + activeChain.value.currencySymbol ;
-        }
+      } else {
+        return "N/A";
       }
-      else {
-        return 'N/A';
-      }
-    }
+    };
     return { activeChain, decodeOdds, convertCurrency, BigNumber, getBetSelection, getBetStatus, getProfitLoss };
   },
 });

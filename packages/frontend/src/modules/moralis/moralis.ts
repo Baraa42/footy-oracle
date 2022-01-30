@@ -13,6 +13,7 @@ import { useBalance } from "./balance";
 import { TokenBalance } from "../../interfaces/TokenBalance";
 import Moralis from "moralis/dist/moralis.js";
 import { useChain } from "./chain";
+import Web3 from "web3";
 
 /**
  * The user object where all relevant information were stored
@@ -94,6 +95,8 @@ const enableWeb3 = async (): Promise<boolean> => {
   }
   try {
     web3.value = await Moralis.Web3.enableWeb3();
+    //const provider = new Web3.providers.HttpProvider("http://127.0.0.1:8545/");
+    //web3.value = new Web3(provider);
     isWeb3Enabled.value = true;
     return true;
   } catch (err: any) {

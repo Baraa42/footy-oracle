@@ -10,6 +10,7 @@ import Moralis from "moralis/dist/moralis.js";
 import { useOneInchDex } from "./dex/oneInchDex";
 import { useYieldYakDex } from "./dex/yieldYakDex";
 import useDex from "./dex/dex";
+import Web3 from "web3";
 
 const avalancheTestnet: Chain = {
   name: "Avalanche Fuji Testnet",

@@ -39,16 +39,16 @@
 
                   <div v-if="isAuthenticated && mode == 'from' && userTokens">
                     <span class="text-xs font-semibold">Avalible Tokens</span>
-                    <div v-for="token in userTokens" :key="token.symbol" class="mt-1">
-                      <div
-                        v-if="findToken(token.symbol)"
-                        class="relative horizontal-scroll grid grid-cols-horizontal-scroll col-span-full gap-1 grid-flow-col auto-cols-max overflow-x-scroll no-scrollbar pb-1"
-                      >
+
+                    <div
+                      class="relative horizontal-scroll grid grid-cols-horizontal-scroll col-span-full gap-x-1 grid-flow-col auto-cols-max overflow-x-scroll no-scrollbar pb-1"
+                    >
+                      <div v-for="token in userTokens" :key="token.symbol">
                         <button
                           @click="click(findToken(token.symbol))"
                           class="inline-flex items-center bg-indigo-500 hover:bg-indigo-700 px-2 py-1 space-x-2 rounded"
                         >
-                          <img :src="findToken(token.symbol)?.logoURI" class="w-6 h-6 rounded-full opacity-100" />
+                          <img v-if="findToken(token.symbol)?.logoURI" :src="findToken(token.symbol)?.logoURI" class="w-6 h-6 rounded-full opacity-100" />
                           <span class="text-white text-xs font-medium">{{ token.symbol }}</span>
                         </button>
                       </div>

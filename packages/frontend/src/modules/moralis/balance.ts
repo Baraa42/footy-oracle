@@ -113,6 +113,8 @@ const getTokenBalances = async (): Promise<Ref<Array<TokenBalance> | undefined>>
     });
   }
 
+  console.log(tokenBalances);
+
   return tokenBalances;
 };
 

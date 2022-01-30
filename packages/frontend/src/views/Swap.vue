@@ -54,6 +54,7 @@
 
         <div>
           <button
+            :disabled="!quote"
             @click="onSwap()"
             class="w-full shadow-md mt-3 shadow-indigo-800/30 bg-gradient-to-b from-indigo-500 to-indigo-600 rounded-xl text-xl font-bold py-4 text-gray-100 focus:outline-none transition-all hover:bg-gradient-to-t border-2 border-indigo-500 focus:ring-2 focus:ring-indigo-500 ring-offset-4 ring-offset-gray-800"
           >
@@ -202,7 +203,7 @@ export default defineComponent({
 
     const onSwap = async () => {
       if (isAuthenticated.value) {
-        await trySwap(from, to);
+        await trySwap(from, to, quote.value);
       } else {
         showError("You need to connect your wallet");
       }
