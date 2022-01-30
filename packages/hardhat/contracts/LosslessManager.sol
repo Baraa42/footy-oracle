@@ -1,12 +1,13 @@
 // SPDX-License-Identifier: MIT
 
-pragma solidity ^0.8.0;
+pragma solidity ^0.8.9;
 
 import "./LosslessV2.sol";
 import "./BenqiLossless.sol";
 import "../interfaces/QiAvaxInterface.sol";
 import "../interfaces/BenqiLosslessInterface.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@chainlink/contracts/src/v0.8/dev/ChainlinkClient.sol";
 
 /** @title LosslessManager
  *  @dev This contract implement is a lossless betting contracts for football 1X2 that uses Benqi to generate yield
@@ -19,7 +20,10 @@ import "@openzeppelin/contracts/access/Ownable.sol";
  * Eth Contracts : See cETH addresses here 'https://compound.finance/docs#networks'
  */
 
-contract LosslessManager is Ownable {
+contract LosslessManager is Ownable, ChainlinkClient
+{
+    using Chainlink for Chainlink.Request;
+
     // tracks games count
     uint256 public gamesCount;
     // interface to interact with qiToken
@@ -36,10 +40,16 @@ contract LosslessManager is Ownable {
     // mapping gameId => array containing players that placed a bet
     mapping(string => address[]) public gameIdToPlayers;
 
+    address private oracle;
+    bytes32 private jobId;
+    uint256 private fee;
+
+
     event GameCreated(string gameId, uint256 gameCount, address gameAddress);
-    event GameSponsored(string gameId, uint256 amount);
+    //event GameSponsored(string gameId, uint256 amount);
     event BetPlaced(string gameId, BenqiLossless.BetSide betside, uint256 amount);
     event Winner(string gameId, address winner, uint256 amount);
+    event ChainlinkReply(string gameId, uint256 winner);
 
     /**
      * @dev Initialize the contract settings .
@@ -50,6 +60,20 @@ contract LosslessManager is Ownable {
     constructor(address _qiToken) {
         gamesCount = 0;
         qiToken = QiAvaxInterface(_qiToken);
+
+        /*
+        // Chainlink Integration
+        // Polygon Mumbai
+        setChainlinkToken(0x326C977E6efc84E512bB9C30f76E30c160eD06FB);
+        oracle = 0xc8D925525CA8759812d0c299B90247917d4d4b7C;
+        jobId = "7ecb74753e414b54b26ed1b911b88d67";
+        */
+
+        // AVAX Fuji
+        setChainlinkToken(0x0b9d5D9136855f6FEc3c0993feE6E9CE8a297846);
+        oracle = 0xD5c4D9Fe36d09e71940676b312D1500078E24C6a;
+        jobId = "fee82cce27ec45c3af4d2ba0b9e2dd02";
+        fee = 10**16;
     }
 
     /**
@@ -70,6 +94,8 @@ contract LosslessManager is Ownable {
     /**
      * @dev Sponsor the contract, funds received will be used to generate yield.
      */
+     /*
+     Removing due to contract size issues. 
     function sponsor(string calldata _gameId) external payable {
         // Get amount and gameAddress
         uint256 amount = msg.value;
@@ -93,6 +119,7 @@ contract LosslessManager is Ownable {
         // emit event
         emit GameSponsored(_gameId, amount);
     }
+    */
 
     /**
      * @dev Places the bet.
@@ -142,9 +169,9 @@ contract LosslessManager is Ownable {
      * Only Owner can call, replace with chainlink
      */
     function setMatchWinnerAndWithdrawFromPool(
-        string calldata _gameId,
+        string memory _gameId,
         uint256 _winningSide
-    ) external onlyOwner {
+    ) public {
         // Get gameAddress and contract
         address payable gameAddress = payable(gameIdToAddress[_gameId]);
         BenqiLossless benqiLossless = BenqiLossless(gameAddress);
@@ -186,33 +213,58 @@ contract LosslessManager is Ownable {
         return gameIdToTokenBalance[_gameId];
     }
 
-    function getGameAddress(string calldata _gameId)
-        external
-        view
-        returns (address)
-    {
-        return gameIdToAddress[_gameId];
-    }
-
-    function getQiTokenBalanceOfContract() external view returns (uint256) {
-        return qiToken.balanceOf(address(this));
-    }
-
-    function mintQiToken()  external payable {
-        qiToken.mint{value: msg.value}();
-    }
-
-    function placeBetDummy(string calldata _gameId, uint256 _betSide) external payable {
-        // Get amount and gameAddress
-        uint256 amount = msg.value;
-        address gameAddress = gameIdToAddress[_gameId];
-
-        // Place bet
-        BenqiLosslessInterface Igame = BenqiLosslessInterface(gameAddress);
-        Igame.placeBet(msg.sender, amount, _betSide);
-    }
     /**
-     * @dev to receive avax
+     * Create a Chainlink request to retrieve API response, find the target
+     * data, the result is a string in the format "fixtureId_Winner"
      */
-    receive() external payable {}
+    function requestResult(string memory _objectId) public onlyOwner() returns(bytes32 requestId) 
+    {
+        Chainlink.Request memory req = buildChainlinkRequest(jobId, address(this), this.fulfill.selector);
+        req.add("fixtureId", _objectId);
+        // Sends the request
+        return sendChainlinkRequestTo(oracle, req, fee);
+    }
+
+    /*
+      Sample answers:
+      Match Id -> 710580 (supplied through requestData) -> Manchester City vs Arsenal
+      Bytes32 reply from Chainlink Node -> 0x3731303538303100000000000000000000000000000000000000000000000000
+      Conversion to string / uint256 (by calling bytes32ToString)-> 7105801
+      Match Id is appended with  0 - pending, 1 - Home win, 2 - Away win, 3 - Draw
+      City won this match, hence match id is appended with 1.
+    */
+    function fulfill(bytes32 _requestId, bytes32 _data) public recordChainlinkFulfillment(_requestId)
+    {
+        (string memory gameId, uint256 winner) = bytes32ToString(_data);
+        // No players, so need for this step
+        if (gameIdToPlayers[gameId].length > 0 ) {
+            setMatchWinnerAndWithdrawFromPool(gameId, winner);
+        }
+        else {
+            delete gameIdToAddress[gameId];
+            delete gameIdToTokenBalance[gameId];
+        }
+        emit ChainlinkReply(gameId, winner);
+    }
+
+    function bytes32ToString(bytes32 _bytes32) public pure returns(string memory, uint256)
+    {
+        uint256 i = 0;
+        uint256 c= 0;
+        uint256 k = 0;
+        while (i < 32 && _bytes32[i] != 0) {
+            i++;
+        }
+        uint256 ii = i - 1; // remove last digit from result
+        bytes memory bytesArray = new bytes(ii);
+        for (i = 0; i < 32 && _bytes32[i] != 0; i++) {
+            if (i < ii) {
+                bytesArray[i] = _bytes32[i];
+            }
+            c = (uint8(_bytes32[i]) - 48);
+            k = k * 10 + c;
+        }
+        // last digit inidicates the result of the match with this matchId.
+        return (string(bytesArray), uint256(k % 10));
+    }
 }
