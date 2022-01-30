@@ -32,6 +32,7 @@ const user: Ref<User> = ref({
   listedNfts: [],
   nfts: [],
   depositNfts: [],
+  losslessBets: []
 });
 
 /**
@@ -68,6 +69,7 @@ const moralisUser = computed((): Moralis.User | undefined => user.value.moralis)
 const balance = computed(() => user.value.balances);
 const tokens = computed((): Array<TokenBalance> => user.value.balances.tokens);
 const unmatchedBets = computed((): Array<UnmatchedBetModel> | undefined => user.value.unmatchedBets);
+const losslessBets = computed((): Array<MatchedBetModel> | undefined => user.value.losslessBets);
 const matchedBets = computed((): Array<MatchedBetModel> | undefined => user.value.matchedBets);
 const userAddress = computed((): string | undefined => user.value.moralis?.get("ethAddress"));
 
@@ -144,7 +146,7 @@ const afterLogin = async (moralisUser: any) => {
  */
 const loadUserRelatedData = async (): Promise<void> => {
   try {
-    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites()]);
+    await Promise.all([loadNativeBalance(), loadTokenBalance(), loadNfts(), loadUnmatchedBets(), loadMatchedBets(), loadFavorites(), loadLosslessBets()]);
   } catch (err: any) {
     console.log(err);
   }
@@ -219,6 +221,13 @@ const loadMatchedBets = async () => {
   }
 };
 
+const loadLosslessBets = async () => {
+  const { getLosslessBets } = useBet();
+  const losslessBets: any = await getLosslessBets();
+  user.value.losslessBets = losslessBets;
+};
+
+
 const loadUnmatchedBets = async () => {
   const { getUnmatchedBets } = useBet();
   const unmatchedBets: any = await getUnmatchedBets();
@@ -242,6 +251,7 @@ const logout = async () => {
     listedNfts: [],
     nfts: [],
     depositNfts: [],
+    losslessBets: [],
   };
 };
 
@@ -271,5 +281,6 @@ export const useMoralis = () => {
     lpDeposits,
     logout,
     isWeb3Enabled,
+    losslessBets,
   };
 };

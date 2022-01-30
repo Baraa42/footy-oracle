@@ -1,5 +1,3 @@
-import { Event } from 'ethers';
-import { placeBet } from './../../../../hardhat/test/helpers';
 import { SelectionEnum } from './../../interfaces/enums/SelectionEnum';
 import { useMoralis } from "./moralis";
 import { useAlert } from "../layout/alert";
@@ -15,7 +13,9 @@ export const useLosslessBet = () => {
   /**
    * Accept new bet from betslip
    *
-   * @param  {Betslip} betslipItem
+   * @param  {EventModel} event  Details of the match
+   * @param  {SelectionEnum} select HOME/AWAY/DRAW
+   * @param  {number} amount Bet Amount
    * @returns Promise
    */
   const createLosslessBet = async (event: EventModel, select: SelectionEnum, amount : number): Promise<void> => {
@@ -28,19 +28,13 @@ export const useLosslessBet = () => {
       showError("No contract deployed for this game");
       return;
     }
-    console.log(event);
-    console.log("eventid = ", event.attributes.apiId);
-
     var betAmount = new BigNumber(amount).toString();
-    console.log(betAmount);
-    var v = web3.value.utils.toWei(betAmount, "ether");
-    console.log(v);
     console.log('losslessManagerContractAddress = ', losslessManagerContractAddress.value);
 
-    var balance = await losslessManagerContract.value.methods.getQiTokenBalance(event.attributes.apiId).call();
-    console.log("total balance = ", balance);
-
     /*
+    var balance = await losslessManagerContract.value.methods.getQiTokenBalance(event.attributes.apiId).call();
+    console.log("total balance before = ", balance);
+
     balance = await losslessManagerContract.value.methods.getQiTokenBalanceOfContract().call();
     console.log("qi balance = ", balance);
 
@@ -53,7 +47,7 @@ export const useLosslessBet = () => {
       .send(
         {
           from: userAddress.value,
-          value: v,
+          value: web3.value.utils.toWei(betAmount, "ether"),
         },
         async (err: any, result: any) => {
           if (!err) {
@@ -62,71 +56,6 @@ export const useLosslessBet = () => {
           console.log(result);
         }
       );
-   /*
-   // This works
-      losslessManagerContract.value.methods
-      .mintQiToken()
-      .send(
-        {
-          from: userAddress.value,
-          value: v,
-        },
-        async (err: any, result: any) => {
-          if (!err) {
-            showSuccess("Lossless Bet mintQiToken successfully created");
-          }
-          console.log(result);
-        }
-      );
-      */
-    /*
-
-    if (betslipItem.type === types.BACK) {
-      bettingContract.value.methods
-        .createBackBet(
-          String(betslipItem.event.attributes.apiId),
-          0,
-          betslipItem.selection,
-          encodeOdds(betslipItem.odds),
-          web3.value.utils.toWei(betslipItem.stake.toString(), "ether")
-        )
-        .send(
-          {
-            from: userAddress.value,
-            value: web3.value.utils.toWei(betslipItem.stake.toString(), "ether"),
-          },
-          async (err: any, result: any) => {
-            if (!err) {
-              removeFromBetslip(betslipItem);
-              showSuccess("Bet successfully placed");
-            }
-            console.log(result);
-          }
-        );
-    } else if (betslipItem.type === types.LAY) {
-      bettingContract.value.methods
-        .createLayBet(
-          String(betslipItem.event.attributes.apiId),
-          0,
-          betslipItem.selection,
-          encodeOdds(betslipItem.odds),
-          web3.value.utils.toWei(betslipItem.stake.toString(), "ether")
-        )
-        .send(
-          {
-            from: userAddress.value,
-            value: web3.value.utils.toWei(betslipItem.liability.toString(), "ether"),
-          },
-          async (err: any, result: any) => {
-            if (!err) {
-              removeFromBetslip(betslipItem);
-              showSuccess("Bet successfully placed");
-            }
-            console.log(result);
-          }
-        );
-    }
-    */
   };
   return {createLosslessBet};
 };

@@ -21,4 +21,5 @@ export interface User {
   betslip?: Array<Betslip>;
   listedNfts?: Array<any>;
   depositNfts?: Array<MumbaiDepositLPModel>;
+  losslessBets?: Array<MatchedBetModel>;
 }
