@@ -25,7 +25,8 @@
             <div class="bg-gray-600 px-2 py-1 rounded"><component :is="defiProvider.logo" class="w-12" /></div>
           </div>
           <div class="bg-indigo-700 w-full text-center px-2 py-1 rounded text-xs font-semibold text-gray-50">
-            Total Price 2 {{ activeChain.currencySymbol }}
+            <!-- Total Deposit 2 {{ activeChain.currencySymbol }} -->
+            Total Deposit {{ getTotalQiBalance }} {{ activeChain.currencySymbol }}
           </div>
           <div class="flex space-x-1 ml-auto">
             <div class="bg-gray-600 w-full text-center px-2 py-1 rounded text-xs font-semibold text-gray-50">
@@ -56,28 +57,28 @@
           style="width: 40%"
           :style="{ background: event.attributes.home.attributes.primaryColor }"
         >
-          40%
+          {{ percentageTotalSelectionValue (selections.HOME)}} %
         </div>
-        <div class="h-full opacity-90 flex items-center justify-center bg-gray-600" style="width: 27%">27%</div>
+        <div class="h-full opacity-90 flex items-center justify-center bg-gray-600" style="width: 27%">{{ percentageTotalSelectionValue (selections.DRAW)}} %</div>
         <div
           class="h-full flex opacity-90 items-center rounded-r justify-center"
           style="width: 33%"
           :style="{ background: event.attributes.away.attributes.primaryColor }"
         >
-          33%
+          {{ percentageTotalSelectionValue (selections.AWAY)}}%
         </div>
       </div>
 
       <div class="flex flex-row w-full mt-4 rounded shadow-md shadow-gray-200">
         <button class="btn border-l-2 border-t-2 border-b-2 rounded-l" @click="onSelect(selections.HOME)">
           <span class="font-semibold">Home</span>
-          <span class="text-xs">20 {{ activeChain.currencySymbol }}</span>
+          <span class="text-xs">{{ countTotalSelectionValue(selections.HOME) }} {{ activeChain.currencySymbol }}</span>
         </button>
         <button class="btn border-2" @click="onSelect(selections.DRAW)">
-          <span class="font-semibold">Draw</span> <span class="text-xs">13.5 {{ activeChain.currencySymbol }}</span>
+          <span class="font-semibold">Draw</span> <span class="text-xs">{{ countTotalSelectionValue(selections.DRAW) }} {{ activeChain.currencySymbol }}</span>
         </button>
         <button class="btn border-t-2 border-b-2 border-r-2 rounded-r" @click="onSelect(selections.AWAY)">
-          <span class="font-semibold">Away</span> <span class="text-xs">16.5 {{ activeChain.currencySymbol }}</span>
+          <span class="font-semibold">Away</span> <span class="text-xs">{{ countTotalSelectionValue(selections.AWAY) }} {{ activeChain.currencySymbol }}</span>
         </button>
       </div>
     </div>
@@ -155,12 +156,15 @@ import { DefiProvider } from "@/interfaces/Chain";
 import { useConfirmDialog } from "@/modules/layout/confirmDialog";
 import { useMoralis } from "@/modules/moralis/moralis";
 import { useLosslessBet } from "@/modules/moralis/lossless";
-
 import { useAlert } from "@/modules/layout/alert";
 import { CashIcon } from "@heroicons/vue/outline";
 import { SelectionEnum } from "@/interfaces/enums/SelectionEnum";
 import ConfirmationDialog from "../dialogs/ConfirmationDialog.vue";
 import { QuestionMarkCircleIcon } from "@heroicons/vue/solid";
+import { MatchedBetModel } from "../../interfaces/models/MatchedBetModel";
+import BigNumber from "bignumber.js";
+import { useCurrency } from "../../modules/settings/currency";
+
 export default defineComponent({
   props: {
     event: {
@@ -172,11 +176,11 @@ export default defineComponent({
     const selections = SelectionEnum;
     const { humanizeDate, getDate, getDateTime } = useTimezone();
     const { showError } = useAlert();
-
+    const { convertCurrency } = useCurrency();
     const { activeChain } = useChain();
     const defiProvider = computed((): DefiProvider | undefined => (activeChain.value.defiProviders ? activeChain.value.defiProviders[0] : undefined));
 
-    const { isAuthenticated } = useMoralis();
+    const { isAuthenticated, losslessBets } = useMoralis();
     const confirmDialog = useConfirmDialog();
 
     const selection: Ref<SelectionEnum | undefined> = ref();
@@ -195,7 +199,58 @@ export default defineComponent({
       }
     });
 
+    const percentageTotalSelectionValue = (select: SelectionEnum): string => {
+      var totalAmount = new BigNumber (0);
+      var selectionAmount = new BigNumber (0);
+      var zero = new BigNumber(0);
+      
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
+         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
+           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+           totalAmount = totalAmount.plus(amount);
+           
+           if (losslessBet.attributes.selection == select) {
+             selectionAmount = selectionAmount.plus(amount);
+           }
+         }
+      });
+      if (totalAmount.gt(zero)) {
+        console.log(selectionAmount.div(totalAmount).times(100).toString());
+        return selectionAmount.div(totalAmount).times(100).toString(); 
+      }
+      return zero.toString();      
+    };
+
+
+    const countTotalSelectionValue = (select: SelectionEnum): string => {
+      var totalAmount = new BigNumber (0);
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
+         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId) && 
+             losslessBet.attributes.selection == select) {
+           console.log(losslessBet);
+           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+           totalAmount = totalAmount.plus(amount);
+         }
+       });
+      return totalAmount.toString();      
+    };
+
+    const getTotalQiBalance = computed((): string => {
+      var totalAmount = new BigNumber (0);
+      losslessBets?.value?.forEach((losslessBet: MatchedBetModel) => { 
+         if (losslessBet.attributes.apiId == String(props.event.attributes.apiId)) {
+           console.log(losslessBet);
+           console.log(losslessBet.attributes.amount);
+           console.log(losslessBet.attributes.apiId);
+           var amount = new BigNumber(convertCurrency(losslessBet?.get("amount")));
+           totalAmount = totalAmount.plus(amount);
+         }
+       });
+      return totalAmount.toString();
+    });
+
     const onSelect = (select: SelectionEnum) => {
+      console.log("onSelect");
       selection.value = select;
       confirmDialog.icon = CashIcon;
       confirmDialog.color = "indigo";
@@ -227,7 +282,10 @@ export default defineComponent({
       onSelect,
       selection,
       getNameFromSelection,
-      betAmount
+      betAmount,
+      getTotalQiBalance,
+      countTotalSelectionValue,
+      percentageTotalSelectionValue,
       };
   },
   components: { ConfirmationDialog, QuestionMarkCircleIcon },

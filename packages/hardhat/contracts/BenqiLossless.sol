@@ -72,7 +72,7 @@ contract BenqiLossless is Lossless {
     function placeBet(
         address player,
         uint256 amount,
-        uint256 betSide
+        uint8 betSide
     )
         external
         onlyOwner /*isOpen correctBet(betSide)*/

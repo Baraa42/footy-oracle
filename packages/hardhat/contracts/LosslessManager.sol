@@ -45,11 +45,11 @@ contract LosslessManager is Ownable, ChainlinkClient
     uint256 private fee;
 
 
-    event GameCreated(string gameId, uint256 gameCount, address gameAddress);
+    event GameCreated(string apiId, uint256 gameCount, address gameAddress);
     //event GameSponsored(string gameId, uint256 amount);
-    event BetPlaced(string gameId, BenqiLossless.BetSide betside, uint256 amount);
-    event Winner(string gameId, address winner, uint256 amount);
-    event ChainlinkReply(string gameId, uint256 winner);
+    event BetPlaced(string apiId, address from, uint8 selection, uint256 amount);
+    event Winner(string apiId, address winner, uint256 amount);
+    event ChainlinkReply(string apiId, uint256 winner);
 
     /**
      * @dev Initialize the contract settings .
@@ -124,7 +124,7 @@ contract LosslessManager is Ownable, ChainlinkClient
     /**
      * @dev Places the bet.
      */
-    function placeBet(string calldata _gameId, uint256 _betSide) external payable {
+    function placeBet(string calldata _gameId, uint8 _betSide) external payable {
         // Get amount and gameAddress
         uint256 amount = msg.value;
         address gameAddress = gameIdToAddress[_gameId];
@@ -146,12 +146,14 @@ contract LosslessManager is Ownable, ChainlinkClient
         }
 
         // emit event
+        /*
         BenqiLossless.BetSide bettingSide = _betSide == 1
             ? BenqiLossless.BetSide.HOME
             : _betSide == 2
             ? BenqiLossless.BetSide.DRAW
             : BenqiLossless.BetSide.AWAY;
-        emit BetPlaced(_gameId, bettingSide, amount);
+        */
+        emit BetPlaced(_gameId, msg.sender, _betSide, amount);
     }
 
     /**

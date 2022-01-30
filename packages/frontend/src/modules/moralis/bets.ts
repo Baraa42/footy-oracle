@@ -17,6 +17,7 @@ import { useContract } from "./contract";
 const unmatchedBets: Ref<Array<UnmatchedBetModel> | undefined> = ref();
 const matchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
 const marketMakerMatchedBets: Ref<Array<MatchedBetModel> | undefined> = ref();
+const losslessBets: Ref<Array<MatchedBetModel> | undefined> = ref();
 
 /**
  *  Get all unmatched bets from user
@@ -76,6 +77,30 @@ const getMatchedBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>
   }
 
   return matchedBets;
+};
+
+const getLosslessBets = async (): Promise<Ref<Array<MatchedBetModel> | undefined>> => {
+  const { userAddress } = useMoralis();
+  if (userAddress.value) {
+    // Get all matched bets from user
+    const { getClassName } = useChain();
+    const { createQuery } = useMoralisObject(getClassName("LosslessBetsPlaced"));
+    const query: Moralis.Query<any> = createQuery();
+    const losslessBetsQuery: Moralis.Query<MatchedBetModel> = query
+     // .equalTo("from", userAddress.value)
+      .include("event", "event.home", "event.away", "event.league")
+      .select("amount", "from", "betType", "odds", "betSide", "selection", "apiId", "isMinted", "nft", "tokenId", "confirmed", "mintStatus", "event");
+    losslessBets.value = (await losslessBetsQuery.find()) as Array<MatchedBetModel>;
+
+    console.log(losslessBets);
+    // Create live subscriptions
+    const { subscribe, subscribeToCreate, subscribeToUpdate } = useSubscription();
+    subscribe(losslessBetsQuery).then((subscription: Moralis.LiveQuerySubscription) => {
+      subscribeToCreate(subscription, losslessBets.value);
+      subscribeToUpdate(subscription, losslessBets.value, "id");
+    });
+  }
+  return losslessBets;
 };
 
 /**
@@ -180,5 +205,6 @@ export const useBet = () => {
     getMatchedBetQuery,
     calculatePotentialProfit,
     getMarketMakerMatchedBets,
+    getLosslessBets,
   };
 };

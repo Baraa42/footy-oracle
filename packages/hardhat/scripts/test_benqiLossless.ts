@@ -9,7 +9,7 @@ const Web3 = require('web3');
 const main = async(): Promise<any> => {
   
   const LosslessManager = await ethers.getContractFactory("LosslessManager");
-  const losslessManager = LosslessManager.attach("0x7915aA52a890b313b81524830ac1dF5CfD136e43");
+  const losslessManager = LosslessManager.attach("0x46755c45ed5bcEd2C7E40958D119417039db6E0d");
 
   const gameId1 = "710806"; // Arsenal vs Brentford
   const gameId2 = "710797"; // Burnley vs Liverpool
@@ -28,13 +28,12 @@ const main = async(): Promise<any> => {
   console.log(currentDate, ", ", sixteenDays);
   
 //  console.log ((sixteenDays - fifteenDays) / (24 * 60 * 60))
-  /*
+  
   await losslessManager.create(gameId1, fifteenDays, sixteenDays);
   await losslessManager.create(gameId2, fifteenDays, sixteenDays);
   await losslessManager.create(gameId3, fifteenDays, sixteenDays);
   await losslessManager.create(gameId4, fifteenDays, sixteenDays);
   await losslessManager.create(gameId5, fifteenDays, sixteenDays);
-  */
 
   // Place a Bet
   var depositAmount = ethers.utils.parseEther("0.15");
