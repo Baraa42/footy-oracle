@@ -133,6 +133,7 @@
         <label for="price" class="block text-sm font-medium text-gray-700">Amount</label>
         <div class="mt-1 relative rounded-md shadow-sm">
           <input
+            v-model="betAmount"
             type="text"
             name="price"
             id="price"
@@ -153,6 +154,8 @@ import { useChain } from "@/modules/moralis/chain";
 import { DefiProvider } from "@/interfaces/Chain";
 import { useConfirmDialog } from "@/modules/layout/confirmDialog";
 import { useMoralis } from "@/modules/moralis/moralis";
+import { useLosslessBet } from "@/modules/moralis/lossless";
+
 import { useAlert } from "@/modules/layout/alert";
 import { CashIcon } from "@heroicons/vue/outline";
 import { SelectionEnum } from "@/interfaces/enums/SelectionEnum";
@@ -177,6 +180,10 @@ export default defineComponent({
     const confirmDialog = useConfirmDialog();
 
     const selection: Ref<SelectionEnum | undefined> = ref();
+    const betAmount = <Ref<string>>ref();
+    const betAmountNumber = computed((): number => Number(betAmount?.value.replaceAll(",", ".")));
+
+    const {createLosslessBet} = useLosslessBet();
 
     const getNameFromSelection = computed((): string => {
       if (selection.value === selections.HOME) {
@@ -193,7 +200,14 @@ export default defineComponent({
       confirmDialog.icon = CashIcon;
       confirmDialog.color = "indigo";
       confirmDialog.buttonText = "Confirm";
-      confirmDialog.onConfirm = async () => {};
+      confirmDialog.onConfirm = async () => {
+
+        console.log("onConfirm ", props.event.attributes);
+        console.log(betAmountNumber.value);
+        createLosslessBet(props.event, select, betAmountNumber.value);
+
+        betAmount.value = "";
+      };
 
       if (isAuthenticated.value) {
         confirmDialog.toggle();
@@ -202,7 +216,19 @@ export default defineComponent({
       }
     };
 
-    return { activeChain, defiProvider, humanizeDate, getDate, getDateTime, selections, confirmDialog, onSelect, selection, getNameFromSelection };
+    return {
+      activeChain,
+      defiProvider,
+      humanizeDate,
+      getDate,
+      getDateTime,
+      selections,
+      confirmDialog,
+      onSelect,
+      selection,
+      getNameFromSelection,
+      betAmount
+      };
   },
   components: { ConfirmationDialog, QuestionMarkCircleIcon },
 });

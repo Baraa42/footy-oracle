@@ -30,6 +30,12 @@ const config: HardhatUserConfig = {
       { version: "0.6.12" },
       { version: "0.4.25" },
     ],
+    settings: {
+      optimizer: {
+        enabled: true,
+        runs: 200
+      }
+    }
   },
   networks: {
     ropsten: {
