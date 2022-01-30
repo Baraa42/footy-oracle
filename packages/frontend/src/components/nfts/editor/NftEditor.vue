@@ -130,7 +130,7 @@
       :border="border"
       :borderThickness="borderThickness"
     ></Nft>
-    <div class="flex flex-row gap-x-2">
+    <div class="flex flex-row gap-x-2 mt-2">
       <button
         @click="download()"
         class="w-max group relative flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-md text-white bg-gray-600 hover:bg-gray-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-500 mb-2"
