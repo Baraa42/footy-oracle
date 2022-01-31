@@ -6,7 +6,7 @@ https://sneuxiknspgx.grandmoralis.com/#/sport/soccer
 
 ## Walkthrough video url : 
 
-`Add video link here`
+https://www.youtube.com/watch?v=gHobHdJ2H00
 
 ## The Project - Footy Oracle
 
@@ -75,21 +75,23 @@ Players can bet on their favorite team without losing money (Same principe as Po
 - Users can only withdraw the money that they bet on the game after its finished.
 
 ## Technologies used :
-- Moralis.
-- Hardhat, Brownie.
-- Add more.
+* [Moralis](https://docs.moralis.io/)
+* [Hardhat](https://hardhat.org/)
+* [Vue.js](https://v3.vuejs.org/)
+    * [Typescript](https://v3.vuejs.org/guide/typescript-support.html)
+    * [Composition API](https://v3.vuejs.org/guide/composition-api-introduction.html)
+    * [Router](https://next.router.vuejs.org/)
+* [Tailwind CSS](https://tailwindcss.com/)
+* [Vite](https://vitejs.dev/)
+
 
 ## Procotols used :
 - Benqi.
 - Aave.
 - Chainlink.
 - YieldYak.
-
-## Installation and Requierements :
-?
-
-## Contract addresses :
- ?
+- IPFS
+- Chainlink
 
 
 
