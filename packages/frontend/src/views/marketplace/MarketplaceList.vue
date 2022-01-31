@@ -76,8 +76,8 @@
                 <div class="flex font-semibold text-sm">{{ nft.attributes.symbol }} #{{ nft.attributes.token_id }}</div>
                 <div class="flex flex-row items-center space-x-1" v-if="nft.attributes.offer">
                   <span class="font-bold text-sm">{{ convertCurrency(nft.attributes.offer.attributes.price) }}</span>
-                  <div class="bg-indigo-500 rounded-full w-5 h-5 flex items-center justify-center">
-                    <component :is="activeChain.icon" class="w-3 h-3 text-white" />
+                  <div class="rounded-full w-5 h-5 flex items-center justify-center">
+                    <component :is="activeChain.iconRounded" class="w-5 h-5" />
                   </div>
                 </div>
               </div>

@@ -261,8 +261,8 @@ export default defineComponent({
         console.log("onConfirm ", props.event.attributes);
         console.log(betAmountNumber.value);
         createLosslessBet(props.event, select, betAmountNumber.value);
-
         betAmount.value = "";
+        confirmDialog.toggle();
       };
 
       if (isAuthenticated.value) {
