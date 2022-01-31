@@ -86,13 +86,11 @@ Players can bet on their favorite team without losing money (Same principe as Po
 
 
 ## Procotols used :
-- Benqi.
-- Aave.
-- Chainlink.
-- YieldYak.
-- IPFS
-- Chainlink
-
+- Benqi : Generating yield from Lossless betting deposits.
+- Aave :  Generating yield from Lossless betting deposits.
+- Chainlink : Bringing match results on-chain.
+- YieldYak : Swap tokens plugin.
+- IPFS : Store bet NFTs metadata.
 
 
     
